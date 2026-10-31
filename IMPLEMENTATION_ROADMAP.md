@@ -152,6 +152,8 @@ Objective: Establish the project structure and prevent the agents from inventing
 
 **P0-01 status:** Completed — folder structure initialized per `PROJECT_ARCHITECTURE.md`. `README.md` and `ATTRIBUTION.md` remain pending under P0-06.
 
+**P0-02 status:** Completed — `js/backend/index.js` is the backend's public entry point and aggregates the documented backend domains. Frontend modules must import backend functionality only through this entry point and must not contain gameplay logic.
+
 ### Expected deliverables
 
 - Empty but organized project structure.
