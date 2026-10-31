@@ -197,6 +197,8 @@ This is the most important technical phase because incorrect emission calculatio
 
 **P1-01 status:** Completed — `js/backend/data/rulebook.js` exports the 11 municipal assessment rates from `GAME_RULES.md` §3.1, grouped by category with their rate keys, activity labels, values and units. The PRD-defined keys `GRID_ELEC`, `GAS_HEAT`, `LOCAL_FOOD`, `BEEF` and `FLIGHT` are preserved; remaining keys use consistent uppercase identifiers for the same activities. These 11 keys are canonical for all case data per D-13, and P1-03 must use them exactly.
 
+**P1-02 status:** Completed — `js/backend/data/grants.js` exports all four grants from `GAME_RULES.md` §5 with their IDs, names, costs, Net-Zero boosts, eligibility requirements and future-impact descriptions. The Cool/Green Roof Permit stores `summerAcAboveKwh: null` because the numeric AC threshold remains the approved open data gap in §13.1; P1-13 must not treat the grant as fully eligible until that threshold is approved.
+
 **Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. `tests/rulebook.test.js` verifies the canonical keys, rates, categories, and units; each future backend module must add its tests as it is implemented.
 
 ### 1B. Calculation Engine
