@@ -191,11 +191,13 @@ This is the most important technical phase because incorrect emission calculatio
 | ----- | ---------------------------------- | ----------------------------------------------------------------------------- |
 | P1-01 | Implement emission rulebook        | Store all emission rates and categories from the PRD.                         |
 | P1-02 | Implement grant database           | Store grant IDs, eligibility requirements, costs and effects.                 |
-| P1-03 | Implement citizen case database    | Create the citizen profiles, receipts, declarations and notes.                |
+| P1-03 | Implement citizen case database    | Create the citizen profiles, receipts, declarations and notes using the canonical rulebook keys (D-13). |
 | P1-04 | Implement case validation          | Verify IDs, required fields, receipt types, quantities and rate references.   |
 | P1-05 | Implement campaign day definitions | Store the number of cases, time limits and introduced mechanics for each day. |
 
-**P1-01 status:** Completed — `js/backend/data/rulebook.js` exports the 11 municipal assessment rates from `GAME_RULES.md` §3.1, grouped by category with their rate keys, activity labels, values and units. The PRD-defined keys `GRID_ELEC`, `GAS_HEAT`, `LOCAL_FOOD`, `BEEF` and `FLIGHT` are preserved; remaining keys use consistent uppercase identifiers for the same activities.
+**P1-01 status:** Completed — `js/backend/data/rulebook.js` exports the 11 municipal assessment rates from `GAME_RULES.md` §3.1, grouped by category with their rate keys, activity labels, values and units. The PRD-defined keys `GRID_ELEC`, `GAS_HEAT`, `LOCAL_FOOD`, `BEEF` and `FLIGHT` are preserved; remaining keys use consistent uppercase identifiers for the same activities. These 11 keys are canonical for all case data per D-13, and P1-03 must use them exactly.
+
+**Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. `tests/rulebook.test.js` verifies the canonical keys, rates, categories, and units; each future backend module must add its tests as it is implemented.
 
 ### 1B. Calculation Engine
 

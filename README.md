@@ -36,8 +36,9 @@ The player must finish Day 3 with at least 100% Net-Zero Progress without going 
 ## Tech Stack
 
 - HTML5, CSS3, and Vanilla JavaScript (ES6 modules).
-- No build step, npm dependencies, server, database, or external services.
+- No build step, runtime npm dependencies, server, database, or external services.
 - Runs entirely in the browser from static files.
+- Vitest is a development-only dependency used for automated backend tests.
 
 ## Running Locally
 
@@ -60,7 +61,9 @@ js/backend/                 Game logic, data, calculations, and state systems
 js/frontend/                Screens, components, rendering, events, and audio
 js/app.js                   Application composition root
 assets/icons/               Project-owned icons and SVG assets
-tests/                      Backend test files
+tests/                      Automated backend tests (Vitest)
+package.json                Development scripts and test dependency
+vitest.config.js            Vitest configuration
 GAME_RULES.md               Authoritative gameplay rules
 PROJECT_ARCHITECTURE.md     Folder structure and layer responsibilities
 IMPLEMENTATION_ROADMAP.md   Phases, tasks, and completion status
@@ -84,7 +87,14 @@ ATTRIBUTION.md              Third-party assets, names, and licensing notes
 
 ## Testing
 
-Backend modules are intended to be testable independently of the UI. Test files live in `tests/`; a test runner and populated tests are added in later roadmap phases.
+Backend modules are tested independently of the UI with [Vitest](https://vitest.dev/). Install the development dependency once, then run the suite:
+
+```sh
+npm install
+npm test
+```
+
+Use `npm run test:watch` while developing. Tests live in `tests/` and import the ES modules directly. `tests/rulebook.test.js` covers the canonical rulebook keys and rates (D-13); future backend modules must add their tests as they are implemented. Vitest is development-only and is not shipped with the game.
 
 ## Licensing
 

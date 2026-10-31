@@ -4,7 +4,11 @@ This file records third-party assets, names, data notes, and licensing status fo
 
 ## Runtime Dependencies
 
-The project uses no npm packages, frameworks, game engines, databases, APIs, or paid services. It is built with HTML5, CSS3, and Vanilla JavaScript (ES6 modules) and runs as static files in a browser.
+The game runtime uses no npm packages, frameworks, game engines, databases, APIs, or paid services. It is built with HTML5, CSS3, and Vanilla JavaScript (ES6 modules) and runs as static files in a browser.
+
+## Development Dependencies
+
+Automated tests use [Vitest](https://vitest.dev/), installed as a development-only npm dependency. Vitest is distributed under the MIT License and is not bundled with or loaded by the game.
 
 ## Visual Assets
 

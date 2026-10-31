@@ -51,12 +51,11 @@ GameUP/
 │   └── icons/
 │
 ├── tests/
-│   ├── emissions.test.js
-│   ├── audit.test.js
-│   ├── grants.test.js
-│   ├── metrics.test.js
-│   └── campaign.test.js
+│   └── rulebook.test.js
 │
+├── package.json
+├── package-lock.json
+├── vitest.config.js
 ├── README.md
 └── ATTRIBUTION.md
 

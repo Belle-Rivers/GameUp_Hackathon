@@ -11,7 +11,7 @@
 ### 1.2 Core Objectives
 
 * **COP31 Alignment:** Features four key COP31 Action Agenda priorities: *Carbon Footprint & Conscious Consumption*, *Climate Literacy & Greenwashing Verification*, *Climate-Resilient Cities*, and *Zero Waste & Methane Reduction*.
-* **48-Hour Scope Guarantee:** Built using pure HTML5, CSS3, and Vanilla JavaScript (ES6+). Uses zero heavy game engines or external npm dependencies to enable AI coding agents (Antigravity, OpenCode) to construct, test, and refactor the entire repository in minutes.
+* **48-Hour Scope Guarantee:** Built using pure HTML5, CSS3, and Vanilla JavaScript (ES6+). Uses zero heavy game engines or runtime npm dependencies; Vitest is a development-only test dependency. This enables AI coding agents (Antigravity, OpenCode) to construct, test, and refactor the entire repository in minutes.
 * **Cost & Licensing:** 100% free-tier stack. Uses CSS/SVG procedural visuals and Web Audio API synthesized sound effects, requiring zero proprietary or licensed external assets.
 
 ---

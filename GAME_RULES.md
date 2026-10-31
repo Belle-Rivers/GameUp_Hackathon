@@ -677,6 +677,8 @@ The following decisions are approved for the MVP and are authoritative for imple
 | D-10 | Does the ±2 kg tolerance apply to every action? | The tolerance applies to APPROVE accuracy and the FINE underdeclaration threshold. It does not apply to GRANT eligibility or validation. |
 | D-11 | Can a fine be negative? | No. Fine = max(0, Actual CO₂ − Declared CO₂) × $10. An unverified offset can make FINE valid but cannot create a negative fine or an automatic additional penalty. |
 | D-12 | How is CO₂ reduction for shift statistics calculated? | The MVP does not claim an exact reduction total. Display valid grant counts and Net-Zero Progress; do not populate `co2ReducedKg` from grant future-impact percentages. |
+| D-13 | Which names identify emission rates in case data? | The 11 keys exported by `EMISSION_RULEBOOK` are canonical: `GRID_ELEC`, `GAS_HEAT`, `SOLAR_OFFSET`, `BEEF`, `IMPORTED_GOODS`, `LOCAL_FOOD`, `GASOLINE`, `FLIGHT`, `PUBLIC_TRANSIT`, `LANDFILL`, and `COMPOST`. All P1-03 case data must use these exact keys. Unknown keys are invalid case data and must not be assigned a rate. |
+| D-14 | How is backend logic verified? | Vitest is the automated test runner (`npm test` for one run, `npm run test:watch` for watch mode). It is a development-only dependency; the game runtime remains dependency-free. Tests live in `tests/` and must accompany each implemented backend module. |
 
 ## 13.1 Known Data Gap
 
