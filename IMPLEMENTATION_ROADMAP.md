@@ -152,7 +152,7 @@ Objective: Establish the project structure and prevent the agents from inventing
 | P0-05 | Resolve the gameplay ambiguities identified above and record the approved decisions. | Product |
 | P0-06 | Create the initial README and ATTRIBUTION documentation.                             | Shared  |
 
-**P0-01 status:** Completed — folder structure initialized per `PROJECT_ARCHITECTURE.md`. `README.md` and `ATTRIBUTION.md` remain pending under P0-06.
+**P0-01 status:** Completed — folder structure initialized per `PROJECT_ARCHITECTURE.md`. `README.md` and `ATTRIBUTION.md` were added under P0-06.
 
 **P0-02 status:** Completed — `js/backend/index.js` is the backend's public entry point and aggregates the documented backend domains. Frontend modules must import backend functionality only through this entry point and must not contain gameplay logic.
 
@@ -161,6 +161,8 @@ Objective: Establish the project structure and prevent the agents from inventing
 **P0-04 status:** Completed — frontend/backend communication interface defined as JSDoc typedefs in `js/backend/index.js` (`BackendApi`, sanitized case/state views, receipt breakdown, action request/result, shift summary, campaign outcome) and referenced from `js/app.js`. Frontend requests operations and displays results; validation, calculations, metrics, and outcomes remain backend-owned. Timer/day-transition operations beyond this core surface remain with P3-12/P4.
 
 **P0-05 status:** Completed — the recommended MVP decisions are approved and recorded as D-01–D-12 in `GAME_RULES.md` §13. The Cool/Green Roof “high summer AC” threshold remains an open data gap in §13.1 and must not be invented.
+
+**P0-06 status:** Completed — initial `README.md` and `ATTRIBUTION.md` created. Final submission documentation remains part of P6-15/P6-16.
 
 ### Expected deliverables
 
