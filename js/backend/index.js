@@ -141,6 +141,30 @@ import * as metrics from './systems/metrics.js';
 import * as gameState from './systems/game-state.js';
 import * as campaign from './systems/campaign.js';
 
+/**
+ * Creates or gets the default BackendApi implementation.
+ *
+ * @type {BackendApi}
+ */
+export const backendApi = {
+  startCampaign: () => campaign.resetCampaign().getView(),
+  restartCampaign: () => campaign.resetCampaign().getView(),
+  getState: () => campaign.getCampaign().getView(),
+  getCurrentCase: () => campaign.getCampaign().getCurrentCaseView(),
+  getRulebook: () => rulebook.EMISSION_RULEBOOK,
+  getGrants: () => grants.MITIGATION_GRANTS,
+  getReceiptBreakdown: (request) => {
+    const targetCase = cases.CITIZEN_CASES.find((c) => c.id === request.caseId);
+    if (!targetCase) {
+      throw new Error(`Case not found: "${request.caseId}".`);
+    }
+    return emissions.breakdownReceipts(targetCase, request.selection);
+  },
+  submitAction: (request) => campaign.getCampaign().submitAction(request),
+  getShiftSummary: () => campaign.getCampaign().getShiftSummary(),
+  getCampaignOutcome: () => campaign.getCampaign().getCampaignOutcome(),
+};
+
 export {
   cases,
   rulebook,

@@ -257,6 +257,16 @@ This is the most important technical phase because incorrect emission calculatio
 | P1-19 | Implement case progression   | Track processed cases and current case.                          |
 | P1-20 | Implement shift statistics   | Track correct actions, fines, grants and CO2-related statistics. |
 
+**P1-16 status:** Completed — `js/backend/systems/game-state.js` exports `createInitialGameState`, initializing campaign day, daily cases from `CITIZEN_CASES`, time limit from `CAMPAIGN_DAYS` (120s for Day 1), initial metrics (Net-Zero 30%, Budget $5,000, Public Trust 70%), and empty shift statistics. `campaign.js` and `index.js` expose this through `startCampaign` / `restartCampaign`.
+
+**P1-17 status:** Completed — `js/backend/systems/metrics.js` exports `createInitialMetrics`, `applyMetricChanges`, and `clampPercentage`. Manages Net-Zero progress, Municipal Budget, and Public Trust according to the exact formulas in `GAME_RULES.md` §6 and action effects in §4.
+
+**P1-18 status:** Completed — `js/backend/systems/metrics.js` exports `isBankrupt`, `isTrustDepleted`, `checkFailureConditions`, `checkVictoryCondition`, and enforces metric bounds via `METRIC_BOUNDS`. Ensures percentage metrics are clamped between [0, 100]% while budget is checked before clamping so bankruptcy is accurately detected when budget <= 0 or trust <= 0 per `GAME_RULES.md` §6.5 and §10.2.
+
+**P1-19 status:** Completed — `js/backend/systems/game-state.js` exports `getCurrentCase`, `hasNextCase`, `advanceCase`, `tickTimer`, and `applyAuditAction`. Tracks current case index, enforces single-case advancement on action completion, ends shifts when the daily case list finishes or the timer hits zero without processing unfinished cases per `GAME_RULES.md` §8.4 and §8.5.
+
+**P1-20 status:** Completed — `js/backend/systems/game-state.js` exports `createInitialShiftStats` and `recordActionInShiftStats`. Accurately increments `processedCount`, `correctActions`, `finesIssued`, and `grantsIssued` only when actions are completed and verified per `GAME_RULES.md` §9. Accessible via `getShiftSummary` in `index.js` and `campaign.js`.
+
 ### Backend testing
 
 Each module must have independent tests.
