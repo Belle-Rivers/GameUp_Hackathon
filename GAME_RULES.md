@@ -659,18 +659,30 @@ The frontend requests actions and displays backend results. It must not become a
 
 ---
 
-# 13. Open Decisions and Change Control
+# 13. Approved MVP Decisions and Change Control
 
-The following items require explicit approval if the team wants to change them:
+The following decisions are approved for the MVP and are authoritative for implementation.
 
-1. Whether grants can be combined with fines or approvals. MVP rule: one action per citizen.
-2. Whether grant future impacts affect later citizen records. MVP rule: descriptive only.
-3. Whether reaching 100% Net-Zero before Day 3 ends the campaign. MVP rule: evaluate victory after Day 3.
-4. How exact CO₂ reductions are calculated for shift statistics. MVP rule: do not invent unsupported values.
-5. Whether a fine for an unverified offset can generate a negative amount. MVP rule: fine amount cannot be negative.
-6. Whether a citizen's unfinished case is penalized when time expires. MVP rule: it is not processed and does not receive an action penalty.
+| ID | Ambiguity | Approved MVP decision |
+| --- | --- | --- |
+| D-01 | Can a citizen receive a grant and also be fined or approved? | No. APPROVE, FINE, and GRANT are mutually exclusive; each citizen receives exactly one final action. Grants are alternatives to approvals and fines. |
+| D-02 | Can Net-Zero reaching 100% before Day 3 end the campaign early? | No. The campaign always runs all three days. Victory is evaluated only after Day 3 and requires Net-Zero Progress at least 100%, a positive budget, and positive Public Trust. |
+| D-03 | Do grant effects change later citizens' records? | No. Immediate metric effects apply when a grant is validated. Future impacts are descriptive only and do not modify later cases, receipts, or emissions. |
+| D-04 | Are the emission rates official scientific or COP31 values? | No. They are fixed gameplay benchmark values described as municipal assessment rates, not official COP31, Antalya government, or scientific figures. |
+| D-05 | What does clicking a receipt item add to the calculator? | The backend-calculated emission contribution in kg CO₂ for that item. The calculator may display quantity and rate for transparency, but must not multiply or total emissions independently. |
+| D-06 | What happens to an unfinished case when the timer expires? | The shift stops accepting actions. The current case is not processed, receives no action penalty, and is not counted in processed statistics. The shift summary is shown, and the campaign continues if it has not failed. |
+| D-07 | Does bankruptcy or zero trust end the day or the campaign? | Either condition ends the entire campaign immediately. At the end of Day 3, Net-Zero Progress below 100% also fails the campaign. |
+| D-08 | How is the discrepancy ratio handled when actual emissions are zero? | Never divide by zero. Use the absolute discrepancy for decision rules when actual emissions are zero; the ratio is not used for those decisions. |
+| D-09 | Can `hasFraud` or `fraudType` decide the audit outcome? | No. The backend must derive fraud from receipts, the declaration, and policy rules. `hasFraud` is expected-answer metadata for tests only; `fraudType` may categorize a case but does not replace verification. |
+| D-10 | Does the ±2 kg tolerance apply to every action? | The tolerance applies to APPROVE accuracy and the FINE underdeclaration threshold. It does not apply to GRANT eligibility or validation. |
+| D-11 | Can a fine be negative? | No. Fine = max(0, Actual CO₂ − Declared CO₂) × $10. An unverified offset can make FINE valid but cannot create a negative fine or an automatic additional penalty. |
+| D-12 | How is CO₂ reduction for shift statistics calculated? | The MVP does not claim an exact reduction total. Display valid grant counts and Net-Zero Progress; do not populate `co2ReducedKg` from grant future-impact percentages. |
 
-Any change to these rules must be reflected in this document before implementation.
+## 13.1 Known Data Gap
+
+The numeric threshold for “high summer air-conditioning electricity consumption” used by the Cool/Green Roof Permit is not specified. This is not an approved decision. The value must not be invented; implementing that grant's eligibility requires an explicit owner decision or an approved case-data rule.
+
+Any change to these decisions or to any other gameplay rule requires explicit approval and must be reflected in this document before implementation.
 
 Agents must not silently change gameplay rules to make implementation easier.
 
@@ -678,4 +690,4 @@ If a rule is ambiguous, contradictory, or impossible to implement using the avai
 
 ---
 
-**Document status:** MVP gameplay rules — ready for implementation, subject to approval of the recommended decisions above.
+**Document status:** MVP gameplay rules — approved for implementation, except for the known data gap recorded in §13.1.

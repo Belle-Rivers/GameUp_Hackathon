@@ -97,6 +97,8 @@ To keep the implementation manageable, I suggest:
 
 These are proposed decisions, not facts already established in the PRD. I'd have you approve them before Phase 1.
 
+**Approval status:** Approved under P0-05. The authoritative record is `GAME_RULES.md` §13.
+
 # 3. Phase-by-phase implementation roadmap
 
 I recommend seven phases, with each phase having a clear completion gate.
@@ -157,6 +159,8 @@ Objective: Establish the project structure and prevent the agents from inventing
 **P0-03 status:** Completed — shared data contracts defined as JSDoc typedefs in `cases.js` (citizen case, receipt, receipt item), `grants.js` (grant and eligibility), `rulebook.js` (emission rate), and `game-state.js` (game state, city metrics, shift statistics). Contract fields follow `GAME_RULES.md` §3, §5–§9 and the PRD case/game-state schemas.
 
 **P0-04 status:** Completed — frontend/backend communication interface defined as JSDoc typedefs in `js/backend/index.js` (`BackendApi`, sanitized case/state views, receipt breakdown, action request/result, shift summary, campaign outcome) and referenced from `js/app.js`. Frontend requests operations and displays results; validation, calculations, metrics, and outcomes remain backend-owned. Timer/day-transition operations beyond this core surface remain with P3-12/P4.
+
+**P0-05 status:** Completed — the recommended MVP decisions are approved and recorded as D-01–D-12 in `GAME_RULES.md` §13. The Cool/Green Roof “high summer AC” threshold remains an open data gap in §13.1 and must not be invented.
 
 ### Expected deliverables
 
