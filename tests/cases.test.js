@@ -5,8 +5,14 @@ import { EMISSION_RULEBOOK } from '../js/backend/data/rulebook.js';
 const CANONICAL_KEYS = new Set(Object.keys(EMISSION_RULEBOOK));
 
 describe('CITIZEN_CASES', () => {
-  it('has exactly two sample cases', () => {
-    expect(CITIZEN_CASES.length).toBe(2);
+  it('has exactly 18 citizen cases across the 3 campaign days', () => {
+    expect(CITIZEN_CASES.length).toBe(18);
+  });
+
+  it('contains exactly 5 cases for Day 1, 6 for Day 2, and 7 for Day 3', () => {
+    expect(CITIZEN_CASES.filter((c) => c.day === 1).length).toBe(5);
+    expect(CITIZEN_CASES.filter((c) => c.day === 2).length).toBe(6);
+    expect(CITIZEN_CASES.filter((c) => c.day === 3).length).toBe(7);
   });
 
   it('each case has a valid id', () => {

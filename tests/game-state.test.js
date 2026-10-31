@@ -46,8 +46,8 @@ describe('Game State & Progression (P1-16, P1-19, P1-20)', () => {
       const activeCase = getCurrentCase(state);
       expect(activeCase).toBeDefined();
       expect(activeCase.id).toBe('C001');
-      // In current sample dataset, Day 1 has 1 case (C001)
-      expect(hasNextCase(state)).toBe(false);
+      // Day 1 has 5 cases (P4-01)
+      expect(hasNextCase(state)).toBe(true);
     });
 
     it('advances to the next case without skipping', () => {
@@ -147,8 +147,8 @@ describe('Game State & Progression (P1-16, P1-19, P1-20)', () => {
       expect(result.shiftStats.correctActions).toBe(1);
       expect(result.shiftStats.finesIssued).toBe(1);
       expect(nextState.currentCaseIndex).toBe(1);
-      expect(getCurrentCase(nextState)).toBeNull(); // Day 1 has 1 case in sample data
-      expect(nextState.shiftEnded).toBe(true);
+      expect(getCurrentCase(nextState).id).toBe('C003');
+      expect(nextState.shiftEnded).toBe(false);
     });
 
     it('detects bankruptcy failure immediately when action budget penalty causes budget <= 0', () => {
@@ -202,7 +202,7 @@ describe('Game State & Progression (P1-16, P1-19, P1-20)', () => {
 
       expect(actionResult.isValid).toBe(true);
       const nextCase = backendApi.getCurrentCase();
-      expect(nextCase).toBeNull(); // Day 1 finished
+      expect(nextCase.id).toBe('C003');
 
       const summary = backendApi.getShiftSummary();
       expect(summary.day).toBe(1);

@@ -124,7 +124,11 @@
  * @property {() => GameStateView} getState Return the current sanitized game state.
  * @property {() => CitizenCaseView | null} getCurrentCase Return the current case, or null when none remains.
  * @property {() => EmissionRulebook} getRulebook Return the emission rulebook.
- * @property {() => Grant[]} getGrants Return the grant catalog.
+ * @property {(day?: number) => Grant[]} getGrants Return the grant catalog, optionally filtered by day.
+ * @property {(day: number) => Grant[]} getGrantsForDay Return grants active on a specific campaign day.
+ * @property {(day: number) => import('./data/days.js').DayConfig} getDayConfig Return configuration for a day.
+ * @property {() => Record<number, import('./data/days.js').DayConfig>} getAllDayConfigs Return all day configurations.
+ * @property {() => import('./systems/game-state.js').CampaignStats} getCampaignStats Return cumulative campaign stats.
  * @property {(request: ReceiptBreakdownRequest) => ReceiptBreakdown} getReceiptBreakdown Calculate selected receipt contributions.
  * @property {(request: AuditActionRequest) => ActionResult} submitAction Validate an action and apply its effects.
  * @property {() => ShiftSummary} getShiftSummary Return the summary for the completed shift.
@@ -134,6 +138,7 @@
  */
 
 import * as cases from './data/cases.js';
+import * as days from './data/days.js';
 import * as rulebook from './data/rulebook.js';
 import * as grants from './data/grants.js';
 import * as emissions from './calculations/emissions.js';
@@ -154,7 +159,11 @@ export const backendApi = {
   getState: () => campaign.getCampaign().getView(),
   getCurrentCase: () => campaign.getCampaign().getCurrentCaseView(),
   getRulebook: () => rulebook.EMISSION_RULEBOOK,
-  getGrants: () => grants.MITIGATION_GRANTS,
+  getGrants: (day) => (day ? grantSystem.getGrantsForDay(day) : grants.MITIGATION_GRANTS),
+  getGrantsForDay: (day) => grantSystem.getGrantsForDay(day),
+  getDayConfig: (day) => days.getDayConfig(day),
+  getAllDayConfigs: () => days.CAMPAIGN_DAYS,
+  getCampaignStats: () => campaign.getCampaign().getCampaignStats(),
   getReceiptBreakdown: (request) => {
     const targetCase = cases.CITIZEN_CASES.find((c) => c.id === request.caseId);
     if (!targetCase) {
@@ -186,6 +195,7 @@ export const backendApi = {
 
 export {
   cases,
+  days,
   rulebook,
   grants,
   emissions,

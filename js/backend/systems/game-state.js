@@ -15,6 +15,15 @@
  */
 
 /**
+ * @typedef {Object} CampaignStats
+ * @property {number} totalProcessed Total citizens processed across all days.
+ * @property {number} totalCorrect Total correct actions across all days.
+ * @property {number} totalFines Total valid fines issued across all days.
+ * @property {number} totalGrants Total valid grants awarded across all days.
+ * @property {number} daysCompleted Number of completed shift days.
+ */
+
+/**
  * @typedef {Object} GameState
  * @property {number} currentDay Campaign day currently being played.
  * @property {number} timeRemaining Remaining shift time in seconds.
@@ -22,6 +31,7 @@
  * @property {import('../data/cases.js').CitizenCase[]} dailyCases Cases for the current day.
  * @property {CityMetrics} metrics Current city metrics.
  * @property {ShiftStats} shiftStats Current shift statistics.
+ * @property {CampaignStats} campaignStats Cumulative statistics across all campaign days.
  * @property {boolean} shiftEnded Whether the current shift has concluded.
  * @property {boolean} campaignEnded Whether the campaign has concluded.
  * @property {import('../index.js').CampaignOutcome | null} campaignOutcome Final outcome if campaignEnded is true.
@@ -50,6 +60,22 @@ export function createInitialShiftStats() {
     finesIssued: 0,
     grantsIssued: 0,
     co2ReducedKg: 0,
+  };
+}
+
+/**
+ * Creates empty cumulative campaign statistics.
+ * Per GAME_RULES.md §10.1 and P4-08.
+ *
+ * @returns {CampaignStats}
+ */
+export function createInitialCampaignStats() {
+  return {
+    totalProcessed: 0,
+    totalCorrect: 0,
+    totalFines: 0,
+    totalGrants: 0,
+    daysCompleted: 0,
   };
 }
 
@@ -87,6 +113,7 @@ export function createInitialGameState(day = 1, initialMetrics = null) {
   const timeRemaining = getTimeLimitForDay(day);
   const metrics = initialMetrics ? { ...initialMetrics } : createInitialMetrics();
   const shiftStats = createInitialShiftStats();
+  const campaignStats = createInitialCampaignStats();
 
   return {
     currentDay: day,
@@ -95,6 +122,7 @@ export function createInitialGameState(day = 1, initialMetrics = null) {
     dailyCases,
     metrics,
     shiftStats,
+    campaignStats,
     shiftEnded: false,
     campaignEnded: false,
     campaignOutcome: null,
@@ -157,6 +185,30 @@ export function recordActionInShiftStats(stats, actionResult) {
 }
 
 /**
+ * Updates cumulative campaign statistics based on a resolved action.
+ * Per GAME_RULES.md §10.1 and P4-08.
+ *
+ * @param {CampaignStats} stats
+ * @param {import('./audit.js').ActionResolutionResult} actionResult
+ * @returns {CampaignStats}
+ */
+export function recordActionInCampaignStats(stats, actionResult) {
+  const nextStats = { ...stats };
+  nextStats.totalProcessed += 1;
+
+  if (actionResult.isValid) {
+    nextStats.totalCorrect += 1;
+    if (actionResult.action === 'FINE') {
+      nextStats.totalFines += 1;
+    } else if (actionResult.action === 'GRANT') {
+      nextStats.totalGrants += 1;
+    }
+  }
+
+  return nextStats;
+}
+
+/**
  * Advances case progression after an action has been taken.
  * If the current case was the last case of the day, marks the shift as ended.
  * Per GAME_RULES.md §8.4, §11.7, §11.8.
@@ -196,6 +248,22 @@ export function tickTimer(state, seconds = 1) {
 
   const nextTime = Math.max(0, state.timeRemaining - seconds);
   const timerExpired = nextTime === 0;
+
+  if (timerExpired && state.currentDay === 3 && !state.campaignEnded) {
+    const victoryEval = checkVictoryCondition(state.metrics);
+    return {
+      ...state,
+      timeRemaining: 0,
+      shiftEnded: true,
+      campaignEnded: true,
+      campaignOutcome: {
+        status: victoryEval.isVictory ? 'VICTORY' : 'FAILED',
+        failureReason: victoryEval.reason,
+        metrics: { ...state.metrics },
+        campaignStats: { ...(state.campaignStats || createInitialCampaignStats()) },
+      },
+    };
+  }
 
   return {
     ...state,
@@ -249,8 +317,12 @@ export function applyAuditAction(state, request) {
     resolution.metricChanges
   );
 
-  // 3. Update shift statistics
+  // 3. Update shift statistics & campaign statistics
   const updatedShiftStats = recordActionInShiftStats(state.shiftStats, resolution);
+  const updatedCampaignStats = recordActionInCampaignStats(
+    state.campaignStats || createInitialCampaignStats(),
+    resolution
+  );
 
   // 4. Advance case
   const nextCaseIndex = state.currentCaseIndex + 1;
@@ -268,6 +340,7 @@ export function applyAuditAction(state, request) {
       status: 'FAILED',
       failureReason: failure.reason,
       metrics: updatedMetrics,
+      campaignStats: updatedCampaignStats,
     };
   } else if (noCasesRemaining && state.currentDay === 3) {
     // If Day 3 cases are completed, evaluate victory
@@ -278,6 +351,7 @@ export function applyAuditAction(state, request) {
       status: victoryEval.isVictory ? 'VICTORY' : 'FAILED',
       failureReason: victoryEval.reason,
       metrics: updatedMetrics,
+      campaignStats: updatedCampaignStats,
     };
   }
 
@@ -285,6 +359,7 @@ export function applyAuditAction(state, request) {
     ...state,
     metrics: updatedMetrics,
     shiftStats: updatedShiftStats,
+    campaignStats: updatedCampaignStats,
     currentCaseIndex: nextCaseIndex,
     shiftEnded,
     campaignEnded,
@@ -325,7 +400,7 @@ export function startNextDay(state) {
     throw new Error('GameState is required to start next day.');
   }
 
-  if (state.campaignEnded) {
+  if (state.campaignEnded || state.metrics.budget <= 0 || state.metrics.trust <= 0) {
     throw new Error('Cannot start next day: Campaign has ended.');
   }
 
@@ -337,6 +412,10 @@ export function startNextDay(state) {
   const dailyCases = getCasesForDay(nextDay);
   const timeRemaining = getTimeLimitForDay(nextDay);
   const shiftStats = createInitialShiftStats();
+  const campaignStats = {
+    ...(state.campaignStats || createInitialCampaignStats()),
+    daysCompleted: state.currentDay,
+  };
 
   return {
     ...state,
@@ -345,6 +424,7 @@ export function startNextDay(state) {
     currentCaseIndex: 0,
     dailyCases,
     shiftStats,
+    campaignStats,
     shiftEnded: false,
     campaignEnded: false,
     campaignOutcome: null,
@@ -364,6 +444,9 @@ export function sanitizeGameStateView(state) {
     currentCaseIndex: state.currentCaseIndex,
     metrics: { ...state.metrics },
     shiftStats: { ...state.shiftStats },
+    campaignStats: { ...(state.campaignStats || createInitialCampaignStats()) },
+    shiftEnded: state.shiftEnded,
+    campaignEnded: state.campaignEnded,
   };
 }
 

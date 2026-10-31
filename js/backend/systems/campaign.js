@@ -137,6 +137,23 @@ export class CampaignManager {
   getCampaignOutcome() {
     return this.state.campaignOutcome ? { ...this.state.campaignOutcome } : null;
   }
+
+  /**
+   * Returns cumulative campaign statistics across all days.
+   *
+   * @returns {import('./game-state.js').CampaignStats}
+   */
+  getCampaignStats() {
+    return {
+      ...(this.state.campaignStats || {
+        totalProcessed: 0,
+        totalCorrect: 0,
+        totalFines: 0,
+        totalGrants: 0,
+        daysCompleted: 0,
+      }),
+    };
+  }
 }
 
 /**

@@ -34,6 +34,7 @@
  */
 
 import { GRANTS } from '../data/grants.js';
+import { getAvailableGrantsForDay } from '../data/days.js';
 
 /**
  * Metric changes applied when a grant action is resolved.
@@ -313,3 +314,17 @@ export function calculateGrantMetricChanges(validation) {
     netZero: GRANT_ACTION_EFFECTS.INVALID.netZero,
   };
 }
+
+/**
+ * Retrieves full Grant objects available on a specific campaign day.
+ * Day 1: Heat Pump Subsidy & Municipal Compost Kit.
+ * Day 2 & 3: All four grants.
+ *
+ * @param {number} day Campaign day (1, 2, or 3).
+ * @returns {Grant[]}
+ */
+export function getGrantsForDay(day) {
+  const grantIds = getAvailableGrantsForDay(day);
+  return grantIds.map((id) => GRANTS[id]).filter(Boolean);
+}
+

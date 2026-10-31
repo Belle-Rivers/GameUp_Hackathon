@@ -461,6 +461,22 @@ Objective: Transform the single-day prototype into the complete three-day campai
 | P4-07 | Implement campaign loss conditions | Handle bankruptcy and zero public trust.                            |
 | P4-08 | Implement campaign statistics      | Aggregate performance across all three days.                        |
 
+**P4-01 status:** Completed — `js/backend/data/days.js` configures Day 1 with 5 citizen cases, a 120-second time limit (`timeLimitSeconds`), and initial mitigation grants (`HEAT_PUMP`, `COMPOST_KIT`). Day 1 cases in `js/backend/data/cases.js` focus on basic receipt arithmetic, declaration comparisons, and introduce Heat Pump Subsidy and Compost Kit eligibility.
+
+**P4-02 status:** Completed — `js/backend/data/days.js` configures Day 2 with 6 citizen cases, a 100-second time limit (`timeLimitSeconds`), and expanded grants incorporating all four programs (`HEAT_PUMP`, `COMPOST_KIT`, `TRANSIT_PASS`, `COOL_ROOF`). Day 2 cases introduce flight records, greenwashing claims, and unverified carbon offset fraud (`UNVERIFIED_OFFSET`, `UNDERDECLARED_KWH`).
+
+**P4-03 status:** Completed — `js/backend/data/days.js` configures Day 3 with 7 citizen cases, a 90-second time limit (`timeLimitSeconds`), and all four mitigation grants. Day 3 cases feature complex multi-receipt structures, subtle declaration discrepancies testing the ±2 kg tolerance boundary, and conflicting personal notes.
+
+**P4-04 status:** Completed — `js/backend/systems/game-state.js` implements `getCasesForDay(day)` loading the designated cases for each day (5 on Day 1, 6 on Day 2, 7 on Day 3 for 18 total cases). All 18 cases pass schema validation without leaking test or internal audit fields in sanitized views.
+
+**P4-05 status:** Completed — `js/backend/systems/game-state.js` and `CampaignManager.advanceDay()` transition the campaign to the subsequent day upon shift conclusion, carrying over municipal metrics (Net-Zero, Budget, Public Trust), setting the respective day's time limit and cases, resetting shift statistics, and preventing transition if the campaign has ended or failed.
+
+**P4-06 status:** Completed — Win conditions are evaluated at the conclusion of Day 3 (via timer expiration or case completion). Reaching 100% Net-Zero before Day 3 does not terminate early per D-02. If Net-Zero Progress >= 100%, Budget > 0, and Public Trust > 0 after Day 3, victory status (`VICTORY`) is awarded; otherwise, campaign failure with reason `NET_ZERO_TARGET` is applied.
+
+**P4-07 status:** Completed — Immediate campaign termination is triggered upon municipal bankruptcy (`budget <= 0`, reason `BANKRUPTCY`) or public trust depletion (`trust <= 0`, reason `PUBLIC_TRUST`). When terminated, `campaignEnded` and `shiftEnded` are locked, preventing further action submissions or day advancement.
+
+**P4-08 status:** Completed — `js/backend/systems/game-state.js` and `CampaignManager.getCampaignStats()` aggregate cumulative performance (`totalProcessed`, `totalCorrect`, `totalFines`, `totalGrants`, `daysCompleted`) across all shifts, preserving campaign totals across day transitions while isolating daily shift statistics, and resetting cleanly upon campaign restart.
+
 ### 4B. Frontend Tasks
 
 | ID    | Task                              | Description                                       |
