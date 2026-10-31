@@ -326,6 +326,20 @@ This is where Antigravity can be particularly useful for visual inspection.
 | P2-10 | Implement action dock          | Create approval, fine and grant controls.             |
 | P2-11 | Implement grant selector       | Allow players to inspect and select available grants. |
 
+**P2-05 status:** Completed — `js/frontend/components/top-bar.js` exports `TopBarComponent`, `createTopBar`, `formatBudget`, and `formatTimer`. Binds to `#top-bar` DOM nodes, presenting campaign day, case count, clamped percentage meters (Net-Zero and Trust), normalized Budget meter, and MM:SS countdown timer with low-time warning classes.
+
+**P2-06 status:** Completed — `js/frontend/components/rulebook-panel.js` exports `RulebookPanelComponent`, `createRulebookPanel`, `renderRateItem`, and `renderPolicyItem`. Renders official emission benchmark rates and municipal policy directives (`DIR-3101`, `DIR-3102`, `DIR-3103`) into `#rulebook-panel` with semantic badges and XSS-safe text escaping.
+
+**P2-07 status:** Completed — `js/frontend/components/dossier-panel.js` exports `DossierPanelComponent`, `createDossierPanel`, and `formatCO2`. Binds to `#dossier-panel` fields to display citizen full name, case ID, district, roof type, formatted declared carbon footprint, and citizen statement/note.
+
+**P2-08 status:** Completed — `js/frontend/components/dossier-panel.js` implements `renderReceiptCard` and `renderReceiptItem`. Dynamically renders utility, grocery, travel, and cooling receipts with category badges, item quantities, and interactive click/keyboard event hooks referencing line item indices.
+
+**P2-09 status:** Completed — `js/frontend/components/calculator-panel.js` exports `CalculatorPanelComponent`, `createCalculatorPanel`, and `formatCO2`. Manages scratchpad tape entries, displays formatted running CO₂ totals, provides clear controls, and respects the architecture boundary by consuming calculated inputs without duplicating backend formula calculations.
+
+**P2-10 status:** Completed — `js/frontend/components/action-panel.js` exports `ActionPanelComponent` and `createActionPanel`. Binds to `#stamp-dock` and `#assessment-summary-box`, displaying audited vs. declared comparison with variance indicators, handling APPROVE, FINE, and GRANT click events, and supporting action enablement states.
+
+**P2-11 status:** Completed — `js/frontend/components/action-panel.js` implements `populateGrants`, `getSelectedGrant`, `setSelectedGrant`, and `formatGrantLabel`. Populates and controls `#grant-select` with catalog entries (Heat Pump, Compost Kit, Transit Voucher, Cool Roof) showing subsidies and Net-Zero boost percentages.
+
 ### 2C. Screens and Interactions
 
 | ID    | Task                                    | Description                                        |
