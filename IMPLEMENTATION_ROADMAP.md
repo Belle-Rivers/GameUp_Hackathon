@@ -207,6 +207,8 @@ This is the most important technical phase because incorrect emission calculatio
 
 **P1-06 status:** Completed — `js/backend/calculations/emissions.js` exports `calculateItemEmissions` and `calculateActualEmissions`. The calculator resolves each item's `rateKey` against `EMISSION_RULEBOOK` (throwing on unknown keys per `GAME_RULES.md` §7.2), multiplies quantity by rate, sums all receipt items in a case, and clamps the assessed total to zero per §3.2. Coverage includes the roadmap examples, multi-receipt sums, solar offsets, clamping and unknown rate keys.
 
+**P1-07 status:** Completed — `js/backend/calculations/emissions.js` exports `calculateReceiptBreakdown`, which returns the approved `ReceiptBreakdown` contract: every item's contribution with its receipt/item reference, subtotals grouped by receipt category (`receipt.type`), and the case total. Item and category values preserve negative offsets while `totalCO2` is clamped to zero per `GAME_RULES.md` §3.2/§3.3. Coverage includes item references, category grouping across receipts, offsets, sample cases, and unknown rate keys.
+
 **Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. Tests in `tests/` mirror the implemented backend modules; each future backend module must add its tests as it is implemented.
 
 ### 1B. Calculation Engine

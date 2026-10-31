@@ -4,6 +4,29 @@
  * @typedef {import('../data/rulebook.js').EmissionRate} EmissionRate
  */
 
+/**
+ * @typedef {Object} ReceiptItemRef
+ * @property {number} receiptIndex Index of the receipt in the case.
+ * @property {number} itemIndex Index of the item within that receipt.
+ */
+
+/**
+ * @typedef {Object} ReceiptBreakdownItem
+ * @property {ReceiptItemRef} ref Reference to the calculated receipt item.
+ * @property {string} label Human-readable activity description.
+ * @property {number} qty Recorded quantity.
+ * @property {string} unit Unit of measurement.
+ * @property {number} co2 Emission contribution in kg CO2.
+ */
+
+/**
+ * @typedef {Object} ReceiptBreakdown
+ * @property {string} caseId Case the breakdown belongs to.
+ * @property {ReceiptBreakdownItem[]} items Per-item emission contributions.
+ * @property {Record<string, number>} categorySubtotals Emission subtotals by receipt category.
+ * @property {number} totalCO2 Total emissions for the case, never below zero.
+ */
+
 import { EMISSION_RULEBOOK } from '../data/rulebook.js';
 
 /**
@@ -53,4 +76,54 @@ function calculateActualEmissions(citizenCase) {
   return Math.max(0, total);
 }
 
-export { calculateItemEmissions, calculateActualEmissions };
+/**
+ * Calculate the emission contribution of every item and the subtotal of every
+ * receipt category for a case.
+ *
+ * Item contributions may be negative for offsets. Category subtotals preserve
+ * those negative contributions, while the total is clamped to zero per
+ * GAME_RULES §3.2.
+ *
+ * @param {CitizenCase} citizenCase Case to break down.
+ * @returns {ReceiptBreakdown}
+ */
+function calculateReceiptBreakdown(citizenCase) {
+  /** @type {ReceiptBreakdownItem[]} */
+  const items = [];
+  /** @type {Record<string, number>} */
+  const categorySubtotals = {};
+  let total = 0;
+
+  citizenCase.receipts.forEach((receipt, receiptIndex) => {
+    const category = receipt.type;
+    if (categorySubtotals[category] === undefined) {
+      categorySubtotals[category] = 0;
+    }
+
+    receipt.items.forEach((item, itemIndex) => {
+      const co2 = calculateItemEmissions(item);
+      items.push({
+        ref: { receiptIndex, itemIndex },
+        label: item.label,
+        qty: item.qty,
+        unit: item.unit,
+        co2,
+      });
+      categorySubtotals[category] += co2;
+      total += co2;
+    });
+  });
+
+  return {
+    caseId: citizenCase.id,
+    items,
+    categorySubtotals,
+    totalCO2: Math.max(0, total),
+  };
+}
+
+export {
+  calculateItemEmissions,
+  calculateActualEmissions,
+  calculateReceiptBreakdown,
+};
