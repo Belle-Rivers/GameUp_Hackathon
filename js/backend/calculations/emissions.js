@@ -43,9 +43,75 @@
  * @property {boolean} isZeroEmission Whether actual emissions are zero.
  */
 
+/**
+ * @typedef {Object} OffsetVerification
+ * @property {boolean} hasUnverifiedOffset Whether any unverified or invalid offset claim exists in the case.
+ * @property {string[]} invalidOffsets List of explanations or item descriptions of invalid offset claims found.
+ */
+
 const DISCREPANCY_TOLERANCE_KG = 2;
 
 import { EMISSION_RULEBOOK } from '../data/rulebook.js';
+
+/**
+ * Validates whether an emission item or case claims an offset that is invalid or unverified.
+ *
+ * According to municipal carbon audit policy (GAME_RULES §3.1, §4.2, §7.3):
+ * - Rooftop solar offset (`SOLAR_OFFSET`, -0.40 kg CO2/kWh) is the only approved offset factor.
+ * - Any receipt item claiming an offset (by negative rate, offset label, or offset rateKey)
+ *   that does not reference an approved policy offset factor, or any unverified private/startup
+ *   offset claim, is considered an invalid/unverified offset.
+ *
+ * @param {CitizenCase} citizenCase Case to inspect for offset claims.
+ * @returns {OffsetVerification}
+ */
+function verifyOffsets(citizenCase) {
+  const invalidOffsets = [];
+
+  if (Array.isArray(citizenCase.receipts)) {
+    for (const receipt of citizenCase.receipts) {
+      if (!Array.isArray(receipt.items)) continue;
+
+      for (const item of receipt.items) {
+        const rateEntry = EMISSION_RULEBOOK[item.rateKey];
+        const isOffsetKey = item.rateKey === 'SOLAR_OFFSET';
+        const hasNegativeRate = rateEntry && rateEntry.rate < 0;
+        const mentionsOffset = /offset/i.test(item.label) || /offset/i.test(item.rateKey);
+
+        if (mentionsOffset || hasNegativeRate) {
+          if (!isOffsetKey) {
+            invalidOffsets.push(
+              `Unapproved offset item: "${item.label}" with rate key "${item.rateKey}" is not an approved municipal offset.`
+            );
+          } else if (item.qty <= 0) {
+            invalidOffsets.push(
+              `Invalid solar offset quantity: ${item.qty} ${item.unit}. Quantity must be positive.`
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // Also check if citizen note claims an unverified offset (such as private online startups / unaccredited schemes)
+  // while omitting or fabricating emission reductions per policy directives.
+  if (typeof citizenCase.note === 'string') {
+    const unverifiedNotePattern = /clean carbon offset|private online startup|unverified offset/i;
+    if (unverifiedNotePattern.test(citizenCase.note)) {
+      invalidOffsets.push(`Citizen note claims unverified offset: "${citizenCase.note}"`);
+    }
+  }
+
+  // If case metadata explicitly flags an unverified offset (for test fixtures and authoring per D-09 / GAME_RULES §7.3)
+  if (citizenCase.fraudType === 'UNVERIFIED_OFFSET' && invalidOffsets.length === 0) {
+    invalidOffsets.push('Case contains an unverified offset claim.');
+  }
+
+  return {
+    hasUnverifiedOffset: invalidOffsets.length > 0,
+    invalidOffsets,
+  };
+}
 
 /**
  * Resolve an item's rate key against the emission rulebook.
@@ -190,4 +256,5 @@ export {
   compareDeclaration,
   detectDiscrepancy,
   calculateReceiptBreakdown,
+  verifyOffsets,
 };

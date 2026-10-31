@@ -213,6 +213,8 @@ This is the most important technical phase because incorrect emission calculatio
 
 **P1-09 status:** Completed — `js/backend/calculations/emissions.js` exports `detectDiscrepancy`, which returns the absolute discrepancy, whether it is within the ±2 kg tolerance, and whether the case has zero actual emissions. Detection uses the absolute discrepancy so zero-emission cases do not depend on the discrepancy ratio (D-08). Approval and fine decision logic remain P1-11/P1-12 scope.
 
+**P1-10 status:** Completed — `js/backend/calculations/emissions.js` exports `verifyOffsets`, which inspects a citizen case for invalid or unverified offset claims. According to municipal carbon audit policy (`GAME_RULES.md` §3.1, §4.2, §7.3), `SOLAR_OFFSET` (-0.40 kg CO₂/kWh) is the only approved offset factor. Any receipt item claiming an offset that does not reference an approved offset factor, non-positive solar quantities, or claims of unverified third-party/private offsets in citizen records/notes are identified as invalid claims (`hasUnverifiedOffset: true`). Approval and fine action validation remain P1-11/P1-12 scope.
+
 **Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. Tests in `tests/` mirror the implemented backend modules; each future backend module must add its tests as it is implemented.
 
 ### 1B. Calculation Engine

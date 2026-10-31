@@ -5,6 +5,7 @@ import {
   calculateReceiptBreakdown,
   compareDeclaration,
   detectDiscrepancy,
+  verifyOffsets,
 } from '../js/backend/calculations/emissions.js';
 import { CITIZEN_CASES } from '../js/backend/data/cases.js';
 
@@ -341,5 +342,74 @@ describe('detectDiscrepancy', () => {
       withinTolerance: true,
       isZeroEmission: true,
     });
+  });
+});
+
+describe('verifyOffsets', () => {
+  it('identifies cases without any offset claims as valid (no unverified offsets)', () => {
+    const citizenCase = makeCase([
+      { label: 'Grid Electricity', qty: 100, unit: 'kWh', rateKey: 'GRID_ELEC' },
+      { label: 'Natural Gas', qty: 20, unit: 'm³', rateKey: 'GAS_HEAT' },
+    ]);
+
+    const result = verifyOffsets(citizenCase);
+    expect(result.hasUnverifiedOffset).toBe(false);
+    expect(result.invalidOffsets).toEqual([]);
+  });
+
+  it('accepts approved rooftop solar offset claims', () => {
+    const citizenCase = makeCase([
+      { label: 'Grid Electricity', qty: 100, unit: 'kWh', rateKey: 'GRID_ELEC' },
+      { label: 'Rooftop Solar Offset', qty: 50, unit: 'kWh', rateKey: 'SOLAR_OFFSET' },
+    ]);
+
+    const result = verifyOffsets(citizenCase);
+    expect(result.hasUnverifiedOffset).toBe(false);
+    expect(result.invalidOffsets).toEqual([]);
+  });
+
+  it('flags unapproved offset items that are not SOLAR_OFFSET', () => {
+    const citizenCase = makeCase([
+      { label: 'Domestic Air Travel', qty: 1, unit: 'ticket', rateKey: 'FLIGHT' },
+      { label: 'Voluntary Tree Planting Offset', qty: 100, unit: 'kg', rateKey: 'GRID_ELEC' },
+    ]);
+
+    const result = verifyOffsets(citizenCase);
+    expect(result.hasUnverifiedOffset).toBe(true);
+    expect(result.invalidOffsets.length).toBeGreaterThan(0);
+    expect(result.invalidOffsets[0]).toContain('Unapproved offset item');
+  });
+
+  it('flags unverified offset claims mentioned in citizen personal notes', () => {
+    const citizenCase = makeCase([
+      { label: 'Domestic Air Travel', qty: 1, unit: 'ticket', rateKey: 'FLIGHT' },
+    ]);
+    citizenCase.note = "I purchased 100 kg of 'Clean Carbon Offsets' from a private online startup, so my flight to Istanbul should count as zero emissions!";
+
+    const result = verifyOffsets(citizenCase);
+    expect(result.hasUnverifiedOffset).toBe(true);
+    expect(result.invalidOffsets.length).toBe(1);
+    expect(result.invalidOffsets[0]).toContain('Citizen note claims unverified offset');
+  });
+
+  it('flags cases with fraudType UNVERIFIED_OFFSET', () => {
+    const citizenCase = makeCase([
+      { label: 'Grid Electricity', qty: 50, unit: 'kWh', rateKey: 'GRID_ELEC' },
+    ]);
+    citizenCase.fraudType = 'UNVERIFIED_OFFSET';
+
+    const result = verifyOffsets(citizenCase);
+    expect(result.hasUnverifiedOffset).toBe(true);
+    expect(result.invalidOffsets.length).toBe(1);
+  });
+
+  it('flags solar offset with non-positive quantity', () => {
+    const citizenCase = makeCase([
+      { label: 'Rooftop Solar Offset', qty: 0, unit: 'kWh', rateKey: 'SOLAR_OFFSET' },
+    ]);
+
+    const result = verifyOffsets(citizenCase);
+    expect(result.hasUnverifiedOffset).toBe(true);
+    expect(result.invalidOffsets[0]).toContain('Invalid solar offset quantity');
   });
 });
