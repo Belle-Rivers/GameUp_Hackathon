@@ -205,6 +205,8 @@ This is the most important technical phase because incorrect emission calculatio
 
 **P1-05 status:** Completed — `js/backend/data/days.js` exports the `CAMPAIGN_DAYS` constant with the number of citizen cases, time limits (in seconds) and introduced mechanics for each of the three campaign days, as documented in `README.md` and `GAME_RULES.md` §6–§7. Day 1 has 5 cases and a 120‑second timer; Day 2 has 6 cases and a 100‑second timer; Day 3 has 7 cases and a 90‑second timer. The mechanics fields list the gameplay concepts first introduced on each day (e.g. fraud on Day 2, Cool/Roof permit on Day 3) without prescribing their exact implementation.
 
+**P1-06 status:** Completed — `js/backend/calculations/emissions.js` exports `calculateItemEmissions` and `calculateActualEmissions`. The calculator resolves each item's `rateKey` against `EMISSION_RULEBOOK` (throwing on unknown keys per `GAME_RULES.md` §7.2), multiplies quantity by rate, sums all receipt items in a case, and clamps the assessed total to zero per §3.2. Coverage includes the roadmap examples, multi-receipt sums, solar offsets, clamping and unknown rate keys.
+
 **Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. Tests in `tests/` mirror the implemented backend modules; each future backend module must add its tests as it is implemented.
 
 ### 1B. Calculation Engine
