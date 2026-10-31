@@ -209,6 +209,8 @@ This is the most important technical phase because incorrect emission calculatio
 
 **P1-07 status:** Completed — `js/backend/calculations/emissions.js` exports `calculateReceiptBreakdown`, which returns the approved `ReceiptBreakdown` contract: every item's contribution with its receipt/item reference, subtotals grouped by receipt category (`receipt.type`), and the case total. Item and category values preserve negative offsets while `totalCO2` is clamped to zero per `GAME_RULES.md` §3.2/§3.3. Coverage includes item references, category grouping across receipts, offsets, sample cases, and unknown rate keys.
 
+**P1-08 status:** Completed — `js/backend/calculations/emissions.js` exports `compareDeclaration`, which compares a case's clamped actual emissions with its `declaredCO2` and returns the signed discrepancy (`actual − declared`) and discrepancy ratio. When actual emissions are zero, the ratio is `null` to avoid division by zero per `GAME_RULES.md` §3.4 and D-08. The ±2 kg tolerance and decision classification remain P1-09 scope.
+
 **Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. Tests in `tests/` mirror the implemented backend modules; each future backend module must add its tests as it is implemented.
 
 ### 1B. Calculation Engine

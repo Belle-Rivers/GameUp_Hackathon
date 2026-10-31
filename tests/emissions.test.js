@@ -3,6 +3,7 @@ import {
   calculateActualEmissions,
   calculateItemEmissions,
   calculateReceiptBreakdown,
+  compareDeclaration,
 } from '../js/backend/calculations/emissions.js';
 import { CITIZEN_CASES } from '../js/backend/data/cases.js';
 
@@ -202,5 +203,91 @@ describe('calculateReceiptBreakdown', () => {
     expect(() => calculateReceiptBreakdown(citizenCase)).toThrow(
       'Unknown emission rate key: UNKNOWN',
     );
+  });
+});
+
+describe('compareDeclaration', () => {
+  it('returns a positive discrepancy when actual emissions exceed the declaration', () => {
+    const citizenCase = makeCase([
+      { label: 'Grid Electricity', qty: 100, unit: 'kWh', rateKey: 'GRID_ELEC' },
+      { label: 'Beef', qty: 2, unit: 'pack', rateKey: 'BEEF' },
+    ]);
+    citizenCase.declaredCO2 = 30;
+
+    const comparison = compareDeclaration(citizenCase);
+
+    expect(comparison).toEqual({
+      caseId: 'C999',
+      actualCO2: 80,
+      declaredCO2: 30,
+      discrepancy: 50,
+      discrepancyRatio: 0.625,
+    });
+  });
+
+  it('returns a negative discrepancy when the declaration exceeds actual emissions', () => {
+    const citizenCase = makeCase([
+      { label: 'Grid Electricity', qty: 100, unit: 'kWh', rateKey: 'GRID_ELEC' },
+    ]);
+    citizenCase.declaredCO2 = 100;
+
+    const comparison = compareDeclaration(citizenCase);
+
+    expect(comparison.actualCO2).toBe(50);
+    expect(comparison.declaredCO2).toBe(100);
+    expect(comparison.discrepancy).toBe(-50);
+    expect(comparison.discrepancyRatio).toBe(-1);
+  });
+
+  it('returns zero discrepancy when declared and actual emissions match', () => {
+    const citizenCase = makeCase([
+      { label: 'Natural Gas', qty: 10, unit: 'm³', rateKey: 'GAS_HEAT' },
+    ]);
+    citizenCase.declaredCO2 = 20;
+
+    const comparison = compareDeclaration(citizenCase);
+
+    expect(comparison.discrepancy).toBe(0);
+    expect(comparison.discrepancyRatio).toBe(0);
+  });
+
+  it('returns a null ratio when actual emissions are zero', () => {
+    const citizenCase = makeCase([
+      { label: 'Rooftop Solar Offset', qty: 100, unit: 'kWh', rateKey: 'SOLAR_OFFSET' },
+    ]);
+    citizenCase.declaredCO2 = 10;
+
+    const comparison = compareDeclaration(citizenCase);
+
+    expect(comparison.actualCO2).toBe(0);
+    expect(comparison.declaredCO2).toBe(10);
+    expect(comparison.discrepancy).toBe(-10);
+    expect(comparison.discrepancyRatio).toBeNull();
+  });
+
+  it('returns a null ratio when both emissions are zero', () => {
+    const citizenCase = makeCase([
+      { label: 'Public Electric Transit', qty: 10, unit: 'km', rateKey: 'PUBLIC_TRANSIT' },
+    ]);
+    citizenCase.declaredCO2 = 0;
+
+    const comparison = compareDeclaration(citizenCase);
+
+    expect(comparison.discrepancy).toBe(0);
+    expect(comparison.discrepancyRatio).toBeNull();
+  });
+
+  it('compares the sample citizen cases against their declarations', () => {
+    const first = compareDeclaration(CITIZEN_CASES[0]);
+    expect(first.actualCO2).toBe(166);
+    expect(first.declaredCO2).toBe(80);
+    expect(first.discrepancy).toBe(86);
+    expect(first.discrepancyRatio).toBeCloseTo(86 / 166);
+
+    const second = compareDeclaration(CITIZEN_CASES[1]);
+    expect(second.actualCO2).toBeCloseTo(165.2);
+    expect(second.declaredCO2).toBe(120);
+    expect(second.discrepancy).toBeCloseTo(45.2);
+    expect(second.discrepancyRatio).toBeCloseTo(45.2 / 165.2);
   });
 });

@@ -27,6 +27,15 @@
  * @property {number} totalCO2 Total emissions for the case, never below zero.
  */
 
+/**
+ * @typedef {Object} DeclarationComparison
+ * @property {string} caseId Case the comparison belongs to.
+ * @property {number} actualCO2 Actual emissions calculated from receipts.
+ * @property {number} declaredCO2 Emissions declared by the citizen.
+ * @property {number} discrepancy Actual emissions minus declared emissions.
+ * @property {number | null} discrepancyRatio Discrepancy divided by actual emissions, or null when actual emissions are zero.
+ */
+
 import { EMISSION_RULEBOOK } from '../data/rulebook.js';
 
 /**
@@ -74,6 +83,31 @@ function calculateActualEmissions(citizenCase) {
   }
 
   return Math.max(0, total);
+}
+
+/**
+ * Compare a citizen's declared emissions with the actual emissions calculated
+ * from their receipt items.
+ *
+ * The discrepancy ratio is null when actual emissions are zero so the game
+ * never divides by zero; decision rules use the absolute discrepancy in that
+ * case (GAME_RULES §3.4, D-08).
+ *
+ * @param {CitizenCase} citizenCase Case whose declaration should be compared.
+ * @returns {DeclarationComparison}
+ */
+function compareDeclaration(citizenCase) {
+  const actualCO2 = calculateActualEmissions(citizenCase);
+  const declaredCO2 = citizenCase.declaredCO2;
+  const discrepancy = actualCO2 - declaredCO2;
+
+  return {
+    caseId: citizenCase.id,
+    actualCO2,
+    declaredCO2,
+    discrepancy,
+    discrepancyRatio: actualCO2 === 0 ? null : discrepancy / actualCO2,
+  };
 }
 
 /**
@@ -125,5 +159,6 @@ function calculateReceiptBreakdown(citizenCase) {
 export {
   calculateItemEmissions,
   calculateActualEmissions,
+  compareDeclaration,
   calculateReceiptBreakdown,
 };
