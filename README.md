@@ -94,7 +94,7 @@ npm install
 npm test
 ```
 
-Use `npm run test:watch` while developing. Tests live in `tests/` and import the ES modules directly. `tests/rulebook.test.js` covers the canonical rulebook keys and rates (D-13); future backend modules must add their tests as they are implemented. Vitest is development-only and is not shipped with the game.
+Use `npm run test:watch` while developing. Tests live in `tests/` and import the ES modules directly. The initial data-layer contracts (rulebook, grants, and citizen cases) are covered; future backend modules must add their tests as they are implemented. Vitest is development-only and is not shipped with the game.
 
 ## Licensing
 

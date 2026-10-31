@@ -31,6 +31,12 @@ describe('CITIZEN_CASES', () => {
     }
   });
 
+  it('each case declares a valid roofType', () => {
+    for (const c of CITIZEN_CASES) {
+      expect(['ASPHALT', 'OTHER']).toContain(c.roofType);
+    }
+  });
+
   it('each receipt has a type and title', () => {
     for (const c of CITIZEN_CASES) {
       for (const receipt of c.receipts) {

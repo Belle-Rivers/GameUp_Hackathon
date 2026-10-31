@@ -293,7 +293,7 @@ Effects:
 ## 5.4 Cool/Green Roof Permit
 
 Eligibility:
-- High summer air-conditioning electricity consumption.
+- Summer air-conditioning electricity consumption exceeds 150 kWh.
 - Asphalt roof.
 
 Effects:
@@ -395,6 +395,7 @@ Each case should contain:
 - `note`: Personal statement or explanation from the citizen.
 - `declaredCO2`: Declared carbon footprint.
 - `receipts`: Collection of recorded household activities.
+- `roofType`: Household roof type (`"ASPHALT"` or `"OTHER"`), used for Cool/Green Roof Permit eligibility.
 - `eligibleGrant`: Eligible grant identifier, if applicable.
 - `grantExplanation`: Explanation of why the citizen qualifies.
 
@@ -415,6 +416,8 @@ Each receipt item must contain:
 The calculation engine must resolve `rateKey` against the emission rulebook.
 
 Unknown rate keys must be treated as invalid case data rather than silently assigned an emission rate.
+
+Summer air-conditioning electricity must be recorded in a receipt with `type: "COOLING"`, using `GRID_ELEC` items. P1-13 sums those quantities when checking Cool/Green Roof Permit eligibility.
 
 ## 7.3 Fraud Verification
 
@@ -679,10 +682,12 @@ The following decisions are approved for the MVP and are authoritative for imple
 | D-12 | How is CO₂ reduction for shift statistics calculated? | The MVP does not claim an exact reduction total. Display valid grant counts and Net-Zero Progress; do not populate `co2ReducedKg` from grant future-impact percentages. |
 | D-13 | Which names identify emission rates in case data? | The 11 keys exported by `EMISSION_RULEBOOK` are canonical: `GRID_ELEC`, `GAS_HEAT`, `SOLAR_OFFSET`, `BEEF`, `IMPORTED_GOODS`, `LOCAL_FOOD`, `GASOLINE`, `FLIGHT`, `PUBLIC_TRANSIT`, `LANDFILL`, and `COMPOST`. All P1-03 case data must use these exact keys. Unknown keys are invalid case data and must not be assigned a rate. |
 | D-14 | How is backend logic verified? | Vitest is the automated test runner (`npm test` for one run, `npm run test:watch` for watch mode). It is a development-only dependency; the game runtime remains dependency-free. Tests live in `tests/` and must accompany each implemented backend module. |
+| D-15 | What summer AC consumption qualifies a household for the Cool/Green Roof Permit? | Summer air-conditioning electricity consumption must exceed 150 kWh. The comparison is strict (`> 150 kWh`), not `>= 150 kWh`. |
+| D-16 | How do case records represent Cool/Green Roof eligibility? | Summer AC usage is recorded in receipts with `type: "COOLING"` using `GRID_ELEC` items. `CitizenCase.roofType` is required and must equal `"ASPHALT"` for eligibility. P1-13 must check both conditions. |
 
-## 13.1 Known Data Gap
+## 13.1 Cool/Green Roof Data Gap (Resolved)
 
-The numeric threshold for “high summer air-conditioning electricity consumption” used by the Cool/Green Roof Permit is not specified. This is not an approved decision. The value must not be invented; implementing that grant's eligibility requires an explicit owner decision or an approved case-data rule.
+The previously missing summer AC threshold is resolved by D-15 (`> 150 kWh`), and its case-data representation is resolved by D-16. No Cool/Green Roof data gap remains open.
 
 Any change to these decisions or to any other gameplay rule requires explicit approval and must be reflected in this document before implementation.
 
@@ -692,4 +697,4 @@ If a rule is ambiguous, contradictory, or impossible to implement using the avai
 
 ---
 
-**Document status:** MVP gameplay rules — approved for implementation, except for the known data gap recorded in §13.1.
+**Document status:** MVP gameplay rules — approved for implementation.

@@ -29,7 +29,7 @@ const EXPECTED_GRANTS = {
     name: 'Cool/Green Roof Permit',
     cost: 300,
     netZeroBoost: 9,
-    eligibility: { summerAcAboveKwh: null, requiresAsphaltRoof: true },
+    eligibility: { summerAcAboveKwh: 150, requiresAsphaltRoof: true },
     futureImpact: '40% reduction in cooling-related electricity consumption.',
   },
 };
@@ -57,7 +57,7 @@ describe('GRANTS', () => {
     }
   });
 
-  it('leaves the unresolved Cool/Green Roof AC threshold undefined', () => {
-    expect(GRANTS.COOL_ROOF.eligibility.summerAcAboveKwh).toBeNull();
+  it('uses the approved Cool/Green Roof AC threshold', () => {
+    expect(GRANTS.COOL_ROOF.eligibility.summerAcAboveKwh).toBe(150);
   });
 });

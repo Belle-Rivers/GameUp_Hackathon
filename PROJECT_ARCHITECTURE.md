@@ -50,8 +50,7 @@ GameUP/
 ├── assets/
 │   └── icons/
 │
-├── tests/
-│   └── rulebook.test.js
+├── tests/                    Automated backend tests (Vitest; mirrors js/backend modules)
 │
 ├── package.json
 ├── package-lock.json

@@ -7,7 +7,7 @@
  * @property {number} [naturalGasAboveM3] Natural gas consumption must exceed this value.
  * @property {number} [landfillWasteAboveKg] Landfill waste must exceed this value.
  * @property {number} [gasolineDistanceAboveKm] Gasoline travel must exceed this value.
- * @property {number | null} [summerAcAboveKwh] Summer air-conditioning electricity must exceed this value. Null while the approved threshold is undefined.
+ * @property {number} [summerAcAboveKwh] Summer air-conditioning electricity must exceed this value.
  * @property {boolean} [requiresAsphaltRoof] Household must have an asphalt roof.
  */
 
@@ -63,7 +63,7 @@ export const GRANTS = {
     cost: 300,
     netZeroBoost: 9,
     eligibility: {
-      summerAcAboveKwh: null,
+      summerAcAboveKwh: 150,
       requiresAsphaltRoof: true,
     },
     futureImpact: '40% reduction in cooling-related electricity consumption.',

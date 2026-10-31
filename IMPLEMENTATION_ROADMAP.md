@@ -160,7 +160,7 @@ Objective: Establish the project structure and prevent the agents from inventing
 
 **P0-04 status:** Completed — frontend/backend communication interface defined as JSDoc typedefs in `js/backend/index.js` (`BackendApi`, sanitized case/state views, receipt breakdown, action request/result, shift summary, campaign outcome) and referenced from `js/app.js`. Frontend requests operations and displays results; validation, calculations, metrics, and outcomes remain backend-owned. Timer/day-transition operations beyond this core surface remain with P3-12/P4.
 
-**P0-05 status:** Completed — the recommended MVP decisions are approved and recorded as D-01–D-12 in `GAME_RULES.md` §13. The Cool/Green Roof “high summer AC” threshold remains an open data gap in §13.1 and must not be invented.
+**P0-05 status:** Completed — the recommended MVP decisions are approved and recorded as D-01–D-12 in `GAME_RULES.md` §13. The Cool/Green Roof “high summer AC” threshold was later approved as D-15/D-16, resolving §13.1.
 
 **P0-06 status:** Completed — initial `README.md` and `ATTRIBUTION.md` created. Final submission documentation remains part of P6-15/P6-16.
 
@@ -197,11 +197,13 @@ This is the most important technical phase because incorrect emission calculatio
 
 **P1-01 status:** Completed — `js/backend/data/rulebook.js` exports the 11 municipal assessment rates from `GAME_RULES.md` §3.1, grouped by category with their rate keys, activity labels, values and units. The PRD-defined keys `GRID_ELEC`, `GAS_HEAT`, `LOCAL_FOOD`, `BEEF` and `FLIGHT` are preserved; remaining keys use consistent uppercase identifiers for the same activities. These 11 keys are canonical for all case data per D-13, and P1-03 must use them exactly.
 
-**P1-02 status:** Completed — `js/backend/data/grants.js` exports all four grants from `GAME_RULES.md` §5 with their IDs, names, costs, Net-Zero boosts, eligibility requirements and future-impact descriptions. The Cool/Green Roof Permit stores `summerAcAboveKwh: null` because the numeric AC threshold remains the approved open data gap in §13.1; P1-13 must not treat the grant as fully eligible until that threshold is approved.
+**P1-02 status:** Completed — `js/backend/data/grants.js` exports all four grants from `GAME_RULES.md` §5 with their IDs, names, costs, Net-Zero boosts, eligibility requirements and future-impact descriptions. The Cool/Green Roof Permit uses the approved `summerAcAboveKwh: 150` threshold (D-15) and the case-data convention in D-16, so P1-13 can validate that grant from citizen records.
 
-**P1-03 status:** Completed — `js/backend/data/cases.js` exports the `CITIZEN_CASES` array using the 11 canonical rate keys from `EMISSION_RULEBOOK` (D-13). Each case includes receipts with valid `rateKey` values, declared CO₂, and citizen metadata, providing a data layer for shift‑level case processing.
+**P1-03 status:** Completed — `js/backend/data/cases.js` exports the `CITIZEN_CASES` array using the 11 canonical rate keys from `EMISSION_RULEBOOK` (D-13). Each case includes receipts with valid `rateKey` values, declared CO₂, citizen metadata and the required `roofType` (D-16), providing a data layer for shift‑level case processing. Summer AC usage, when present, follows the `COOLING` receipt convention (D-16).
 
-**Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. `tests/rulebook.test.js` verifies the canonical keys, rates, categories, and units; each future backend module must add its tests as it is implemented.
+**P1-04 status:** Completed — `js/backend/data/cases.js` exports the `validateCase`, `validateReceipt` and `validateReceiptItem` functions that verify case IDs (format `C###`), required fields (name, district, declaredCO₂, receipt structure), receipt types and titles, item quantities and units, and that every `rateKey` references a known emission rate in the rulebook. These validators are used by the backend before any action resolution and provide clear error messages for the player.
+
+**Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. Tests in `tests/` mirror the implemented backend modules; each future backend module must add its tests as it is implemented.
 
 ### 1B. Calculation Engine
 
@@ -219,7 +221,7 @@ This is the most important technical phase because incorrect emission calculatio
 | ----- | ----------------------------- | ----------------------------------------------------------- |
 | P1-11 | Implement approval validation | Determine whether approval is correct.                      |
 | P1-12 | Implement fine validation     | Check underdeclaration and invalid offset claims.           |
-| P1-13 | Implement grant eligibility   | Match household defects with eligible grants.               |
+| P1-13 | Implement grant eligibility   | Match household defects with eligible grants using the Cool/Green Roof rules in D-15/D-16. |
 | P1-14 | Implement grant validation    | Ensure the selected grant matches the eligible issue.       |
 | P1-15 | Implement action resolution   | Calculate the financial and metric effects of every action. |
 
