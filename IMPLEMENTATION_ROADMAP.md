@@ -156,6 +156,8 @@ Objective: Establish the project structure and prevent the agents from inventing
 
 **P0-03 status:** Completed — shared data contracts defined as JSDoc typedefs in `cases.js` (citizen case, receipt, receipt item), `grants.js` (grant and eligibility), `rulebook.js` (emission rate), and `game-state.js` (game state, city metrics, shift statistics). Contract fields follow `GAME_RULES.md` §3, §5–§9 and the PRD case/game-state schemas.
 
+**P0-04 status:** Completed — frontend/backend communication interface defined as JSDoc typedefs in `js/backend/index.js` (`BackendApi`, sanitized case/state views, receipt breakdown, action request/result, shift summary, campaign outcome) and referenced from `js/app.js`. Frontend requests operations and displays results; validation, calculations, metrics, and outcomes remain backend-owned. Timer/day-transition operations beyond this core surface remain with P3-12/P4.
+
 ### Expected deliverables
 
 - Empty but organized project structure.
