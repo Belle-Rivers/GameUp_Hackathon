@@ -154,6 +154,8 @@ Objective: Establish the project structure and prevent the agents from inventing
 
 **P0-02 status:** Completed — `js/backend/index.js` is the backend's public entry point and aggregates the documented backend domains. Frontend modules must import backend functionality only through this entry point and must not contain gameplay logic.
 
+**P0-03 status:** Completed — shared data contracts defined as JSDoc typedefs in `cases.js` (citizen case, receipt, receipt item), `grants.js` (grant and eligibility), `rulebook.js` (emission rate), and `game-state.js` (game state, city metrics, shift statistics). Contract fields follow `GAME_RULES.md` §3, §5–§9 and the PRD case/game-state schemas.
+
 ### Expected deliverables
 
 - Empty but organized project structure.
