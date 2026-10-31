@@ -195,6 +195,8 @@ This is the most important technical phase because incorrect emission calculatio
 | P1-04 | Implement case validation          | Verify IDs, required fields, receipt types, quantities and rate references.   |
 | P1-05 | Implement campaign day definitions | Store the number of cases, time limits and introduced mechanics for each day. |
 
+**P1-01 status:** Completed — `js/backend/data/rulebook.js` exports the 11 municipal assessment rates from `GAME_RULES.md` §3.1, grouped by category with their rate keys, activity labels, values and units. The PRD-defined keys `GRID_ELEC`, `GAS_HEAT`, `LOCAL_FOOD`, `BEEF` and `FLIGHT` are preserved; remaining keys use consistent uppercase identifiers for the same activities.
+
 ### 1B. Calculation Engine
 
 | ID    | Task                             | Description                                                       |
