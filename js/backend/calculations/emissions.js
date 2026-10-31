@@ -36,6 +36,15 @@
  * @property {number | null} discrepancyRatio Discrepancy divided by actual emissions, or null when actual emissions are zero.
  */
 
+/**
+ * @typedef {Object} DiscrepancyDetection
+ * @property {number} absoluteDiscrepancy Absolute difference between actual and declared emissions.
+ * @property {boolean} withinTolerance Whether the absolute discrepancy is 2 kg CO2 or less.
+ * @property {boolean} isZeroEmission Whether actual emissions are zero.
+ */
+
+const DISCREPANCY_TOLERANCE_KG = 2;
+
 import { EMISSION_RULEBOOK } from '../data/rulebook.js';
 
 /**
@@ -111,6 +120,25 @@ function compareDeclaration(citizenCase) {
 }
 
 /**
+ * Detect whether a declaration is within the ±2 kg CO2 tolerance.
+ *
+ * The absolute discrepancy is used so zero-emission cases are handled without
+ * relying on the discrepancy ratio (GAME_RULES §3.5, D-08).
+ *
+ * @param {DeclarationComparison} comparison Result from compareDeclaration.
+ * @returns {DiscrepancyDetection}
+ */
+function detectDiscrepancy(comparison) {
+  const absoluteDiscrepancy = Math.abs(comparison.discrepancy);
+
+  return {
+    absoluteDiscrepancy,
+    withinTolerance: absoluteDiscrepancy <= DISCREPANCY_TOLERANCE_KG,
+    isZeroEmission: comparison.actualCO2 === 0,
+  };
+}
+
+/**
  * Calculate the emission contribution of every item and the subtotal of every
  * receipt category for a case.
  *
@@ -160,5 +188,6 @@ export {
   calculateItemEmissions,
   calculateActualEmissions,
   compareDeclaration,
+  detectDiscrepancy,
   calculateReceiptBreakdown,
 };

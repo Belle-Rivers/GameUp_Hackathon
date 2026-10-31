@@ -4,6 +4,7 @@ import {
   calculateItemEmissions,
   calculateReceiptBreakdown,
   compareDeclaration,
+  detectDiscrepancy,
 } from '../js/backend/calculations/emissions.js';
 import { CITIZEN_CASES } from '../js/backend/data/cases.js';
 
@@ -289,5 +290,56 @@ describe('compareDeclaration', () => {
     expect(second.declaredCO2).toBe(120);
     expect(second.discrepancy).toBeCloseTo(45.2);
     expect(second.discrepancyRatio).toBeCloseTo(45.2 / 165.2);
+  });
+});
+
+describe('detectDiscrepancy', () => {
+  function comparisonFor(actualCO2, declaredCO2) {
+    const citizenCase = makeCase([
+      { label: 'Grid Electricity', qty: actualCO2 / 0.5, unit: 'kWh', rateKey: 'GRID_ELEC' },
+    ]);
+    citizenCase.declaredCO2 = declaredCO2;
+    return compareDeclaration(citizenCase);
+  }
+
+  it('accepts a difference of exactly 2 kg as within tolerance', () => {
+    expect(detectDiscrepancy(comparisonFor(50, 52))).toEqual({
+      absoluteDiscrepancy: 2,
+      withinTolerance: true,
+      isZeroEmission: false,
+    });
+    expect(detectDiscrepancy(comparisonFor(50, 48)).withinTolerance).toBe(true);
+  });
+
+  it('rejects differences greater than 2 kg', () => {
+    expect(detectDiscrepancy(comparisonFor(50, 52.01)).withinTolerance).toBe(false);
+    expect(detectDiscrepancy(comparisonFor(50, 47.99)).withinTolerance).toBe(false);
+  });
+
+  it('uses the absolute discrepancy for zero-emission cases', () => {
+    const comparison = comparisonFor(0, 2);
+
+    expect(comparison.discrepancyRatio).toBeNull();
+    expect(detectDiscrepancy(comparison)).toEqual({
+      absoluteDiscrepancy: 2,
+      withinTolerance: true,
+      isZeroEmission: true,
+    });
+  });
+
+  it('rejects a zero-emission declaration outside the tolerance', () => {
+    expect(detectDiscrepancy(comparisonFor(0, 2.01))).toEqual({
+      absoluteDiscrepancy: 2.01,
+      withinTolerance: false,
+      isZeroEmission: true,
+    });
+  });
+
+  it('accepts a zero-emission case when both values are zero', () => {
+    expect(detectDiscrepancy(comparisonFor(0, 0))).toEqual({
+      absoluteDiscrepancy: 0,
+      withinTolerance: true,
+      isZeroEmission: true,
+    });
   });
 });
