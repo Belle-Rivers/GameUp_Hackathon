@@ -32,4 +32,55 @@
  * @property {FraudType | null} [fraudType] Type of fraud or misleading declaration.
  */
 
-export {};
+const CITIZEN_CASES = [
+  {
+    id: "C001",
+    day: 1,
+    name: "Alice",
+    district: "Downtown",
+    note: "Works from home",
+    declaredCO2: 80,
+    receipts: [
+      {
+        type: "Energy",
+        title: "Household Energy Use",
+        items: [
+          { label: "Grid Electricity", qty: 100, unit: "kWh", rateKey: "GRID_ELEC" },
+          { label: "Natural Gas", qty: 50, unit: "m³", rateKey: "GAS_HEAT" },
+          { label: "Local Organic / Plant Food", qty: 2, unit: "pack", rateKey: "LOCAL_FOOD" },
+          { label: "Beef Sirloin", qty: 1, unit: "pack", rateKey: "BEEF" }
+        ]
+      }
+    ],
+    eligibleGrant: null,
+    grantExplanation: "",
+    hasFraud: null,
+    fraudType: null,
+  },
+  {
+    id: "C002",
+    day: 2,
+    name: "Bob",
+    district: "Industrial",
+    note: "Delivery driver",
+    declaredCO2: 120,
+    receipts: [
+      {
+        type: "Transport and Food",
+        title: "Mixed Receipt",
+        items: [
+          { label: "Domestic Air Travel", qty: 1, unit: "ticket", rateKey: "FLIGHT" },
+          { label: "Public Electric Transit", qty: 10, unit: "km", rateKey: "PUBLIC_TRANSIT" },
+          { label: "Landfill Waste", qty: 5, unit: "kg", rateKey: "LANDFILL" },
+          { label: "Composted Organic Waste", qty: 2, unit: "kg", rateKey: "COMPOST" }
+        ]
+      }
+    ],
+    eligibleGrant: null,
+    grantExplanation: "",
+    hasFraud: null,
+    fraudType: null,
+  }
+];
+
+export { CITIZEN_CASES };

@@ -199,6 +199,8 @@ This is the most important technical phase because incorrect emission calculatio
 
 **P1-02 status:** Completed — `js/backend/data/grants.js` exports all four grants from `GAME_RULES.md` §5 with their IDs, names, costs, Net-Zero boosts, eligibility requirements and future-impact descriptions. The Cool/Green Roof Permit stores `summerAcAboveKwh: null` because the numeric AC threshold remains the approved open data gap in §13.1; P1-13 must not treat the grant as fully eligible until that threshold is approved.
 
+**P1-03 status:** Completed — `js/backend/data/cases.js` exports the `CITIZEN_CASES` array using the 11 canonical rate keys from `EMISSION_RULEBOOK` (D-13). Each case includes receipts with valid `rateKey` values, declared CO₂, and citizen metadata, providing a data layer for shift‑level case processing.
+
 **Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. `tests/rulebook.test.js` verifies the canonical keys, rates, categories, and units; each future backend module must add its tests as it is implemented.
 
 ### 1B. Calculation Engine
