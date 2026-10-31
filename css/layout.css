@@ -1,0 +1,653 @@
+/* ==========================================================================
+   MUNICIPAL CARBON ASSESSOR — APPLICATION SHELL & WORKSPACE LAYOUT
+   Subphase 2A / Task P2-03
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   App Root & Screen Management
+   -------------------------------------------------------------------------- */
+.app-root {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-app);
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.screen.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------------------------------
+   Screen 1: Main Menu Layout
+   -------------------------------------------------------------------------- */
+.main-menu-screen {
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+}
+
+.menu-container {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  text-align: center;
+}
+
+.menu-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.menu-title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-main);
+  text-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+}
+
+.menu-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.menu-briefing {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid var(--border-bright);
+}
+
+.card-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.briefing-list {
+  padding-left: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.briefing-list strong {
+  color: var(--text-main);
+}
+
+.briefing-warning {
+  font-size: var(--text-xs);
+  color: #f87171;
+  border-left: 2px solid #ef4444;
+  padding-left: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+
+.menu-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-sm);
+}
+
+/* --------------------------------------------------------------------------
+   Screen 2: Gameplay Workstation Layout
+   -------------------------------------------------------------------------- */
+.gameplay-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-app);
+}
+
+/* Header & Top Bar Layout */
+.top-bar {
+  flex: 0 0 auto;
+  height: var(--top-bar-height);
+  background: #111c30;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-md);
+  gap: var(--space-md);
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.terminal-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.terminal-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.terminal-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-version {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 0.08em;
+}
+
+.terminal-station {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+.shift-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.city-meters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-left: auto;
+}
+
+.timer-widget {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--border-bright);
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  color: #f87171;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.timer-icon {
+  font-size: var(--text-xs);
+}
+
+/* Workspace Navigation Bar (Hidden on full desktop, shown on mobile/tabs) */
+.workspace-tabs-bar {
+  display: none;
+  background: var(--surface-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 var(--space-sm);
+  gap: var(--space-xs);
+}
+
+.workspace-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.workspace-tab-btn.active {
+  color: var(--accent-cyan);
+  border-bottom-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.05);
+}
+
+/* --------------------------------------------------------------------------
+   Three-Column Workspace Layout (#workspace)
+   -------------------------------------------------------------------------- */
+.workspace-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(360px, 1.4fr) minmax(300px, 1.1fr);
+  gap: var(--space-md);
+  padding: var(--space-md);
+  overflow: hidden;
+  background: var(--bg-app);
+}
+
+.workspace-column {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Column 1: Rulebook Panel
+   -------------------------------------------------------------------------- */
+.rulebook-panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
+}
+
+.rulebook-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.rulebook-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.section-title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 4px;
+}
+
+.rates-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.rate-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border-subtle);
+  transition: border-color var(--transition-fast);
+}
+
+.rate-item:hover {
+  border-color: var(--border-bright);
+}
+
+.rate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rate-name {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.rate-value {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.rate-category {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.policy-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.policy-code {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+.policy-heading {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.policy-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* --------------------------------------------------------------------------
+   Column 2: Citizen Dossier Panel
+   -------------------------------------------------------------------------- */
+.dossier-panel {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: var(--paper-text);
+}
+
+.dossier-header {
+  background: #e2e8f0;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.dossier-header .panel-tag {
+  color: #0284c7;
+}
+
+.dossier-header .panel-title {
+  color: #0f172a;
+}
+
+.dossier-id {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  background: #cbd5e1;
+  color: #1e293b;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+.dossier-body {
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  overflow-y: auto;
+}
+
+.dossier-paper {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-xs);
+  padding: var(--space-md);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.dossier-stamp-seal {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  border: 1px solid #cbd5e1;
+  padding: 2px 6px;
+  text-transform: uppercase;
+}
+
+.dossier-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.meta-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.meta-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.meta-value {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.highlight-declared {
+  color: #d97706;
+  font-weight: 700;
+}
+
+.dossier-plea-card {
+  background: #f1f5f9;
+  border-left: 3px solid #0284c7;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  margin-top: var(--space-xs);
+}
+
+.plea-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.plea-text {
+  font-size: var(--text-xs);
+  font-style: italic;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.receipts-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* --------------------------------------------------------------------------
+   Column 3: Audit & Action Panel
+   -------------------------------------------------------------------------- */
+.action-panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
+}
+
+.action-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  overflow-y: auto;
+}
+
+.assessment-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.summary-heading {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.summary-value {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.variance-row {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+.grant-selection-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.grant-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-cyan);
+}
+
+/* --------------------------------------------------------------------------
+   Screen 3: Game Over Screen Layout
+   -------------------------------------------------------------------------- */
+.game-over-screen {
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+}
+
+.game-over-container {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  border: 1px solid #ef4444;
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.25);
+  text-align: center;
+}
+
+.game-over-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.game-over-title {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #f87171;
+}
+
+.game-over-reason {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.final-stats-box {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.stat-row span:last-child {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.game-over-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   Summary Modal Interior Layout
+   -------------------------------------------------------------------------- */
+.summary-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.metric-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.metric-num {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.metric-desc {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+

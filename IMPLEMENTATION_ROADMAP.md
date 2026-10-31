@@ -306,6 +306,14 @@ This is where Antigravity can be particularly useful for visual inspection.
 | P2-03 | Implement three-column workspace | Create rulebook, dossier and action panels.             |
 | P2-04 | Implement responsive layout      | Ensure the interface adapts to smaller screens.         |
 
+**P2-01 status:** Completed — `index.html` sets up the semantic HTML5 application shell, linking all four stylesheets (`styles.css`, `layout.css`, `components.css`, `responsive.css`) and loading `js/app.js`. Configures core screen containers (`#screen-main-menu`, `#screen-gameplay`, `#screen-game-over`, `#summary-modal`), top bar with city metrics and timer, and the three-column workspace structure (`#workspace`).
+
+**P2-02 status:** Completed — `css/styles.css` and `css/components.css` define the municipal retro-futuristic design system adhering to PRD §6.2. Declares color tokens (`--bg-app`, `--surface-panel`, `--surface-card`, `--paper-dossier`, `--paper-text`, `--accent-cyan`, `--accent-gold`, stamp colors), typography (`JetBrains Mono`, `Inter`), spacing scale, base resets, and reusable component classes for cards, badges, buttons, meters, and stamp actions.
+
+**P2-03 status:** Completed — `css/layout.css` establishes the fixed viewport (`100vw`, `100vh`) shell, active/inactive screen management, `#top-bar` header layout, and the CSS Grid 3-column workspace (`#workspace`). Sectioned into `#rulebook-panel` (left), contrasting paper `#dossier-panel` (center), and terminal `#action-panel` (right) with scrollable container bodies and bottom-anchored stamp dock.
+
+**P2-04 status:** Completed — `css/responsive.css` implements media queries for large screens, medium laptops/desktops (1024px–1280px), tablets (769px–1024px), mobile devices (<=768px and <=480px), short viewports (height <=720px), and accessibility (`prefers-reduced-motion`), ensuring flexible columns, tab switching, and touch-friendly controls.
+
 ### 2B. Interface Components
 
 | ID    | Task                           | Description                                           |

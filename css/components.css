@@ -1,0 +1,472 @@
+/* ==========================================================================
+   MUNICIPAL CARBON ASSESSOR — REUSABLE UI COMPONENTS
+   Subphase 2A / Task P2-02
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Badges & Tags
+   -------------------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 3px 8px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-xs);
+  line-height: 1.2;
+}
+
+.badge-gold {
+  background: var(--accent-gold-dim);
+  color: var(--accent-gold);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.badge-cyan {
+  background: var(--accent-cyan-dim);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+.badge-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.badge-subtle {
+  background: var(--surface-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 8px 16px;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  user-select: none;
+}
+
+.btn-primary {
+  background: var(--accent-cyan);
+  color: #042f2e;
+  border-color: #0891b2;
+}
+
+.btn-primary:hover {
+  background: #22d3ee;
+  box-shadow: 0 0 12px var(--accent-cyan-glow);
+}
+
+.btn-secondary {
+  background: var(--surface-card);
+  color: var(--text-main);
+  border-color: var(--border-bright);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-card-hover);
+  color: #ffffff;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--surface-card);
+  color: var(--text-main);
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: var(--text-xs);
+}
+
+.btn-large {
+  padding: 12px 24px;
+  font-size: var(--text-md);
+  letter-spacing: 0.02em;
+}
+
+/* --------------------------------------------------------------------------
+   Cards & Panels
+   -------------------------------------------------------------------------- */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-subtle);
+}
+
+.card-compact {
+  padding: var(--space-sm) var(--space-md);
+}
+
+.panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(15, 23, 42, 0.5);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.panel-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panel-tag {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--accent-cyan);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.panel-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+  text-transform: uppercase;
+}
+
+.panel-version,
+.panel-status {
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.panel-body {
+  padding: var(--space-md);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Meters & Metrics
+   -------------------------------------------------------------------------- */
+.meter-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 130px;
+}
+
+.meter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--text-xs);
+}
+
+.meter-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.meter-value {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.meter-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  position: relative;
+}
+
+.meter-fill {
+  height: 100%;
+  transition: width var(--transition-normal);
+  border-radius: 1px;
+}
+
+.fill-cyan {
+  background: linear-gradient(90deg, #0891b2, #06b6d4);
+  box-shadow: 0 0 6px var(--accent-cyan-glow);
+}
+
+.fill-gold {
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+  box-shadow: 0 0 6px var(--accent-gold-glow);
+}
+
+.fill-emerald {
+  background: linear-gradient(90deg, #059669, #10b981);
+  box-shadow: 0 0 6px var(--stamp-approve-glow);
+}
+
+/* --------------------------------------------------------------------------
+   STAMP ACTION DOCK & BUTTONS
+   -------------------------------------------------------------------------- */
+.stamp-action-dock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: auto;
+  padding-top: var(--space-md);
+}
+
+.stamp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: var(--shadow-stamp);
+  transition: transform var(--transition-fast), filter var(--transition-fast), box-shadow var(--transition-fast);
+  color: #ffffff;
+  user-select: none;
+}
+
+.stamp-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.stamp-btn:active {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.stamp-btn--approve {
+  background: var(--stamp-approve-bg);
+  border-color: #34d399;
+}
+
+.stamp-btn--approve:hover {
+  background: var(--stamp-approve-hover);
+  box-shadow: 0 0 16px var(--stamp-approve-glow);
+}
+
+.stamp-btn--fine {
+  background: var(--stamp-fine-bg);
+  border-color: #f87171;
+}
+
+.stamp-btn--fine:hover {
+  background: var(--stamp-fine-hover);
+  box-shadow: 0 0 16px var(--stamp-fine-glow);
+}
+
+.stamp-btn--grant {
+  background: var(--stamp-grant-bg);
+  border-color: #38bdf8;
+}
+
+.stamp-btn--grant:hover {
+  background: var(--stamp-grant-hover);
+  box-shadow: 0 0 16px var(--stamp-grant-glow);
+}
+
+.stamp-icon {
+  font-size: var(--text-md);
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Receipt Cards & Dossier Styles
+   -------------------------------------------------------------------------- */
+.receipt-card {
+  background: #ffffff;
+  border: 1px solid var(--paper-border);
+  border-radius: var(--radius-xs);
+  padding: 10px 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  color: var(--paper-text);
+  margin-bottom: var(--space-sm);
+}
+
+.receipt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed var(--paper-border);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.receipt-title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.receipt-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.receipt-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: #334155;
+  padding: 2px 0;
+}
+
+.item-qty {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* --------------------------------------------------------------------------
+   Scratchpad Calculator & Form Elements
+   -------------------------------------------------------------------------- */
+.calculator-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.calc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.calc-title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+}
+
+.calc-display {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-xs);
+  padding: 8px 12px;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: #38bdf8;
+  text-align: right;
+  letter-spacing: 0.05em;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.calc-tape {
+  font-size: var(--text-xs);
+  min-height: 24px;
+}
+
+.form-select {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-xs);
+  color: var(--text-main);
+  font-size: var(--text-xs);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.form-select:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px var(--accent-cyan-dim);
+}
+
+/* --------------------------------------------------------------------------
+   Modal Backdrop & Window
+   -------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-md);
+}
+
+.modal-backdrop[hidden] {
+  display: none !important;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 540px;
+  background: var(--surface-panel);
+  border: 1px solid var(--accent-gold);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-modal), 0 0 24px rgba(245, 158, 11, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.modal-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-main);
+}
+

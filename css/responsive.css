@@ -1,0 +1,224 @@
+/* ==========================================================================
+   MUNICIPAL CARBON ASSESSOR — RESPONSIVE LAYOUT & MEDIA QUERIES
+   Subphase 2A / Task P2-04
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Medium Desktops & Laptops (1024px to 1280px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 1280px) {
+  .workspace-grid {
+    grid-template-columns: minmax(240px, 0.9fr) minmax(320px, 1.3fr) minmax(280px, 1fr);
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+  }
+
+  .city-meters {
+    gap: var(--space-md);
+  }
+
+  .meter-widget {
+    min-width: 110px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Tablets & Compact Desktops (769px to 1024px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 1024px) {
+  :root {
+    --top-bar-height: auto;
+  }
+
+  .top-bar {
+    flex-wrap: wrap;
+    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-sm);
+    height: auto;
+  }
+
+  .city-meters {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+    gap: var(--space-sm);
+  }
+
+  .workspace-grid {
+    grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.2fr) minmax(260px, 1fr);
+    gap: var(--space-xs);
+    padding: var(--space-xs);
+  }
+
+  .panel-body {
+    padding: var(--space-sm);
+  }
+
+  .stamp-btn {
+    padding: 10px 12px;
+    font-size: var(--text-xs);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Narrow Tablets & Mobile Devices (<= 768px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 768px) {
+  /* Show workspace navigation tabs for small screens */
+  .workspace-tabs-bar {
+    display: flex;
+    overflow-x: auto;
+    background: #111c30;
+  }
+
+  .workspace-grid {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xs);
+    gap: var(--space-sm);
+    overflow-y: auto;
+  }
+
+  /* When tabs are active, hidden panels are visually hidden unless active or scrolled */
+  .workspace-grid[data-tab-mode="tabs"] .workspace-column {
+    display: none;
+    height: 100%;
+  }
+
+  .workspace-grid[data-tab-mode="tabs"] .workspace-column.tab-active {
+    display: flex;
+    flex: 1;
+  }
+
+  .workspace-column {
+    height: auto;
+    min-height: 380px;
+    flex-shrink: 0;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .terminal-brand {
+    justify-content: space-between;
+  }
+
+  .city-meters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
+
+  .timer-widget {
+    grid-column: span 2;
+    justify-content: center;
+  }
+
+  .dossier-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-card {
+    padding: var(--space-md);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .menu-title {
+    font-size: var(--text-xl);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Small Handheld Phones (<= 480px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 480px) {
+  .terminal-title-group {
+    font-size: 0.65rem;
+  }
+
+  .city-meters {
+    grid-template-columns: 1fr;
+  }
+
+  .timer-widget {
+    grid-column: span 1;
+  }
+
+  .meter-widget {
+    min-width: 0;
+  }
+
+  .btn-large {
+    width: 100%;
+    padding: 10px 16px;
+  }
+
+  .stamp-btn {
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Short Viewports (Height <= 720px)
+   -------------------------------------------------------------------------- */
+@media screen and (max-height: 720px) {
+  :root {
+    --top-bar-height: 46px;
+    --space-md: 10px;
+    --space-lg: 14px;
+  }
+
+  .top-bar {
+    padding: 0 var(--space-sm);
+  }
+
+  .meter-track {
+    height: 6px;
+  }
+
+  .workspace-grid {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .panel-header {
+    padding: 4px var(--space-sm);
+  }
+
+  .panel-body {
+    padding: var(--space-sm);
+  }
+
+  .stamp-btn {
+    padding: 8px 12px;
+  }
+
+  .calculator-container {
+    gap: 2px;
+  }
+
+  .calc-display {
+    padding: 4px 8px;
+    font-size: var(--text-md);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced Motion Preferences
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Municipal Carbon Assessor - Retro-futuristic municipal assessment terminal under the COP31 Antalya Protocol.">
+  <title>Municipal Carbon Assessor | COP31 Antalya Protocol</title>
+
+  <!-- Google Fonts: JetBrains Mono and Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div id="app" class="app-root">
+
+    <!-- Screen 1: Main Menu -->
+    <section id="screen-main-menu" class="screen main-menu-screen active" aria-label="Main Menu Screen">
+      <div class="menu-container">
+        <header class="menu-header">
+          <div class="badge badge-gold">COP31 Antalya Protocol • Municipal Terminal v3.1</div>
+          <h1 class="menu-title">MUNICIPAL CARBON ASSESSOR</h1>
+          <p class="menu-subtitle">Department of Environmental Compliance • District Assessment Division</p>
+        </header>
+
+        <div class="menu-briefing card">
+          <h2 class="card-title">Directive & Operational Briefing</h2>
+          <p>
+            Welcome, Assessor. The COP31 Antalya Protocol is now in effect. As the primary auditor for the municipal district, your task is to review citizen carbon declarations against submitted utility records and commercial receipts.
+          </p>
+          <ul class="briefing-list">
+            <li><strong>Audit & Approve:</strong> Verify declared emissions match recorded activity within legal tolerances.</li>
+            <li><strong>Issue Fines:</strong> Penalize willful underdeclarations, forged offsets, or concealed emissions.</li>
+            <li><strong>Award Municipal Grants:</strong> Subsidize qualifying households for clean heat pumps, solar, compost, or transit.</li>
+          </ul>
+          <p class="briefing-warning">
+            Guard your municipal budget and maintain public trust. Bankruptcy or civil unrest will result in immediate termination of terminal access.
+          </p>
+        </div>
+
+        <div class="menu-actions">
+          <button id="btn-start-game" class="btn btn-primary btn-large" type="button">
+            Initialize Shift Terminal
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: Gameplay Workstation Screen -->
+    <section id="screen-gameplay" class="screen gameplay-screen" aria-label="Workstation Assessment Screen">
+
+      <!-- Top Bar: Header and City Metrics -->
+      <header id="top-bar" class="top-bar" aria-label="Municipal Assessment Terminal Header">
+        <div class="terminal-brand">
+          <div class="terminal-indicator pulse-indicator" aria-hidden="true"></div>
+          <div class="terminal-title-group">
+            <span class="terminal-version font-mono">TERM-v3.1 // COP31 AGENDA</span>
+            <span class="terminal-station font-mono">MURATPAŞA AUDIT DESK</span>
+          </div>
+        </div>
+
+        <div class="shift-info font-mono">
+          <span class="shift-day-badge badge badge-gold" id="top-bar-day">DAY 1 OF 3</span>
+          <span class="shift-case-badge badge badge-cyan" id="top-bar-case">CASE 1/8</span>
+        </div>
+
+        <div class="city-meters" role="region" aria-label="City Metrics">
+          <!-- Net-Zero Progress Meter -->
+          <div class="meter-widget" id="meter-netzero-container">
+            <div class="meter-header">
+              <span class="meter-label">NET-ZERO</span>
+              <span class="meter-value font-mono" id="meter-netzero-val">30%</span>
+            </div>
+            <div class="meter-track" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" aria-label="Net-Zero Progress">
+              <div class="meter-fill fill-cyan" id="meter-netzero-bar" style="width: 30%;"></div>
+            </div>
+          </div>
+
+          <!-- Municipal Budget Meter -->
+          <div class="meter-widget" id="meter-budget-container">
+            <div class="meter-header">
+              <span class="meter-label">BUDGET</span>
+              <span class="meter-value font-mono" id="meter-budget-val">$5,000</span>
+            </div>
+            <div class="meter-track" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Municipal Budget Level">
+              <div class="meter-fill fill-gold" id="meter-budget-bar" style="width: 50%;"></div>
+            </div>
+          </div>
+
+          <!-- Public Trust Meter -->
+          <div class="meter-widget" id="meter-trust-container">
+            <div class="meter-header">
+              <span class="meter-label">PUBLIC TRUST</span>
+              <span class="meter-value font-mono" id="meter-trust-val">70%</span>
+            </div>
+            <div class="meter-track" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" aria-label="Public Trust">
+              <div class="meter-fill fill-emerald" id="meter-trust-bar" style="width: 70%;"></div>
+            </div>
+          </div>
+
+          <!-- Shift Countdown Timer -->
+          <div class="timer-widget font-mono" id="timer-container" aria-label="Shift Countdown Timer">
+            <span class="timer-icon" aria-hidden="true">⏱</span>
+            <span class="timer-display" id="timer-display">02:00</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Responsive Workspace Navigation (Small screens / Tablet toggles) -->
+      <nav class="workspace-tabs-bar" aria-label="Workspace Panel Navigation">
+        <button class="workspace-tab-btn active" data-target="rulebook-panel" type="button">Rulebook</button>
+        <button class="workspace-tab-btn" data-target="dossier-panel" type="button">Dossier</button>
+        <button class="workspace-tab-btn" data-target="action-panel" type="button">Action Dock</button>
+      </nav>
+
+      <!-- Workspace 3-Column Layout -->
+      <main id="workspace" class="workspace-grid" aria-label="Three-Column Workspace">
+
+        <!-- Column 1: Rulebook Panel -->
+        <aside id="rulebook-panel" class="panel workspace-column rulebook-panel" aria-label="Emission Rulebook Panel">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="panel-tag font-mono">BENCHMARKS</span>
+              <h2 class="panel-title">MUNICIPAL RULEBOOK</h2>
+            </div>
+            <span class="panel-version font-mono">REV-31.4</span>
+          </div>
+
+          <div class="panel-body rulebook-body" id="rulebook-content">
+            <!-- Benchmark Rates Section -->
+            <section class="rulebook-section" aria-label="Carbon Emission Benchmark Rates">
+              <h3 class="section-title">Official Emission Rates</h3>
+              <div class="rates-list" id="rulebook-rates-list">
+                <!-- Dynamically populated or mock rates -->
+                <div class="rate-item card card-compact">
+                  <div class="rate-header">
+                    <span class="rate-name">Grid Electricity</span>
+                    <span class="rate-value font-mono">0.50 kg CO₂/kWh</span>
+                  </div>
+                  <span class="rate-category font-mono">Electricity</span>
+                </div>
+                <div class="rate-item card card-compact">
+                  <div class="rate-header">
+                    <span class="rate-name">Natural Gas</span>
+                    <span class="rate-value font-mono">2.00 kg CO₂/m³</span>
+                  </div>
+                  <span class="rate-category font-mono">Heating</span>
+                </div>
+                <div class="rate-item card card-compact">
+                  <div class="rate-header">
+                    <span class="rate-name">Beef / Ruminant Meat</span>
+                    <span class="rate-value font-mono">15.00 kg CO₂/pack</span>
+                  </div>
+                  <span class="rate-category font-mono">Food</span>
+                </div>
+                <div class="rate-item card card-compact">
+                  <div class="rate-header">
+                    <span class="rate-name">Domestic Flight</span>
+                    <span class="rate-value font-mono">150.00 kg CO₂/tkt</span>
+                  </div>
+                  <span class="rate-category font-mono">Travel</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Policy Directives Section -->
+            <section class="rulebook-section" aria-label="Municipal Policy Directives">
+              <h3 class="section-title">Policy Directives</h3>
+              <div class="policy-card card card-compact">
+                <span class="policy-code font-mono">DIR-3101</span>
+                <h4 class="policy-heading">Unverified Private Carbon Offsets</h4>
+                <p class="policy-text">Offsets lacking official COP31 municipal registry seals are illegal deductions and must be rejected with fine penalties.</p>
+              </div>
+              <div class="policy-card card card-compact">
+                <span class="policy-code font-mono">DIR-3102</span>
+                <h4 class="policy-heading">Permitted Tolerance Range</h4>
+                <p class="policy-text">A difference within ±5.0 kg CO₂ between calculated and declared totals is permissible as acceptable reporting variance.</p>
+              </div>
+            </section>
+          </div>
+        </aside>
+
+        <!-- Column 2: Citizen Dossier Panel -->
+        <section id="dossier-panel" class="panel workspace-column dossier-panel" aria-label="Citizen Dossier Panel">
+          <div class="panel-header dossier-header">
+            <div class="panel-title-group">
+              <span class="panel-tag font-mono">CASE DOSSIER</span>
+              <h2 class="panel-title" id="dossier-citizen-name">Ayla Yılmaz</h2>
+            </div>
+            <span class="dossier-id font-mono" id="dossier-citizen-id">CIT-101</span>
+          </div>
+
+          <div class="panel-body dossier-body" id="dossier-content">
+            <!-- Citizen Identity and Declaration -->
+            <div class="dossier-paper">
+              <div class="dossier-stamp-seal" aria-hidden="true">COP31 OFFICIAL RECORD</div>
+
+              <div class="dossier-meta-grid">
+                <div class="meta-field">
+                  <span class="meta-label">District:</span>
+                  <span class="meta-value" id="dossier-district">Muratpaşa, Antalya</span>
+                </div>
+                <div class="meta-field">
+                  <span class="meta-label">Roof Type:</span>
+                  <span class="meta-value font-mono" id="dossier-roof">ASPHALT</span>
+                </div>
+                <div class="meta-field">
+                  <span class="meta-label">Declared Footprint:</span>
+                  <span class="meta-value font-mono highlight-declared" id="dossier-declared">120.0 kg CO₂</span>
+                </div>
+              </div>
+
+              <div class="dossier-plea-card">
+                <h4 class="plea-title">Citizen Statement / Note:</h4>
+                <p class="plea-text" id="dossier-note">
+                  "My gas bill was extreme this winter because our landlord won't insulate the walls. I tried my best to cut down on meat to compensate!"
+                </p>
+              </div>
+            </div>
+
+            <!-- Receipt Records Stack -->
+            <div class="receipts-stack" id="dossier-receipts-container" aria-label="Submitted Utility and Commercial Receipts">
+              <div class="receipt-card">
+                <div class="receipt-header">
+                  <span class="receipt-title font-mono">TEDAŞ Smart Meter Log</span>
+                  <span class="badge badge-subtle">ENERGY</span>
+                </div>
+                <div class="receipt-items">
+                  <div class="receipt-item-row">
+                    <span class="item-label">Grid Electricity</span>
+                    <span class="item-qty font-mono">150 kWh</span>
+                  </div>
+                  <div class="receipt-item-row">
+                    <span class="item-label">Natural Gas</span>
+                    <span class="item-qty font-mono">80 m³</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="receipt-card">
+                <div class="receipt-header">
+                  <span class="receipt-title font-mono">Migros Grocery Receipt</span>
+                  <span class="badge badge-subtle">GROCERY</span>
+                </div>
+                <div class="receipt-items">
+                  <div class="receipt-item-row">
+                    <span class="item-label">Local Veg Pack</span>
+                    <span class="item-qty font-mono">4 pack</span>
+                  </div>
+                  <div class="receipt-item-row">
+                    <span class="item-label">Beef Sirloin</span>
+                    <span class="item-qty font-mono">1 pack</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Column 3: Audit & Action Panel -->
+        <section id="action-panel" class="panel workspace-column action-panel" aria-label="Audit and Action Panel">
+          <div class="panel-header">
+            <div class="panel-title-group">
+              <span class="panel-tag font-mono">AUDIT STATION</span>
+              <h2 class="panel-title">CALCULATOR & STAMPS</h2>
+            </div>
+            <span class="panel-status font-mono" id="action-panel-status">READY</span>
+          </div>
+
+          <div class="panel-body action-body">
+
+            <!-- Interactive Scratchpad Calculator -->
+            <div class="calculator-container card" id="calculator-widget">
+              <div class="calc-header">
+                <span class="calc-title font-mono">Scratchpad Calculator</span>
+                <button class="btn btn-ghost btn-sm font-mono" id="btn-calc-clear" type="button">CLEAR</button>
+              </div>
+              <div class="calc-display font-mono" id="calc-display">0.0 kg CO₂</div>
+              <div class="calc-tape" id="calc-tape">
+                <span class="tape-placeholder text-muted">Click receipt items or input quantities to calculate footprint.</span>
+              </div>
+            </div>
+
+            <!-- Assessment Comparison Summary -->
+            <div class="assessment-summary card" id="assessment-summary-box">
+              <h3 class="summary-heading">Assessment Ledger</h3>
+              <div class="summary-row">
+                <span class="summary-label">Audited Total:</span>
+                <span class="summary-value font-mono" id="summary-audited-val">0.0 kg</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Declared Total:</span>
+                <span class="summary-value font-mono" id="summary-declared-val">120.0 kg</span>
+              </div>
+              <div class="summary-row variance-row">
+                <span class="summary-label">Variance:</span>
+                <span class="summary-value font-mono" id="summary-variance-val">-120.0 kg</span>
+              </div>
+            </div>
+
+            <!-- Grant Selector Dropdown / Selection -->
+            <div class="grant-selection-box card" id="grant-selector-container">
+              <label for="grant-select" class="grant-label">Municipal Grant Authorization:</label>
+              <select id="grant-select" class="form-select font-mono">
+                <option value="">-- Select Grant Program --</option>
+                <option value="HEAT_PUMP">Heat Pump Conversion ($1,200 | +6% Net-Zero)</option>
+                <option value="COMPOST_KIT">Urban Compost Kit ($200 | +1% Net-Zero)</option>
+                <option value="TRANSIT_PASS">Annual Green Transit Pass ($600 | +3% Net-Zero)</option>
+                <option value="COOL_ROOF">Cool/Green Roof Permit ($800 | +4% Net-Zero)</option>
+              </select>
+            </div>
+
+            <!-- Stamp Action Dock -->
+            <div class="stamp-action-dock" id="stamp-dock" role="group" aria-label="Audit Decisions Dock">
+              <button id="btn-action-approve" class="stamp-btn stamp-btn--approve" type="button">
+                <span class="stamp-icon" aria-hidden="true">✓</span>
+                <span class="stamp-text">APPROVE DECLARATION</span>
+              </button>
+
+              <button id="btn-action-fine" class="stamp-btn stamp-btn--fine" type="button">
+                <span class="stamp-icon" aria-hidden="true">⚠</span>
+                <span class="stamp-text">ISSUE CO₂ FINE</span>
+              </button>
+
+              <button id="btn-action-grant" class="stamp-btn stamp-btn--grant" type="button">
+                <span class="stamp-icon" aria-hidden="true">★</span>
+                <span class="stamp-text">AWARD GRANT</span>
+              </button>
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+    </section>
+
+    <!-- Screen 3: Game Over / Campaign Outcome Screen -->
+    <section id="screen-game-over" class="screen game-over-screen" aria-label="Campaign Outcome Screen">
+      <div class="game-over-container card">
+        <header class="game-over-header">
+          <div class="badge badge-danger" id="game-over-badge">TERMINATION OF COMMISSION</div>
+          <h1 class="game-over-title" id="game-over-title">CAMPAIGN FAILED</h1>
+          <p class="game-over-reason" id="game-over-reason">Municipal Budget Depleted ($0 remaining).</p>
+        </header>
+
+        <div class="final-stats-box" id="game-over-stats">
+          <div class="stat-row">
+            <span>Days Completed:</span>
+            <span class="font-mono" id="game-over-days">1 of 3</span>
+          </div>
+          <div class="stat-row">
+            <span>Final Net-Zero Progress:</span>
+            <span class="font-mono" id="game-over-netzero">32%</span>
+          </div>
+          <div class="stat-row">
+            <span>Final Public Trust:</span>
+            <span class="font-mono" id="game-over-trust">0%</span>
+          </div>
+        </div>
+
+        <div class="game-over-actions">
+          <button id="btn-restart-game" class="btn btn-primary" type="button">Restart Campaign</button>
+          <button id="btn-return-menu" class="btn btn-secondary" type="button">Return to Main Menu</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary Modal: Shift End Transition -->
+    <div id="summary-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-shift-title" hidden>
+      <div class="modal-card card">
+        <header class="modal-header">
+          <div class="badge badge-gold">SHIFT AUDIT COMPLETE</div>
+          <h2 id="modal-shift-title" class="modal-title">DAY 1 PERFORMANCE REPORT</h2>
+        </header>
+
+        <div class="modal-body" id="summary-modal-content">
+          <div class="summary-metrics-grid">
+            <div class="metric-card">
+              <span class="metric-num font-mono" id="modal-cases-processed">8</span>
+              <span class="metric-desc">Cases Processed</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-num font-mono" id="modal-accuracy">87.5%</span>
+              <span class="metric-desc">Audit Accuracy</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-num font-mono" id="modal-co2-reduced">420 kg</span>
+              <span class="metric-desc">CO₂ Corrected</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button id="btn-next-shift" class="btn btn-primary btn-large" type="button">Proceed to Next Shift</button>
+        </footer>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Application Logic Entrypoint -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
+
