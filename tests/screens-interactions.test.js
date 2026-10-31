@@ -194,6 +194,11 @@ function createFullMockDom() {
   const gameOverDays = createMockElement('span', { id: 'game-over-days' });
   const gameOverNetzero = createMockElement('span', { id: 'game-over-netzero' });
   const gameOverTrust = createMockElement('span', { id: 'game-over-trust' });
+  const gameOverBudget = createMockElement('span', { id: 'game-over-budget' });
+  const gameOverTotalProcessed = createMockElement('span', { id: 'game-over-total-processed' });
+  const gameOverTotalCorrect = createMockElement('span', { id: 'game-over-total-correct' });
+  const gameOverTotalFines = createMockElement('span', { id: 'game-over-total-fines' });
+  const gameOverTotalGrants = createMockElement('span', { id: 'game-over-total-grants' });
   const btnRestartGame = createMockElement('button', { id: 'btn-restart-game' });
   const btnReturnMenu = createMockElement('button', { id: 'btn-return-menu' });
 
@@ -207,6 +212,18 @@ function createFullMockDom() {
   const modalAccuracy = createMockElement('span', { id: 'modal-accuracy' });
   const modalCo2Reduced = createMockElement('span', { id: 'modal-co2-reduced' });
   const btnNextShift = createMockElement('button', { id: 'btn-next-shift' });
+
+  // Modal: Day Intro Modal
+  const dayIntroModal = createMockElement('div', { id: 'day-intro-modal', hidden: '' });
+  dayIntroModal.hidden = true;
+  dayIntroModal.setAttribute('hidden', '');
+  const dayIntroBadge = createMockElement('div', { id: 'day-intro-badge' });
+  const dayIntroTitle = createMockElement('h2', { id: 'day-intro-title' });
+  const dayIntroDescription = createMockElement('p', { id: 'day-intro-description' });
+  const dayIntroCases = createMockElement('span', { id: 'day-intro-cases' });
+  const dayIntroTime = createMockElement('span', { id: 'day-intro-time' });
+  const dayIntroMechanics = createMockElement('ul', { id: 'day-intro-mechanics' });
+  const btnStartShift = createMockElement('button', { id: 'btn-start-shift' });
 
   const elementMap = {
     '#screen-main-menu': screenMainMenu,
@@ -264,6 +281,11 @@ function createFullMockDom() {
     '#game-over-days': gameOverDays,
     '#game-over-netzero': gameOverNetzero,
     '#game-over-trust': gameOverTrust,
+    '#game-over-budget': gameOverBudget,
+    '#game-over-total-processed': gameOverTotalProcessed,
+    '#game-over-total-correct': gameOverTotalCorrect,
+    '#game-over-total-fines': gameOverTotalFines,
+    '#game-over-total-grants': gameOverTotalGrants,
     '#btn-restart-game': btnRestartGame,
     '#btn-return-menu': btnReturnMenu,
 
@@ -274,6 +296,15 @@ function createFullMockDom() {
     '#modal-accuracy': modalAccuracy,
     '#modal-co2-reduced': modalCo2Reduced,
     '#btn-next-shift': btnNextShift,
+
+    '#day-intro-modal': dayIntroModal,
+    '#day-intro-badge': dayIntroBadge,
+    '#day-intro-title': dayIntroTitle,
+    '#day-intro-description': dayIntroDescription,
+    '#day-intro-cases': dayIntroCases,
+    '#day-intro-time': dayIntroTime,
+    '#day-intro-mechanics': dayIntroMechanics,
+    '#btn-start-shift': btnStartShift,
   };
 
   const listeners = {};

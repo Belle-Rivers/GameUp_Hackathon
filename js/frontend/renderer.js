@@ -2,6 +2,7 @@ import { createMainMenuScreen, MainMenuScreen } from './screens/main-menu.js';
 import { createGameplayScreen, GameplayScreen } from './screens/gameplay-screen.js';
 import { createSummaryModal, SummaryModalComponent } from './screens/summary-screen.js';
 import { createGameOverScreen, GameOverScreenComponent } from './screens/game-over-screen.js';
+import { createDayIntroModal, DayIntroModalComponent } from './screens/day-intro-modal.js';
 
 /**
  * Valid screen identifier strings.
@@ -14,6 +15,7 @@ import { createGameOverScreen, GameOverScreenComponent } from './screens/game-ov
  * @property {GameplayScreen} [gameplay]
  * @property {SummaryModalComponent} [summaryModal]
  * @property {GameOverScreenComponent} [gameOver]
+ * @property {DayIntroModalComponent} [dayIntroModal]
  * @property {(screenId: ScreenId) => void} [onScreenChange]
  */
 
@@ -34,6 +36,7 @@ export class Renderer {
     this.gameplay = options.gameplay || createGameplayScreen(root);
     this.summaryModal = options.summaryModal || createSummaryModal(root);
     this.gameOver = options.gameOver || createGameOverScreen(root);
+    this.dayIntroModal = options.dayIntroModal || createDayIntroModal(root);
 
     this.currentScreen = 'main-menu';
   }
@@ -119,6 +122,31 @@ export class Renderer {
    */
   isSummaryModalOpen() {
     return this.summaryModal.isOpen();
+  }
+
+  /**
+   * Opens the day introduction briefing modal.
+   *
+   * @param {Object} [introData]
+   */
+  showDayIntroModal(introData) {
+    this.dayIntroModal.open(introData);
+  }
+
+  /**
+   * Closes the day introduction briefing modal.
+   */
+  hideDayIntroModal() {
+    this.dayIntroModal.close();
+  }
+
+  /**
+   * Checks whether the day intro modal is open.
+   *
+   * @returns {boolean}
+   */
+  isDayIntroModalOpen() {
+    return this.dayIntroModal.isOpen();
   }
 
   /**

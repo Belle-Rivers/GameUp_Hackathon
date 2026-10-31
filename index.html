@@ -362,6 +362,26 @@
             <span>Final Public Trust:</span>
             <span class="font-mono" id="game-over-trust">0%</span>
           </div>
+          <div class="stat-row">
+            <span>Remaining Budget:</span>
+            <span class="font-mono" id="game-over-budget">$0</span>
+          </div>
+          <div class="stat-row">
+            <span>Total Citizens Processed:</span>
+            <span class="font-mono" id="game-over-total-processed">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Correct Actions:</span>
+            <span class="font-mono" id="game-over-total-correct">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Valid Fines Issued:</span>
+            <span class="font-mono" id="game-over-total-fines">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Valid Grants Awarded:</span>
+            <span class="font-mono" id="game-over-total-grants">0</span>
+          </div>
         </div>
 
         <div class="game-over-actions">
@@ -393,11 +413,55 @@
               <span class="metric-num font-mono" id="modal-co2-reduced">420 kg</span>
               <span class="metric-desc">CO₂ Corrected</span>
             </div>
+            <div class="metric-card">
+              <span class="metric-num font-mono" id="modal-fines-issued">0</span>
+              <span class="metric-desc">Fines Issued</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-num font-mono" id="modal-grants-issued">0</span>
+              <span class="metric-desc">Grants Awarded</span>
+            </div>
           </div>
         </div>
 
         <footer class="modal-footer">
           <button id="btn-next-shift" class="btn btn-primary btn-large" type="button">Proceed to Next Shift</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Day Introduction Modal: Subphase 4B (P4-09) -->
+    <div id="day-intro-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="day-intro-title" hidden>
+      <div class="modal-card card">
+        <header class="modal-header">
+          <div class="badge badge-gold" id="day-intro-badge">OPERATIONAL BRIEFING • DAY 1 OF 3</div>
+          <h2 id="day-intro-title" class="modal-title">DAY 1: INTRODUCTION</h2>
+          <p class="modal-subtitle" id="day-intro-description">Basic Audits: Simple receipt math, matching declared vs actual.</p>
+        </header>
+
+        <div class="modal-body" id="day-intro-content">
+          <div class="intro-stats-grid">
+            <div class="intro-stat-card card card-compact">
+              <span class="stat-label">Shift Quota</span>
+              <span class="stat-value font-mono" id="day-intro-cases">5 Citizens</span>
+            </div>
+            <div class="intro-stat-card card card-compact">
+              <span class="stat-label">Shift Timer</span>
+              <span class="stat-value font-mono" id="day-intro-time">2m (120s)</span>
+            </div>
+          </div>
+
+          <div class="intro-mechanics-section">
+            <h4 class="intro-section-heading">Key Shift Mechanics & Programs:</h4>
+            <ul class="intro-mechanics-list" id="day-intro-mechanics">
+              <li>Basic receipt calculations</li>
+              <li>Simple declaration comparisons</li>
+            </ul>
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button id="btn-start-shift" class="btn btn-primary btn-large" type="button">Begin Shift</button>
         </footer>
       </div>
     </div>

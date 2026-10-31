@@ -146,6 +146,14 @@ function makeStubRenderer() {
     _summaryOpened: summaryOpened,
     _summaryHidden: () => summaryHidden,
     _gameOverRendered: gameOverRendered,
+    dayIntroModal: {
+      open: vi.fn(),
+      close: vi.fn(),
+      isOpen: () => false,
+    },
+    showDayIntroModal: function(data) { this._dayIntroOpened = this._dayIntroOpened || []; this._dayIntroOpened.push(data); },
+    hideDayIntroModal: function() { this._dayIntroHidden = (this._dayIntroHidden || 0) + 1; },
+    isDayIntroModalOpen: () => false,
   };
 }
 

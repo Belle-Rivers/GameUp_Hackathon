@@ -9,6 +9,7 @@
  * @property {(detail: { receiptIndex: number, itemIndex: number, item: any }) => void} [onReceiptItemClick] Receipt line item clicked.
  * @property {(targetId: string) => void} [onTabSelect] Responsive tab selected.
  * @property {() => void} [onNextShift] Summary modal proceed button.
+ * @property {() => void} [onStartShift] Day intro modal start shift button.
  * @property {() => void} [onCloseSummaryModal] Summary modal dismissed.
  * @property {() => void} [onRestartGame] Game over restart button.
  * @property {() => void} [onReturnMenu] Game over return to menu button.
@@ -188,6 +189,16 @@ export class EventManager {
       this._addListener(btnNextShift, 'click', () => {
         if (typeof this.handlers.onNextShift === 'function') {
           this.handlers.onNextShift();
+        }
+      });
+    }
+
+    // 6b. Day Intro Modal Start Shift
+    const btnStartShift = this._query('#btn-start-shift');
+    if (btnStartShift) {
+      this._addListener(btnStartShift, 'click', () => {
+        if (typeof this.handlers.onStartShift === 'function') {
+          this.handlers.onStartShift();
         }
       });
     }

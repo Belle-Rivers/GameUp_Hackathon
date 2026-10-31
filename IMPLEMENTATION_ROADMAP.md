@@ -488,6 +488,18 @@ Objective: Transform the single-day prototype into the complete three-day campai
 | P4-13 | Implement campaign failure screen | Explain why the city failed.                      |
 | P4-14 | Implement campaign restart        | Allow players to start a fresh campaign.          |
 
+**P4-09 status:** Completed — `js/frontend/screens/day-intro-modal.js` introduces the `DayIntroModalComponent` (#day-intro-modal), which renders an operational briefing for the active day including title, description, citizen quota, time limit, and bulleted mechanics. It is displayed on campaign start and day transitions, and integrated into `Renderer`, `GameController`, `EventManager`, and `index.html`.
+
+**P4-10 status:** Completed — `js/frontend/screens/summary-screen.js` and `index.html` were updated to render shift-end metrics and statistics, including cases processed, audit accuracy percentage, estimated CO2 corrected/mitigated, fines issued, and grants awarded.
+
+**P4-11 status:** Completed — `GameController.onNextShift()` triggers `backendApi.advanceDay()`, updates city metrics and top bar day/quota indicators, refreshes the grant selector with day-specific programs, resets the calculator and dossier for the new shift's first citizen, and displays the next day's operational introduction.
+
+**P4-12 status:** Completed — `js/frontend/screens/game-over-screen.js` and `index.html` implement the victory presentation. Upon completing Day 3 with Net-Zero >= 100%, Budget > 0, and Public Trust > 0, the game-over screen presents celebratory gold badges, final city metrics, and cumulative campaign totals (total citizens audited, correct actions, valid fines issued, and valid grants awarded).
+
+**P4-13 status:** Completed — `GameOverScreenComponent` presents explanatory failure causes for bankruptcy (`BANKRUPTCY`), public trust depletion (`PUBLIC_TRUST`), and Net-Zero deficit at Day 3 conclusion (`NET_ZERO_TARGET`). It renders danger badges, failure messages, days completed, and final metrics.
+
+**P4-14 status:** Completed — Restart controls (`#btn-restart-game`) reset campaign state via `backendApi.restartCampaign()`, reset municipal metrics (Net-Zero 30%, Budget $5,000, Trust 70%), clear cumulative stats, reset to Day 1, reload Day 1 citizen cases, show the Day 1 introduction briefing, and restart the shift countdown timer.
+
 ### Progression acceptance tests
 
 - Day 1 contains exactly five cases.

@@ -68,9 +68,11 @@ export function initApp(root = typeof document !== 'undefined' ? document : null
     onNextShift: () => controller.onNextShift(),
     onCloseSummaryModal: () => renderer.hideSummaryModal(),
 
-    // Game-over / restart
+    // Day intro modal (P4-09)
+    onStartShift: () => controller.onStartShift(),
+
+    // Game-over / restart (P4-14)
     onRestartGame: () => {
-      renderer.showScreen('gameplay');
       controller.restartCampaign();
     },
     onReturnMenu: () => {

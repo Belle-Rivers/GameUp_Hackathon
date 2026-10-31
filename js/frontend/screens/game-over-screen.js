@@ -63,6 +63,11 @@ export class GameOverScreenComponent {
       days: q('#game-over-days'),
       netzero: q('#game-over-netzero'),
       trust: q('#game-over-trust'),
+      budget: q('#game-over-budget'),
+      totalProcessed: q('#game-over-total-processed'),
+      totalCorrect: q('#game-over-total-correct'),
+      totalFines: q('#game-over-total-fines'),
+      totalGrants: q('#game-over-total-grants'),
       btnRestart: q('#btn-restart-game'),
       btnReturnMenu: q('#btn-return-menu'),
     };
@@ -134,6 +139,27 @@ export class GameOverScreenComponent {
     if (this.elements.trust) {
       const tr = typeof data.trust === 'number' ? Math.round(data.trust) : 0;
       this.elements.trust.textContent = `${tr}%`;
+    }
+
+    // P4-12/P4-13 – Budget display
+    if (this.elements.budget) {
+      const bd = typeof data.budget === 'number' ? Math.round(data.budget) : 0;
+      this.elements.budget.textContent = `$${bd.toLocaleString('en-US')}`;
+    }
+
+    // P4-12/P4-13 – Campaign statistics
+    const cs = data.campaignStats || {};
+    if (this.elements.totalProcessed) {
+      this.elements.totalProcessed.textContent = String(cs.totalProcessed ?? 0);
+    }
+    if (this.elements.totalCorrect) {
+      this.elements.totalCorrect.textContent = String(cs.totalCorrect ?? 0);
+    }
+    if (this.elements.totalFines) {
+      this.elements.totalFines.textContent = String(cs.totalFines ?? 0);
+    }
+    if (this.elements.totalGrants) {
+      this.elements.totalGrants.textContent = String(cs.totalGrants ?? 0);
     }
   }
 

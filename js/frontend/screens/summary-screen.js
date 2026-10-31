@@ -57,6 +57,8 @@ export class SummaryModalComponent {
       casesProcessed: q('#modal-cases-processed'),
       accuracy: q('#modal-accuracy'),
       co2Reduced: q('#modal-co2-reduced'),
+      finesIssued: q('#modal-fines-issued'),
+      grantsIssued: q('#modal-grants-issued'),
       btnNextShift: q('#btn-next-shift'),
     };
   }
@@ -107,6 +109,14 @@ export class SummaryModalComponent {
       } else {
         this.elements.co2Reduced.textContent = '0.0 kg';
       }
+    }
+
+    // P4-10 – Fines and grants issued in shift summary
+    if (this.elements.finesIssued) {
+      this.elements.finesIssued.textContent = String(data.finesIssued ?? 0);
+    }
+    if (this.elements.grantsIssued) {
+      this.elements.grantsIssued.textContent = String(data.grantsIssued ?? 0);
     }
   }
 

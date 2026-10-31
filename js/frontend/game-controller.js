@@ -92,20 +92,40 @@ export class GameController {
   /**
    * Initialises (or re-initialises) the backend campaign and performs the
    * initial full render of all connected UI panels.
+   * P4-09: Shows day introduction modal and starts the shift timer.
    *
+   * @param {object} [options]
+   * @param {boolean} [options.autoStartTimer=true] Whether to start the timer immediately.
    * @returns {void}
    */
-  startCampaign() {
+  startCampaign(options = {}) {
     const stateView = this.backend.startCampaign();
     this._started = true;
     this._awaitingTransition = false;
+    this._pendingGameOverData = null;
 
     this._renderInitialState(stateView);
+
+    // P4-09: Show day intro modal
+    this._showDayIntro(stateView.currentDay);
+
+    // Start shift timer
     this._startTimer();
   }
 
   /**
-   * Restarts the campaign from Day 1 with fresh state.
+   * Called when the player clicks "Begin Shift" on the day intro modal.
+   * Dismisses the intro modal and ensures the timer is running. (P4-09)
+   */
+  onStartShift() {
+    this.renderer.hideDayIntroModal();
+    if (!this._timerHandle) {
+      this._startTimer();
+    }
+  }
+
+  /**
+   * Restarts the campaign from Day 1 with fresh state. (P4-14)
    *
    * @returns {void}
    */
@@ -113,9 +133,14 @@ export class GameController {
     this._stopTimer();
     const stateView = this.backend.restartCampaign();
     this._awaitingTransition = false;
+    this._pendingGameOverData = null;
     this._hideFeedback();
 
+    this.renderer.showScreen('gameplay');
     this._renderInitialState(stateView);
+
+    // P4-09/P4-14: Show day intro for Day 1 and start timer
+    this._showDayIntro(stateView.currentDay);
     this._startTimer();
   }
 
@@ -132,8 +157,11 @@ export class GameController {
       this.renderer.gameplay.rulebook.renderRates(Object.values(rulebook));
     }
 
-    // P3-08 – Grant selector (populate once; grants are static)
-    const grants = this.backend.getGrants();
+    // P3-08 / P4-09 – Grant selector (populate with day-appropriate grants)
+    const currentDay = stateView.currentDay ?? 1;
+    const grants = this.backend.getGrantsForDay
+      ? this.backend.getGrantsForDay(currentDay)
+      : this.backend.getGrants();
     if (this.renderer.gameplay?.actionPanel) {
       this.renderer.gameplay.actionPanel.populateGrants(grants);
     }
@@ -143,6 +171,25 @@ export class GameController {
 
     // P3-03 – First citizen
     this._loadCurrentCitizen(stateView);
+  }
+
+  // ─── P4-09  Day Introduction ──────────────────────────────────────────────
+
+  /**
+   * Shows the day introduction modal with the current day's configuration.
+   *
+   * @param {number} day
+   * @private
+   */
+  _showDayIntro(day) {
+    try {
+      const dayConfig = this.backend.getDayConfig(day);
+      if (this.renderer.dayIntroModal && typeof this.renderer.showDayIntroModal === 'function') {
+        this.renderer.showDayIntroModal(dayConfig);
+      }
+    } catch (_) {
+      // Ignored if getDayConfig is unavailable
+    }
   }
 
   // ─── P3-02  City metrics ─────────────────────────────────────────────────
@@ -550,6 +597,8 @@ export class GameController {
 
   /**
    * Handles campaign end (victory or failure). Navigates to the game-over screen.
+   * P4-12: Victory screen with campaign statistics.
+   * P4-13: Failure screen with failure reason and metrics.
    *
    * @param {import('../backend/index.js').CampaignOutcome} outcome
    * @param {import('../backend/systems/game-state.js').ShiftStats} [shiftStats]
@@ -562,6 +611,12 @@ export class GameController {
     // Retrieve summary before transitioning
     const summary = this.backend.getShiftSummary();
 
+    // P4-08/P4-12/P4-13 – Retrieve campaign stats for comprehensive results
+    let campaignStats = null;
+    try {
+      campaignStats = this.backend.getCampaignStats();
+    } catch (_) { /* ignore if not available */ }
+
     const gameOverData = {
       isVictory,
       outcome: outcome.status,
@@ -571,22 +626,25 @@ export class GameController {
       netZero: outcome.metrics.netZero,
       trust: outcome.metrics.trust,
       budget: outcome.metrics.budget,
+      campaignStats,
     };
 
     if (isVictory) {
-      // Show a brief summary first, then navigate to game-over screen
+      // P4-12: Show a brief summary first, then navigate to game-over screen
       const summaryData = {
         day: stateView.currentDay,
         processedCount: (shiftStats || summary.shiftStats).processedCount,
         correctActions: (shiftStats || summary.shiftStats).correctActions,
         co2ReducedKg: (shiftStats || summary.shiftStats).co2ReducedKg,
+        finesIssued: (shiftStats || summary.shiftStats).finesIssued,
+        grantsIssued: (shiftStats || summary.shiftStats).grantsIssued,
       };
       this.renderer.showSummaryModal(summaryData);
 
       // Store outcome data for when player proceeds from summary
       this._pendingGameOverData = gameOverData;
     } else {
-      // Immediate failure: go straight to game-over
+      // P4-13: Immediate failure: go straight to game-over
       this.renderer.showScreen('game-over');
       if (this.renderer.gameOver) {
         this.renderer.gameOver.render(gameOverData);
@@ -596,11 +654,13 @@ export class GameController {
 
   /**
    * Called when the player clicks "Proceed" on the shift summary modal.
-   * If there's a pending campaign end, shows game-over. Otherwise, advances the day.
+   * P4-11: If campaign ongoing and not last day, advance to next day with intro.
+   * P4-12: If pending victory, show game-over victory screen.
    */
   onNextShift() {
     this.renderer.hideSummaryModal();
 
+    // P4-12 – Pending campaign end (victory after Day 3 summary)
     if (this._pendingGameOverData) {
       const data = this._pendingGameOverData;
       this._pendingGameOverData = null;
@@ -611,12 +671,35 @@ export class GameController {
       return;
     }
 
-    // Advance to the next day (Phase 4 will extend this; for now reset as placeholder)
+    // P4-11 – Advance to the next day
     try {
-      if (this.renderer.gameplay) {
-        this.backend.getState(); // check still active
+      const stateView = this.backend.advanceDay();
+
+      // Re-render the gameplay screen with the new day's state
+      this._awaitingTransition = false;
+      this._hideFeedback();
+
+      // Update grant selector for the new day's available grants
+      const currentDay = stateView.currentDay ?? 1;
+      const grants = this.backend.getGrantsForDay
+        ? this.backend.getGrantsForDay(currentDay)
+        : this.backend.getGrants();
+      if (this.renderer.gameplay?.actionPanel) {
+        this.renderer.gameplay.actionPanel.populateGrants(grants);
       }
-    } catch (_) { /* ignore */ }
+
+      // Render updated metrics + case counter
+      this._renderStateView(stateView);
+
+      // Load the first citizen of the new day
+      this._loadCurrentCitizen(stateView);
+      this._setActionsEnabled(true);
+
+      // P4-09/P4-11 – Show day intro for the new day
+      this._showDayIntro(currentDay);
+    } catch (err) {
+      console.warn('[GameController] advanceDay error:', err.message);
+    }
   }
 
   // ─── P3-12  Shift timer ──────────────────────────────────────────────────
