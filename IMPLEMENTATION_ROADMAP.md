@@ -203,6 +203,8 @@ This is the most important technical phase because incorrect emission calculatio
 
 **P1-04 status:** Completed — `js/backend/data/cases.js` exports the `validateCase`, `validateReceipt` and `validateReceiptItem` functions that verify case IDs (format `C###`), required fields (name, district, declaredCO₂, receipt structure), receipt types and titles, item quantities and units, and that every `rateKey` references a known emission rate in the rulebook. These validators are used by the backend before any action resolution and provide clear error messages for the player.
 
+**P1-05 status:** Completed — `js/backend/data/days.js` exports the `CAMPAIGN_DAYS` constant with the number of citizen cases, time limits (in seconds) and introduced mechanics for each of the three campaign days, as documented in `README.md` and `GAME_RULES.md` §6–§7. Day 1 has 5 cases and a 120‑second timer; Day 2 has 6 cases and a 100‑second timer; Day 3 has 7 cases and a 90‑second timer. The mechanics fields list the gameplay concepts first introduced on each day (e.g. fraud on Day 2, Cool/Roof permit on Day 3) without prescribing their exact implementation.
+
 **Test tooling status:** Completed — Vitest is configured per D-14 through `package.json` and `vitest.config.js`. Run `npm test` for a single run or `npm run test:watch` during development. Tests in `tests/` mirror the implemented backend modules; each future backend module must add its tests as it is implemented.
 
 ### 1B. Calculation Engine
