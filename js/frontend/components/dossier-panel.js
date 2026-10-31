@@ -223,6 +223,15 @@ export class DossierPanelComponent {
   onItemClick(callback) {
     this.options.onItemClick = callback;
   }
+
+  /**
+   * Updates or loads citizen dossier data.
+   *
+   * @param {CitizenDossierData} citizenCase
+   */
+  update(citizenCase) {
+    return this.loadCitizen(citizenCase);
+  }
 }
 
 /**

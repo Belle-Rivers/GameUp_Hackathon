@@ -235,6 +235,32 @@ export class ActionPanelComponent {
     if (this.elements.btnGrant) this.elements.btnGrant.disabled = !enabled;
     if (this.elements.grantSelect) this.elements.grantSelect.disabled = !enabled;
   }
+
+  /**
+   * Unified update method. Accepts a data object and delegates to the appropriate
+   * sub-update methods.
+   *
+   * @param {Object} data
+   * @param {number} [data.auditedCO2]
+   * @param {number} [data.declaredCO2]
+   * @param {GrantOption[]} [data.grants]
+   * @param {string} [data.status]
+   * @param {boolean} [data.actionsEnabled]
+   */
+  update(data = {}) {
+    if (data.auditedCO2 !== undefined || data.declaredCO2 !== undefined) {
+      this.updateAssessment(data.auditedCO2 ?? 0, data.declaredCO2 ?? 0);
+    }
+    if (data.grants !== undefined) {
+      this.populateGrants(data.grants);
+    }
+    if (data.status !== undefined) {
+      this.setStatus(data.status);
+    }
+    if (data.actionsEnabled !== undefined) {
+      this.setActionsEnabled(data.actionsEnabled);
+    }
+  }
 }
 
 /**

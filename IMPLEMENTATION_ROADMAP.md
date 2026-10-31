@@ -350,6 +350,16 @@ This is where Antigravity can be particularly useful for visual inspection.
 | P2-15 | Implement game-over screen              | Create the campaign failure presentation.          |
 | P2-16 | Implement button and modal interactions | Handle opening, closing and selection.             |
 
+**P2-12 status:** Completed — `js/frontend/screens/main-menu.js` exports `MainMenuScreen`, `MainMenuComponent`, and `createMainMenuScreen`. Binds to `#screen-main-menu` and `#btn-start-game`. Manages active state via `show()` / `hide()` / `isActive()`. Supports `setTitle()`, `setSubtitle()`, and `onStart` callback. The HTML `#screen-main-menu` container was already authored in `index.html` with the game title, briefing cards, and start button per P2-01.
+
+**P2-13 status:** Completed — `js/frontend/screens/gameplay-screen.js` exports `GameplayScreen`, `GameplayScreenComponent`, and `createGameplayScreen`. Composes all five workspace sub-components (`TopBarComponent`, `RulebookPanelComponent`, `DossierPanelComponent`, `CalculatorPanelComponent`, `ActionPanelComponent`) under one coordinator. Implements responsive tab management (`setActiveTab()`, `getActiveTab()`), unified `update()` delegation, and `show()` / `hide()` / `isActive()` screen control. Action callbacks (`onApprove`, `onFine`, `onGrant`, `onGrantSelectChange`, `onReceiptItemClick`, `onClearCalculator`, `onTabChange`) are forwarded to options.
+
+**P2-14 status:** Completed — `js/frontend/screens/summary-screen.js` exports `SummaryModalComponent`, `SummaryScreen`, `createSummaryModal`, and `formatAccuracy`. Manages `#summary-modal` hidden-attribute visibility. `open(data)` / `close()` / `isOpen()` implement standard dialog semantics. Renders cases processed, audit accuracy (as computed percentage), and CO₂ corrected. `onProceed` callback fires from `#btn-next-shift`. Re-exports game-over screen exports for convenience.
+
+**P2-15 status:** Completed — `js/frontend/screens/game-over-screen.js` exports `GameOverScreenComponent`, `GameOverScreen`, `createGameOverScreen`, and `getFailureMessage`. Renders failure (BANKRUPTCY, PUBLIC_TRUST, NET_ZERO_TARGET) and victory modes with appropriate badges, titles, reason text, and final metric values. `onRestart` and `onReturnMenu` callbacks wired to `#btn-restart-game` and `#btn-return-menu`.
+
+**P2-16 status:** Completed — `js/frontend/renderer.js` exports `Renderer` and `createRenderer`, coordinating exclusive single-screen visibility across all three screens and the summary modal. `js/frontend/events.js` exports `EventManager` and `setupUIEvents`, wiring all interactive elements (start, tabs, stamps, grant selector, calculator clear, modal proceed, restart, return-to-menu) and keyboard shortcuts (Escape to dismiss modal; 1/2/3 for APPROVE/FINE/GRANT during gameplay). `js/app.js` exports `initApp` which bootstraps `Renderer` + `EventManager` and auto-runs in browser context. `ActionPanelComponent.update()` and `DossierPanelComponent.update()` added to satisfy the unified update interface.
+
 ### Frontend completion gate
 
 - Every screen is visually complete.
