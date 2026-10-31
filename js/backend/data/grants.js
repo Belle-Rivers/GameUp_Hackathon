@@ -70,4 +70,10 @@ export const GRANTS = {
   },
 };
 
+/**
+ * List of all available mitigation grants.
+ * @type {Grant[]}
+ */
+export const MITIGATION_GRANTS = Object.values(GRANTS);
+
 export {};

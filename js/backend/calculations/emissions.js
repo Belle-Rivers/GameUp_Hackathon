@@ -250,11 +250,68 @@ function calculateReceiptBreakdown(citizenCase) {
   };
 }
 
+/**
+ * Calculates emission contributions for a case, optionally limited to a
+ * specific selection of receipt item references (P3-05 / ReceiptBreakdownRequest).
+ *
+ * When `selection` is provided, only the referenced items are included.
+ * The `totalCO2` in the returned breakdown reflects the raw sum of the
+ * selected items (may be negative for offset-only selections); the full-case
+ * clamping rule applies only when calculating the complete actual footprint.
+ *
+ * @param {import('../data/cases.js').CitizenCase} citizenCase
+ * @param {Array<{receiptIndex: number, itemIndex: number}>} [selection]
+ * @returns {import('../index.js').ReceiptBreakdown}
+ */
+function breakdownReceipts(citizenCase, selection) {
+  if (!selection || selection.length === 0) {
+    return calculateReceiptBreakdown(citizenCase);
+  }
+
+  /** @type {import('../index.js').ReceiptBreakdownItem[]} */
+  const items = [];
+  /** @type {Record<string, number>} */
+  const categorySubtotals = {};
+  let total = 0;
+
+  for (const ref of selection) {
+    const receipt = citizenCase.receipts[ref.receiptIndex];
+    if (!receipt) continue;
+    const item = receipt.items[ref.itemIndex];
+    if (!item) continue;
+
+    const co2 = calculateItemEmissions(item);
+    const category = receipt.type;
+
+    items.push({
+      ref: { receiptIndex: ref.receiptIndex, itemIndex: ref.itemIndex },
+      label: item.label,
+      qty: item.qty,
+      unit: item.unit,
+      co2,
+    });
+
+    if (categorySubtotals[category] === undefined) {
+      categorySubtotals[category] = 0;
+    }
+    categorySubtotals[category] += co2;
+    total += co2;
+  }
+
+  return {
+    caseId: citizenCase.id,
+    items,
+    categorySubtotals,
+    totalCO2: total,
+  };
+}
+
 export {
   calculateItemEmissions,
   calculateActualEmissions,
   compareDeclaration,
   detectDiscrepancy,
   calculateReceiptBreakdown,
+  breakdownReceipts,
   verifyOffsets,
 };

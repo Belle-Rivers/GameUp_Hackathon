@@ -129,6 +129,8 @@
  * @property {(request: AuditActionRequest) => ActionResult} submitAction Validate an action and apply its effects.
  * @property {() => ShiftSummary} getShiftSummary Return the summary for the completed shift.
  * @property {() => CampaignOutcome | null} getCampaignOutcome Return the terminal outcome, or null if ongoing.
+ * @property {(seconds?: number) => GameStateView} tick Advance the campaign timer by the given number of seconds (default 1). P3-12.
+ * @property {() => GameStateView} advanceDay Transition the campaign to the next day. P4 prerequisite.
  */
 
 import * as cases from './data/cases.js';
@@ -163,6 +165,23 @@ export const backendApi = {
   submitAction: (request) => campaign.getCampaign().submitAction(request),
   getShiftSummary: () => campaign.getCampaign().getShiftSummary(),
   getCampaignOutcome: () => campaign.getCampaign().getCampaignOutcome(),
+
+  /**
+   * Advances the campaign timer by one second.
+   * Returns an updated GameStateView (P3-12).
+   *
+   * @param {number} [seconds=1]
+   * @returns {import('./index.js').GameStateView}
+   */
+  tick: (seconds = 1) => campaign.getCampaign().tick(seconds),
+
+  /**
+   * Advances the campaign to the next day after a completed shift.
+   * Returns an updated GameStateView for the new day.
+   *
+   * @returns {import('./index.js').GameStateView}
+   */
+  advanceDay: () => campaign.getCampaign().advanceDay(),
 };
 
 export {

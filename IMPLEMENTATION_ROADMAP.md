@@ -395,6 +395,30 @@ This is where the frontend stops using mock data and starts communicating with t
 | P3-11 | Connect shift statistics        | Display processed cases and cumulative statistics.          |
 | P3-12 | Implement shift timer           | Connect the timer to campaign progression.                  |
 
+**P3-01 status:** Completed — `js/app.js` and `js/frontend/game-controller.js` bootstrap the campaign session via `backendApi.startCampaign()`, initializing Day 1 state, loading the first citizen dossier, populating rulebook rates and mitigation grants, and rendering initial top-bar metrics.
+
+**P3-02 status:** Completed — `GameController._renderStateView` binds backend `GameStateView.metrics` directly into `TopBarComponent.setMetrics`, accurately updating Net-Zero progress, Municipal Budget, and Public Trust on shift start and immediately following each audited action resolution.
+
+**P3-03 status:** Completed — `GameController._loadCurrentCitizen` consumes `backendApi.getCurrentCase()` to populate `DossierPanelComponent` with citizen identity, district, roof type, personal plea note, declared CO₂, and submitted activity receipts without leaking test or internal audit metadata.
+
+**P3-04 status:** Completed — Rulebook benchmarks from `backendApi.getRulebook()` and grant programs from `backendApi.getGrants()` are wired during initialization to `RulebookPanelComponent.renderRates` and `ActionPanelComponent.populateGrants`.
+
+**P3-05 status:** Completed — `emissions.breakdownReceipts` supports item-level calculations via `selection: [{ receiptIndex, itemIndex }]`. Clicking line items delegates to `GameController.onReceiptItemClick` which queries `backendApi.getReceiptBreakdown` and feeds calculated values to `CalculatorPanelComponent.addEntry`, keeping gameplay logic exclusively within the backend.
+
+**P3-06 status:** Completed — `GameController.onApprove` transmits `AuditActionRequest` with action `'APPROVE'` to `backendApi.submitAction`, triggering backend validation, metric application, shift stat tracking, and feedback rendering.
+
+**P3-07 status:** Completed — `GameController.onFine` submits action `'FINE'` to `backendApi.submitAction`, penalizing underdeclarations and unverified offset deductions per `GAME_RULES.md` §4.2.
+
+**P3-08 status:** Completed — `GameController.onGrant` validates selection of an active grant program from the dropdown, submitting action `'GRANT'` with `grantId` to `backendApi.submitAction` and resolving eligibility, budget deductions, and Net-Zero boosts.
+
+**P3-09 status:** Completed — `GameController._showActionFeedback` and `GameController._showFeedbackOverlay` present transient visual stamp feedback (`✓ CORRECT` or `✗ INCORRECT`), backend human-readable explanations, and metric impact lines on `#dossier-panel` with `.action-feedback-overlay` CSS transitions.
+
+**P3-10 status:** Completed — Following feedback display delay, `GameController._handleActionResult` advances to the next citizen case via `backendApi.getCurrentCase()`, clearing the calculator and resetting action panel inputs while disallowing action re-submission during the transition window.
+
+**P3-11 status:** Completed — Upon shift completion (exhausting daily cases or timer expiry), `GameController._handleShiftEnd` invokes `backendApi.getShiftSummary()` to present cases processed, correct audit count, audit accuracy percentage, and CO₂ reduced inside `SummaryModalComponent`.
+
+**P3-12 status:** Completed — `GameController._startTimer` drives an active 1-second interval dispatching to `backendApi.tick(1)`. Updates top-bar countdown display, triggers low-time warnings (<=30s), and automatically concludes the shift when remaining time reaches 0 without auditing unfinished dossiers.
+
 ### Integration acceptance test
 
 A complete round should work like this:

@@ -470,3 +470,82 @@
   color: var(--text-main);
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   P3-09 — Action Feedback Overlay
+   Transient overlay rendered on top of the dossier panel after a stamp action.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.action-feedback-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  z-index: 50;
+  text-align: center;
+  pointer-events: none;
+
+  /* Initial hidden state for transition */
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.action-feedback-overlay.feedback-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Valid action (APPROVE correct, FINE correct, GRANT correct) */
+.action-feedback-overlay.feedback--valid {
+  background: rgba(16, 185, 129, 0.18);
+  border: 2px solid var(--stamp-approve, #10b981);
+}
+
+/* Invalid action (wrong decision) */
+.action-feedback-overlay.feedback--invalid {
+  background: rgba(239, 68, 68, 0.18);
+  border: 2px solid var(--stamp-fine, #ef4444);
+}
+
+.feedback-stamp {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl, 1.5rem);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
+}
+
+.feedback--valid .feedback-stamp {
+  color: var(--stamp-approve, #10b981);
+  border: 2px solid var(--stamp-approve, #10b981);
+}
+
+.feedback--invalid .feedback-stamp {
+  color: var(--stamp-fine, #ef4444);
+  border: 2px solid var(--stamp-fine, #ef4444);
+}
+
+.feedback-explanation {
+  font-size: var(--text-sm);
+  color: var(--text-main);
+  max-width: 90%;
+  line-height: 1.5;
+}
+
+.feedback-metrics {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+/* Ensure the dossier panel has position:relative so overlay is contained */
+#dossier-panel {
+  position: relative;
+}
