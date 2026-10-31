@@ -237,6 +237,16 @@ This is the most important technical phase because incorrect emission calculatio
 | P1-14 | Implement grant validation    | Ensure the selected grant matches the eligible issue.       |
 | P1-15 | Implement action resolution   | Calculate the financial and metric effects of every action. |
 
+**P1-11 status:** Completed — `js/backend/systems/audit.js` exports `validateApproval`, which validates citizen declarations against calculated emissions within the approved ±2 kg tolerance (`|actual - declared| <= 2`) and verifies that no unapproved or unverified offset claims exist per `GAME_RULES.md` §4.1. Zero-emission and clamped solar offset cases are handled without division-by-zero dependencies per D-08.
+
+**P1-12 status:** Completed — `js/backend/systems/audit.js` exports `validateFine`, which enforces penalties when emissions are underdeclared by more than 2 kg (`actual - declared > 2`) or when the citizen claims an unverified offset per `GAME_RULES.md` §4.2. Fine amount is calculated as `max(0, actual - declared) * 10` per D-11, ensuring unverified offset claims never generate negative fines or unfair penalties when overdeclared.
+
+**P1-13 status:** Completed — `js/backend/systems/grant-system.js` exports `checkGrantEligibility`, `getEligibleGrants`, and `determineEligibleGrant`. Household defect quantities are aggregated directly from receipt items across categories: natural gas heating (`GAS_HEAT` > 100 m³ for `HEAT_PUMP`), landfill waste (`LANDFILL` > 30 kg for `COMPOST_KIT`), gasoline travel (`GASOLINE` > 300 km for `TRANSIT_PASS`), and summer cooling AC electricity (`GRID_ELEC` in `COOLING` receipts > 150 kWh with `roofType === 'ASPHALT'` for `COOL_ROOF`) per `GAME_RULES.md` §5, §7.2, D-15, and D-16.
+
+**P1-14 status:** Completed — `js/backend/systems/grant-system.js` exports `validateGrant` and `calculateGrantMetricChanges`. Validates that the selected grant matches the citizen's eligible defect. Valid grants yield the catalog cost and Net-Zero boost; mismatched or unselected grants return invalid validation with appropriate penalty costs per `GAME_RULES.md` §4.3.
+
+**P1-15 status:** Completed — `js/backend/systems/audit.js` exports `resolveAction` and action effect definitions (`APPROVAL_ACTION_EFFECTS`, `FINE_ACTION_EFFECTS`). Calculates the exact metric changes (Net-Zero, budget, public trust) and generates human-readable explanations for all three action types (APPROVE, FINE, GRANT) under both valid and invalid conditions per `GAME_RULES.md` §4 and §6.
+
 ### 1D. Game State and Metrics
 
 | ID    | Task                         | Description                                                      |
