@@ -95,9 +95,12 @@ export function initApp(root = typeof document !== 'undefined' ? document : null
 
 // Auto-bootstrap when loaded in a browser environment
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initApp(document));
-  } else {
-    initApp(document);
+  if (!window.__GAMEUP_INITIALIZED__) {
+    window.__GAMEUP_INITIALIZED__ = true;
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => initApp(document));
+    } else {
+      initApp(document);
+    }
   }
 }

@@ -119,8 +119,6 @@
    Screen 2: Gameplay Workstation Layout
    -------------------------------------------------------------------------- */
 .gameplay-screen {
-  display: flex;
-  flex-direction: column;
   height: 100%;
   width: 100%;
   background-color: var(--bg-app);

@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "esbuild js/app.js --bundle --format=iife --outfile=js/bundle.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },

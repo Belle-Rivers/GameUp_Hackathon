@@ -131,7 +131,7 @@ export class CalculatorPanelComponent {
     if (this.elements.tape) {
       if (this.entries.length === 0) {
         this.elements.tape.innerHTML = `
-          <span class="tape-placeholder text-muted">Click receipt items or input quantities to calculate footprint.</span>
+          <span class="tape-placeholder text-muted">Click receipt items to calculate footprint.</span>
         `.trim();
         return;
       }

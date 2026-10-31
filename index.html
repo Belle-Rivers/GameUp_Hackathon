@@ -283,7 +283,7 @@
               </div>
               <div class="calc-display font-mono" id="calc-display">0.0 kg CO₂</div>
               <div class="calc-tape" id="calc-tape">
-                <span class="tape-placeholder text-muted">Click receipt items or input quantities to calculate footprint.</span>
+                <span class="tape-placeholder text-muted">Click receipt items to calculate footprint.</span>
               </div>
             </div>
 
@@ -468,8 +468,9 @@
 
   </div>
 
-  <!-- Application Logic Entrypoint -->
+  <!-- Application Logic Entrypoint (ES Module for HTTP servers; bundle fallback for direct file:// opening) -->
   <script type="module" src="js/app.js"></script>
+  <script src="js/bundle.js" defer></script>
 </body>
 </html>
 
