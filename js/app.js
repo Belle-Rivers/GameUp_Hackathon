@@ -36,6 +36,15 @@ export function initApp(root = typeof document !== 'undefined' ? document : null
   // ── 2. Game controller (backend ↔ frontend bridge) ────────────────────────
   const controller = createGameController(backendApi, renderer, { root });
 
+  // ── 2b. Phase 5B presentation scenes (Agent B) ────────────────────────────
+  // Register presentation-only handlers with Agent A's SceneDirector.
+  const sceneDirector = controller.sceneDirector;
+  renderer.mainMenu?.registerWithSceneDirector?.(sceneDirector);
+  renderer.dayIntroModal?.registerWithSceneDirector?.(sceneDirector);
+  renderer.summaryModal?.registerWithSceneDirector?.(sceneDirector);
+  renderer.gameOver?.registerWithSceneDirector?.(sceneDirector);
+  renderer.gameplay?.registerWithSceneDirector?.(sceneDirector);
+
   // ── 3. DOM event wiring ───────────────────────────────────────────────────
   const events = setupUIEvents(root, {
     // Main menu
@@ -77,7 +86,7 @@ export function initApp(root = typeof document !== 'undefined' ? document : null
     },
     onReturnMenu: () => {
       controller.sceneDirector?.transitionTo('MENU');
-      controller.destroy();
+      controller.stopSession();
       renderer.showScreen('main-menu');
     },
   });

@@ -1,4 +1,5 @@
 import { soundEngine } from '../audio.js';
+import { SCENE_NAMES } from '../scene-director.js';
 
 /**
  * Formats the audit accuracy percentage.
@@ -101,6 +102,28 @@ export class SummaryModalComponent {
   }
 
   /**
+   * P5B-09: Registers the DAY_SUMMARY scene with Agent A's SceneDirector.
+   *
+   * @param {import('../scene-director.js').SceneDirector} sceneDirector
+   */
+  registerWithSceneDirector(sceneDirector) {
+    if (!sceneDirector || typeof sceneDirector.registerScene !== 'function') return;
+
+    sceneDirector.registerScene(SCENE_NAMES.DAY_SUMMARY, {
+      enter: (data) => {
+        if (this.isOpen()) {
+          if (data) this.render(data);
+        } else {
+          this.open(data);
+        }
+      },
+      exit: () => this.close(),
+      skip: () => this.skipAnimation(),
+      duration: 400,
+    });
+  }
+
+  /**
    * Renders shift summary data into modal elements.
    *
    * @param {ShiftSummaryData} [data]
@@ -153,6 +176,7 @@ export class SummaryModalComponent {
    * @param {ShiftSummaryData} [data]
    */
   open(data) {
+    const wasOpen = this.isOpen();
     if (data) {
       this.render(data);
     }
@@ -163,6 +187,10 @@ export class SummaryModalComponent {
       this.elements.modal.hidden = false;
       this.elements.modal.classList?.add('shift-report-active');
     }
+
+    // Repeated opens (e.g. SceneDirector enter + controller render) only
+    // refresh content and must not replay audio or reset the reveal.
+    if (wasOpen) return;
 
     soundEngine.playPaper();
 
@@ -276,63 +304,7 @@ export function createSummaryModal(root = document, options = {}) {
   return new SummaryModalComponent(root, options);
 }
 
-  /**
-   * Alias for open().
-   *
-   * @param {ShiftSummaryData} [data]
-   */
-  show(data) {
-    this.open(data);
-  }
-
-  /**
-   * Closes and hides the summary modal.
-   */
-  close() {
-    if (this.elements.modal) {
-      if (typeof this.elements.modal.setAttribute === 'function') {
-        this.elements.modal.setAttribute('hidden', '');
-      }
-      this.elements.modal.hidden = true;
-    }
-    if (typeof this.options.onClose === 'function') {
-      this.options.onClose();
-    }
-  }
-
-  /**
-   * Alias for close().
-   */
-  hide() {
-    this.close();
-  }
-
-  /**
-   * Returns whether the modal is currently open.
-   *
-   * @returns {boolean}
-   */
-  isOpen() {
-    if (!this.elements.modal) return false;
-    const hasHiddenAttr = typeof this.elements.modal.hasAttribute === 'function'
-      ? this.elements.modal.hasAttribute('hidden')
-      : Boolean(this.elements.modal.hidden);
-    return !hasHiddenAttr && !this.elements.modal.hidden;
-  }
-}
-
 export const SummaryScreen = SummaryModalComponent;
-
-/**
- * Factory for SummaryModalComponent.
- *
- * @param {HTMLElement|Document} [root]
- * @param {SummaryModalOptions} [options]
- * @returns {SummaryModalComponent}
- */
-export function createSummaryModal(root = document, options = {}) {
-  return new SummaryModalComponent(root, options);
-}
 
 // Re-export GameOverScreenComponent for convenience
 export {

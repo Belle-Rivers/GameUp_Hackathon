@@ -263,7 +263,7 @@ export class TopBarComponent {
           text = `${sign}$${Math.round(Math.abs(delta))}`;
         } else {
           const sign = isPos ? '+' : '';
-          text = `${sign}${delta.toFixed(0)}%`;
+          text = `${sign}${delta.toFixed(1)}%`;
         }
         chip.textContent = text;
         container.appendChild(chip);
@@ -294,13 +294,15 @@ export class TopBarComponent {
    * Sets city metrics values and progress bar widths.
    *
    * @param {TopBarMetrics} metrics
+   * @param {{netZero?: number, budget?: number, trust?: number}|null} [changes]
+   *   Optional backend-supplied metric deltas used for floating HUD feedback.
+   *   When omitted, values update silently (e.g. initial render or day change).
    */
-  setMetrics(metrics = {}) {
+  setMetrics(metrics = {}, changes = null) {
     if (metrics.netZero !== undefined) {
       const netZeroClamped = Math.max(0, Math.min(100, Math.round(metrics.netZero)));
-      if (this._prevMetrics.netZero !== null && this._prevMetrics.netZero !== netZeroClamped) {
-        const delta = netZeroClamped - this._prevMetrics.netZero;
-        this._triggerMetricFeedback('netZero', delta, this.elements.netzeroContainer, this.elements.netzeroVal);
+      if (changes && typeof changes.netZero === 'number' && changes.netZero !== 0) {
+        this._triggerMetricFeedback('netZero', changes.netZero, this.elements.netzeroContainer, this.elements.netzeroVal);
       }
       this._prevMetrics.netZero = netZeroClamped;
 
@@ -316,9 +318,8 @@ export class TopBarComponent {
 
     if (metrics.budget !== undefined) {
       const currentBudget = Math.round(metrics.budget);
-      if (this._prevMetrics.budget !== null && this._prevMetrics.budget !== currentBudget) {
-        const delta = currentBudget - this._prevMetrics.budget;
-        this._triggerMetricFeedback('budget', delta, this.elements.budgetContainer, this.elements.budgetVal);
+      if (changes && typeof changes.budget === 'number' && changes.budget !== 0) {
+        this._triggerMetricFeedback('budget', changes.budget, this.elements.budgetContainer, this.elements.budgetVal);
       }
       this._prevMetrics.budget = currentBudget;
 
@@ -336,9 +337,8 @@ export class TopBarComponent {
 
     if (metrics.trust !== undefined) {
       const trustClamped = Math.max(0, Math.min(100, Math.round(metrics.trust)));
-      if (this._prevMetrics.trust !== null && this._prevMetrics.trust !== trustClamped) {
-        const delta = trustClamped - this._prevMetrics.trust;
-        this._triggerMetricFeedback('trust', delta, this.elements.trustContainer, this.elements.trustVal);
+      if (changes && typeof changes.trust === 'number' && changes.trust !== 0) {
+        this._triggerMetricFeedback('trust', changes.trust, this.elements.trustContainer, this.elements.trustVal);
       }
       this._prevMetrics.trust = trustClamped;
 
@@ -372,9 +372,9 @@ export class TopBarComponent {
           this.elements.timerContainer.classList.remove('timer-critical');
         }
 
-        // P5B-07 / P5B-12: Clock tick audio on seconds change
-        if (this._prevTimerSeconds !== sec) {
-          soundEngine.playTick(sec <= 10);
+        // P5B-07 / P5B-12: Subtle clock tick only in the final critical seconds.
+        if (sec <= 10 && this._prevTimerSeconds !== sec) {
+          soundEngine.playTick(true);
           if (sec === 10 || sec === 5) {
             soundEngine.playCountdownSting();
           }

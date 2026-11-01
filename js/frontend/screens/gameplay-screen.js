@@ -3,6 +3,7 @@ import { createRulebookPanel, RulebookPanelComponent } from '../components/ruleb
 import { createDossierPanel, DossierPanelComponent } from '../components/dossier-panel.js';
 import { createCalculatorPanel, CalculatorPanelComponent } from '../components/calculator-panel.js';
 import { createActionPanel, ActionPanelComponent } from '../components/action-panel.js';
+import { SCENE_NAMES } from '../scene-director.js';
 
 /**
  * @typedef {Object} GameplayScreenOptions
@@ -204,6 +205,35 @@ export class GameplayScreen {
     if (this.ambientOfficeLayer?.setAttribute) {
       this.ambientOfficeLayer.setAttribute('data-office-lighting', dayClass);
     }
+  }
+
+  /**
+   * P5B-03 / P5B-06: Registers working scenes so the office can transition
+   * in from the briefing and settle into case review.
+   *
+   * @param {import('../scene-director.js').SceneDirector} sceneDirector
+   */
+  registerWithSceneDirector(sceneDirector) {
+    if (!sceneDirector || typeof sceneDirector.registerScene !== 'function') return;
+
+    const enterWorkingScene = () => {
+      this.show();
+      if (!this.screenElement?.classList) return;
+      this.screenElement.classList.remove('scene-entry-active');
+      void (this.screenElement.offsetWidth || 0);
+      this.screenElement.classList.add('scene-entry-active');
+    };
+
+    sceneDirector.registerScene(SCENE_NAMES.SHIFT_START, {
+      enter: enterWorkingScene,
+      skip: () => this.screenElement?.classList?.remove('scene-entry-active'),
+      duration: 300,
+    });
+
+    sceneDirector.registerScene(SCENE_NAMES.CASE_REVIEW, {
+      enter: () => this.show(),
+      duration: 0,
+    });
   }
 
   /**

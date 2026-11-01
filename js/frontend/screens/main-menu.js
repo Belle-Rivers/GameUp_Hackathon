@@ -1,4 +1,5 @@
 import { soundEngine } from '../audio.js';
+import { SCENE_NAMES } from '../scene-director.js';
 
 /**
  * @typedef {Object} MainMenuOptions
@@ -109,6 +110,27 @@ export class MainMenuScreen {
       }
     }
     return false;
+  }
+
+  /**
+   * P5B-02: Registers the MENU scene with Agent A's SceneDirector.
+   *
+   * @param {import('../scene-director.js').SceneDirector} sceneDirector
+   */
+  registerWithSceneDirector(sceneDirector) {
+    if (!sceneDirector || typeof sceneDirector.registerScene !== 'function') return;
+
+    sceneDirector.registerScene(SCENE_NAMES.MENU, {
+      enter: (_data, context) => {
+        this.show();
+        if (context?.reducedMotion) {
+          this.skipAnimation();
+        }
+      },
+      exit: () => this.hide(),
+      skip: () => this.skipAnimation(),
+      duration: 350,
+    });
   }
 
   /**

@@ -1763,86 +1763,6 @@
     advanceDay: () => getCampaign().advanceDay()
   };
 
-  // js/frontend/screens/main-menu.js
-  var MainMenuScreen = class {
-    /**
-     * @param {HTMLElement|Document} [root=document] Root DOM node containing main menu elements.
-     * @param {MainMenuOptions} [options]
-     */
-    constructor(root = document, options = {}) {
-      this.root = root;
-      this.options = options;
-      this.elements = this._queryElements();
-      this._attachEvents();
-    }
-    _queryElements() {
-      const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
-      return {
-        screen: q("#screen-main-menu"),
-        btnStart: q("#btn-start-game"),
-        title: q(".menu-title"),
-        subtitle: q(".menu-subtitle"),
-        briefing: q(".menu-briefing")
-      };
-    }
-    _attachEvents() {
-      if (this.elements.btnStart) {
-        this.elements.btnStart.addEventListener("click", (event) => {
-          if (typeof this.options.onStart === "function") {
-            this.options.onStart(event);
-          }
-        });
-      }
-    }
-    /**
-     * Activates and reveals the main menu screen.
-     */
-    show() {
-      if (this.elements.screen?.classList) {
-        this.elements.screen.classList.add("active");
-      }
-    }
-    /**
-     * Hides the main menu screen.
-     */
-    hide() {
-      if (this.elements.screen?.classList) {
-        this.elements.screen.classList.remove("active");
-      }
-    }
-    /**
-     * Checks whether the main menu is currently the active screen.
-     *
-     * @returns {boolean}
-     */
-    isActive() {
-      return Boolean(this.elements.screen?.classList?.contains("active"));
-    }
-    /**
-     * Updates the displayed title.
-     *
-     * @param {string} title
-     */
-    setTitle(title) {
-      if (this.elements.title) {
-        this.elements.title.textContent = title;
-      }
-    }
-    /**
-     * Updates the displayed subtitle.
-     *
-     * @param {string} subtitle
-     */
-    setSubtitle(subtitle) {
-      if (this.elements.subtitle) {
-        this.elements.subtitle.textContent = subtitle;
-      }
-    }
-  };
-  function createMainMenuScreen(root = document, options = {}) {
-    return new MainMenuScreen(root, options);
-  }
-
   // js/frontend/audio.js
   var SoundEngine = class {
     constructor() {
@@ -2059,8 +1979,672 @@
       } catch (_) {
       }
     }
+    /**
+     * P5B-12: Transition whoosh — subtle air sweep for scene shifts.
+     */
+    playWhoosh() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.25);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(280, this.ctx.currentTime + 0.24);
+        filter.Q.setValueAtTime(1.8, this.ctx.currentTime);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.08, this.ctx.currentTime + 0.08);
+        gain.gain.exponentialRampToValueAtTime(1e-3, this.ctx.currentTime + 0.25);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
+      } catch (_) {
+      }
+    }
+    /**
+     * P5B-12: Drawer movement — mechanical wood/metal glide.
+     */
+    playDrawer() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(95, now);
+        osc.frequency.exponentialRampToValueAtTime(45, now + 0.2);
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(320, now);
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.2);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } catch (_) {
+      }
+    }
+    /**
+     * P5B-12: Day-start brass desk bell.
+     */
+    playDayBell() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const fundamental = 1046.5;
+        const harmonic = 2093;
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(fundamental, now);
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(harmonic, now);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.65);
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.65);
+        osc2.stop(now + 0.65);
+      } catch (_) {
+      }
+    }
+    /**
+     * P5B-12: Final countdown sting when timer enters critical threshold.
+     */
+    playCountdownSting() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.setValueAtTime(830.6, now + 0.1);
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(900, now);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.28);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.28);
+      } catch (_) {
+      }
+    }
+    /**
+     * P5B-12: Clock tick-tock for countdown timer pacing.
+     *
+     * @param {boolean} [isUrgent=false] Higher pitch and accent when in critical warning.
+     */
+    playTick(isUrgent = false) {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        const freq = isUrgent ? 1600 : 1100;
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.025);
+        const vol = isUrgent ? 0.09 : 0.04;
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.025);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.025);
+      } catch (_) {
+      }
+    }
+    /**
+     * P5B-12: Typewriter keystroke tap for progressive briefing & report reveals.
+     */
+    playTypewriter() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "triangle";
+        const freq = 1400 + Math.random() * 300;
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(400, now + 0.018);
+        gain.gain.setValueAtTime(0.035, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.018);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.018);
+      } catch (_) {
+      }
+    }
+    /**
+     * P5B-12: Ceremonial victory fanfare chords.
+     */
+    playVictory() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const startTime = now + idx * 0.12;
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, startTime);
+          gain.gain.setValueAtTime(0.18, startTime);
+          gain.gain.exponentialRampToValueAtTime(1e-3, startTime + 0.7);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 0.7);
+        });
+      } catch (_) {
+      }
+    }
+    /**
+     * P5B-12: Somber defeat / terminal decommission tone.
+     */
+    playDefeat() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const notes = [185, 174.6, 164.8];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const startTime = now + idx * 0.18;
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(freq, startTime);
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = "lowpass";
+          filter.frequency.setValueAtTime(380, startTime);
+          gain.gain.setValueAtTime(0.16, startTime);
+          gain.gain.exponentialRampToValueAtTime(1e-3, startTime + 0.6);
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 0.6);
+        });
+      } catch (_) {
+      }
+    }
   };
   var soundEngine = new SoundEngine();
+
+  // js/frontend/scene-director.js
+  var SCENE_NAMES = Object.freeze({
+    MENU: "MENU",
+    DAY_BRIEF: "DAY_BRIEF",
+    SHIFT_START: "SHIFT_START",
+    CASE_INTAKE: "CASE_INTAKE",
+    CASE_REVIEW: "CASE_REVIEW",
+    CASE_RESOLVE: "CASE_RESOLVE",
+    NEXT_CASE: "NEXT_CASE",
+    DAY_SUMMARY: "DAY_SUMMARY",
+    NEXT_DAY: "NEXT_DAY",
+    VERDICT: "VERDICT"
+  });
+  var DEFAULT_TRANSITION_DURATIONS = Object.freeze({
+    MENU: 350,
+    DAY_BRIEF: 400,
+    SHIFT_START: 300,
+    CASE_INTAKE: 750,
+    // P5B-04: 0.6–0.9s physical delivery
+    CASE_REVIEW: 0,
+    CASE_RESOLVE: 700,
+    // P5B-05: resolution exit physics
+    NEXT_CASE: 250,
+    DAY_SUMMARY: 400,
+    NEXT_DAY: 350,
+    VERDICT: 500
+  });
+  var SceneDirector = class {
+    /**
+     * @param {SceneDirectorOptions} [options]
+     */
+    constructor(options = {}) {
+      this.root = options.root || (typeof document !== "undefined" ? document : null);
+      this._currentScene = options.initialScene || SCENE_NAMES.MENU;
+      this._durations = {
+        ...DEFAULT_TRANSITION_DURATIONS,
+        ...options.durations || {}
+      };
+      this._handlers = /* @__PURE__ */ new Map();
+      this._listeners = /* @__PURE__ */ new Map();
+      this._isTransitioning = false;
+      this._currentSkipFn = null;
+      this._fallbackTimeout = null;
+      this._reducedMotion = options.reducedMotion ?? this._detectReducedMotion();
+      this._setupReducedMotionListener();
+      this._applySceneAttribute(this._currentScene);
+    }
+    // ─── Reduced Motion ────────────────────────────────────────────────────────
+    _detectReducedMotion() {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        try {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        } catch (_) {
+          return false;
+        }
+      }
+      return false;
+    }
+    _setupReducedMotionListener() {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        try {
+          const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+          if (mql && typeof mql.addEventListener === "function") {
+            mql.addEventListener("change", (e) => {
+              this._reducedMotion = e.matches;
+              this.emit("reducedMotionChange", { reducedMotion: e.matches });
+            });
+          }
+        } catch (_) {
+        }
+      }
+    }
+    /**
+     * Enables or disables reduced-motion mode.
+     * When enabled, transitions complete virtually instantaneously without physical physics.
+     *
+     * @param {boolean} enabled
+     */
+    setReducedMotion(enabled) {
+      this._reducedMotion = Boolean(enabled);
+      this.emit("reducedMotionChange", { reducedMotion: this._reducedMotion });
+    }
+    /**
+     * Returns whether reduced-motion is currently active.
+     *
+     * @returns {boolean}
+     */
+    isReducedMotion() {
+      return this._reducedMotion;
+    }
+    // ─── Configuration & Registration ──────────────────────────────────────────
+    /**
+     * Registers a scene with enter/exit/skip lifecycle hooks.
+     *
+     * @param {string} sceneName Scene name from SCENE_NAMES or custom string.
+     * @param {SceneHandler} handler Scene lifecycle handler.
+     */
+    registerScene(sceneName, handler) {
+      if (!sceneName) return;
+      this._handlers.set(sceneName, handler || {});
+    }
+    /**
+     * Sets the configured transition duration for a scene in milliseconds.
+     *
+     * @param {string} sceneName
+     * @param {number} durationMs
+     */
+    setTransitionDuration(sceneName, durationMs) {
+      if (sceneName && typeof durationMs === "number" && durationMs >= 0) {
+        this._durations[sceneName] = durationMs;
+      }
+    }
+    /**
+     * Gets the transition duration for a scene, factoring in reduced motion.
+     *
+     * @param {string} sceneName
+     * @returns {number}
+     */
+    getTransitionDuration(sceneName) {
+      if (this._reducedMotion) {
+        return 0;
+      }
+      const handler = this._handlers.get(sceneName);
+      if (handler && typeof handler.duration === "number") {
+        return handler.duration;
+      }
+      return this._durations[sceneName] ?? 200;
+    }
+    /**
+     * Returns the currently active scene identifier.
+     *
+     * @returns {string}
+     */
+    getCurrentScene() {
+      return this._currentScene;
+    }
+    /**
+     * Returns true if a transition is currently in progress.
+     *
+     * @returns {boolean}
+     */
+    isTransitioning() {
+      return this._isTransitioning;
+    }
+    // ─── Event Bus ─────────────────────────────────────────────────────────────
+    /**
+     * Subscribes to SceneDirector events.
+     *
+     * @param {string} event
+     * @param {Function} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    on(event, callback) {
+      if (!this._listeners.has(event)) {
+        this._listeners.set(event, /* @__PURE__ */ new Set());
+      }
+      this._listeners.get(event).add(callback);
+      return () => this.off(event, callback);
+    }
+    /**
+     * Unsubscribes from an event.
+     *
+     * @param {string} event
+     * @param {Function} callback
+     */
+    off(event, callback) {
+      const set = this._listeners.get(event);
+      if (set) {
+        set.delete(callback);
+      }
+    }
+    /**
+     * Emits an event to registered listeners.
+     *
+     * @param {string} event
+     * @param {any} payload
+     */
+    emit(event, payload) {
+      const set = this._listeners.get(event);
+      if (set) {
+        for (const cb of set) {
+          try {
+            cb(payload);
+          } catch (err) {
+            console.warn(`[SceneDirector] Error in listener for "${event}":`, err);
+          }
+        }
+      }
+    }
+    // ─── Scene Transition Orchestration ────────────────────────────────────────
+    /**
+     * Immediately skips the active transition if one is in flight, snapping to final state.
+     */
+    skipTransition() {
+      if (this._isTransitioning && typeof this._currentSkipFn === "function") {
+        const skipFn = this._currentSkipFn;
+        this._currentSkipFn = null;
+        skipFn();
+      }
+    }
+    /**
+     * Executes a coordinated scene transition to the target scene.
+     *
+     * @param {string} targetScene Identifier of the scene to transition to.
+     * @param {any} [data={}] Associated data payload (case, day info, result, etc.).
+     * @param {Object} [options]
+     * @param {boolean} [options.force=false] If true, cancels any running transition and immediately starts this one.
+     * @returns {Promise<{ from: string, to: string, data: any }>}
+     */
+    async transitionTo(targetScene, data = {}, options = {}) {
+      if (!targetScene) {
+        return { from: this._currentScene, to: this._currentScene, data };
+      }
+      if (this._isTransitioning) {
+        if (options.force) {
+          this.skipTransition();
+        } else {
+          this.skipTransition();
+        }
+      }
+      const fromScene = this._currentScene;
+      const duration = this.getTransitionDuration(targetScene);
+      const context = {
+        from: fromScene,
+        to: targetScene,
+        data,
+        reducedMotion: this._reducedMotion,
+        duration
+      };
+      this._isTransitioning = true;
+      this.emit("transitionStart", context);
+      const previousHandler = this._handlers.get(fromScene);
+      if (previousHandler && typeof previousHandler.exit === "function") {
+        try {
+          await Promise.resolve(previousHandler.exit(data, context));
+        } catch (err) {
+          console.warn(`[SceneDirector] Exit hook error for ${fromScene}:`, err);
+        }
+      }
+      this._currentScene = targetScene;
+      this._applySceneAttribute(targetScene);
+      const targetHandler = this._handlers.get(targetScene);
+      return new Promise((resolve) => {
+        let isSettled = false;
+        const finish = () => {
+          if (isSettled) return;
+          isSettled = true;
+          if (this._fallbackTimeout !== null) {
+            clearTimeout(this._fallbackTimeout);
+            this._fallbackTimeout = null;
+          }
+          this._isTransitioning = false;
+          this._currentSkipFn = null;
+          this.emit("transitionEnd", context);
+          this.emit("sceneChange", context);
+          resolve({ from: fromScene, to: targetScene, data });
+        };
+        this._currentSkipFn = () => {
+          if (targetHandler && typeof targetHandler.skip === "function") {
+            try {
+              targetHandler.skip();
+            } catch (_) {
+            }
+          }
+          this.emit("transitionSkipped", context);
+          finish();
+        };
+        if (duration === 0) {
+          if (targetHandler && typeof targetHandler.enter === "function") {
+            try {
+              targetHandler.enter(data, context);
+            } catch (err) {
+              console.warn(`[SceneDirector] Enter hook error for ${targetScene}:`, err);
+            }
+          }
+          finish();
+          return;
+        }
+        try {
+          if (targetHandler && typeof targetHandler.enter === "function") {
+            const enterRes = targetHandler.enter(data, context);
+            if (enterRes && typeof enterRes.then === "function") {
+              enterRes.then(() => finish()).catch(() => finish());
+            }
+          }
+        } catch (err) {
+          console.warn(`[SceneDirector] Enter hook error for ${targetScene}:`, err);
+        }
+        const fallbackMs = Math.max(duration + 60, 100);
+        this._fallbackTimeout = setTimeout(finish, fallbackMs);
+      });
+    }
+    _applySceneAttribute(sceneName) {
+      if (this.root && typeof this.root.setAttribute === "function") {
+        this.root.setAttribute("data-active-scene", sceneName);
+      }
+    }
+    /**
+     * Destroys the SceneDirector, clearing timeouts and listeners.
+     */
+    destroy() {
+      if (this._fallbackTimeout !== null) {
+        clearTimeout(this._fallbackTimeout);
+        this._fallbackTimeout = null;
+      }
+      this._listeners.clear();
+      this._handlers.clear();
+      this._isTransitioning = false;
+      this._currentSkipFn = null;
+    }
+  };
+  function createSceneDirector(options = {}) {
+    return new SceneDirector(options);
+  }
+
+  // js/frontend/screens/main-menu.js
+  var MainMenuScreen = class {
+    /**
+     * @param {HTMLElement|Document} [root=document] Root DOM node containing main menu elements.
+     * @param {MainMenuOptions} [options]
+     */
+    constructor(root = document, options = {}) {
+      this.root = root;
+      this.options = options;
+      this.elements = this._queryElements();
+      this._attachEvents();
+    }
+    _queryElements() {
+      const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
+      return {
+        screen: q("#screen-main-menu"),
+        backdrop: q(".menu-backdrop-kenburns"),
+        vignette: q(".menu-vignette-grain"),
+        container: q(".menu-container"),
+        badge: q(".menu-badge-reveal"),
+        title: q(".menu-title"),
+        subtitle: q(".menu-subtitle"),
+        briefing: q(".menu-briefing"),
+        btnStart: q("#btn-start-game")
+      };
+    }
+    _attachEvents() {
+      if (this.elements.btnStart) {
+        this.elements.btnStart.addEventListener("click", (event) => {
+          soundEngine.playWhoosh();
+          if (typeof this.options.onStart === "function") {
+            this.options.onStart(event);
+          }
+        });
+      }
+    }
+    /**
+     * Activates and reveals the main menu screen with atmospheric presentation.
+     */
+    show() {
+      if (this.elements.screen?.classList) {
+        this.elements.screen.classList.add("active");
+      }
+      this.animateReveal();
+    }
+    /**
+     * Hides the main menu screen.
+     */
+    hide() {
+      if (this.elements.screen?.classList) {
+        this.elements.screen.classList.remove("active");
+        this.elements.screen.classList.remove("menu-reveal-active");
+      }
+    }
+    /**
+     * P5B-02: Triggers sequential atmospheric entrance animation.
+     *
+     * @param {object} [opts]
+     * @param {boolean} [opts.reducedMotion]
+     */
+    animateReveal(opts = {}) {
+      const reducedMotion = opts.reducedMotion ?? this.options.reducedMotion ?? this._isReducedMotion();
+      if (!this.elements.screen?.classList) return;
+      if (reducedMotion) {
+        this.skipAnimation();
+        return;
+      }
+      this.elements.screen.classList.remove("menu-reveal-active");
+      void (this.elements.screen.offsetWidth || 0);
+      this.elements.screen.classList.add("menu-reveal-active");
+    }
+    /**
+     * Immediately skips animations to settled resting state.
+     */
+    skipAnimation() {
+      if (this.elements.screen?.classList) {
+        this.elements.screen.classList.remove("menu-reveal-active");
+        this.elements.screen.classList.add("menu-settled");
+      }
+    }
+    _isReducedMotion() {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        try {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        } catch (_) {
+          return false;
+        }
+      }
+      return false;
+    }
+    /**
+     * P5B-02: Registers the MENU scene with Agent A's SceneDirector.
+     *
+     * @param {import('../scene-director.js').SceneDirector} sceneDirector
+     */
+    registerWithSceneDirector(sceneDirector) {
+      if (!sceneDirector || typeof sceneDirector.registerScene !== "function") return;
+      sceneDirector.registerScene(SCENE_NAMES.MENU, {
+        enter: (_data, context) => {
+          this.show();
+          if (context?.reducedMotion) {
+            this.skipAnimation();
+          }
+        },
+        exit: () => this.hide(),
+        skip: () => this.skipAnimation(),
+        duration: 350
+      });
+    }
+    /**
+     * Checks whether the main menu is currently the active screen.
+     *
+     * @returns {boolean}
+     */
+    isActive() {
+      return Boolean(this.elements.screen?.classList?.contains("active"));
+    }
+    /**
+     * Updates the displayed title.
+     *
+     * @param {string} title
+     */
+    setTitle(title) {
+      if (this.elements.title) {
+        this.elements.title.textContent = title;
+      }
+    }
+    /**
+     * Updates the displayed subtitle.
+     *
+     * @param {string} subtitle
+     */
+    setSubtitle(subtitle) {
+      if (this.elements.subtitle) {
+        this.elements.subtitle.textContent = subtitle;
+      }
+    }
+  };
+  function createMainMenuScreen(root = document, options = {}) {
+    return new MainMenuScreen(root, options);
+  }
 
   // js/frontend/components/top-bar.js
   function formatBudget(amount) {
@@ -2088,6 +2672,8 @@
      */
     constructor(root = document) {
       this.root = root;
+      this._prevMetrics = { netZero: null, budget: null, trust: null };
+      this._prevTimerSeconds = null;
       this.elements = this._queryElements();
       this._initAudioToggle();
       this._initTerminalToggle();
@@ -2097,10 +2683,13 @@
       return {
         dayBadge: q("#top-bar-day"),
         caseBadge: q("#top-bar-case"),
+        netzeroContainer: q("#meter-netzero-container"),
         netzeroVal: q("#meter-netzero-val"),
         netzeroBar: q("#meter-netzero-bar"),
+        budgetContainer: q("#meter-budget-container"),
         budgetVal: q("#meter-budget-val"),
         budgetBar: q("#meter-budget-bar"),
+        trustContainer: q("#meter-trust-container"),
         trustVal: q("#meter-trust-val"),
         trustBar: q("#meter-trust-bar"),
         timerDisplay: q("#timer-display"),
@@ -2225,13 +2814,77 @@
       }
     }
     /**
+     * P5B-07: Triggers expressive feedback (bounce animation & floating delta chip)
+     * when a metric changes.
+     *
+     * @param {'netZero'|'budget'|'trust'} type
+     * @param {number} delta
+     * @param {HTMLElement|null} container
+     * @param {HTMLElement|null} valEl
+     * @private
+     */
+    _triggerMetricFeedback(type, delta, container, valEl) {
+      if (!delta || delta === 0) return;
+      const isPos = delta > 0;
+      const bounceCls = isPos ? "metric-bounce-up" : "metric-bounce-down";
+      if (valEl?.classList) {
+        valEl.classList.remove("metric-bounce-up", "metric-bounce-down");
+        void (valEl.offsetWidth || 0);
+        valEl.classList.add(bounceCls);
+        setTimeout(() => {
+          valEl.classList?.remove(bounceCls);
+        }, 450);
+      }
+      if (container && typeof container.appendChild === "function" && !this._isReducedMotion()) {
+        const doc = typeof document !== "undefined" ? document : this.root && typeof this.root.createElement === "function" ? this.root : this.root?.ownerDocument;
+        if (doc && typeof doc.createElement === "function") {
+          const chip = doc.createElement("span");
+          chip.className = `floating-delta-chip ${isPos ? "delta-pos" : "delta-neg"}`;
+          let text = "";
+          if (type === "budget") {
+            const sign = isPos ? "+" : "-";
+            text = `${sign}$${Math.round(Math.abs(delta))}`;
+          } else {
+            const sign = isPos ? "+" : "";
+            text = `${sign}${delta.toFixed(1)}%`;
+          }
+          chip.textContent = text;
+          container.appendChild(chip);
+          setTimeout(() => {
+            if (typeof chip.remove === "function") {
+              chip.remove();
+            } else if (chip.parentNode) {
+              chip.parentNode.removeChild(chip);
+            }
+          }, 750);
+        }
+      }
+    }
+    _isReducedMotion() {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        try {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        } catch (_) {
+          return false;
+        }
+      }
+      return false;
+    }
+    /**
      * Sets city metrics values and progress bar widths.
      *
      * @param {TopBarMetrics} metrics
+     * @param {{netZero?: number, budget?: number, trust?: number}|null} [changes]
+     *   Optional backend-supplied metric deltas used for floating HUD feedback.
+     *   When omitted, values update silently (e.g. initial render or day change).
      */
-    setMetrics(metrics = {}) {
+    setMetrics(metrics = {}, changes = null) {
       if (metrics.netZero !== void 0) {
         const netZeroClamped = Math.max(0, Math.min(100, Math.round(metrics.netZero)));
+        if (changes && typeof changes.netZero === "number" && changes.netZero !== 0) {
+          this._triggerMetricFeedback("netZero", changes.netZero, this.elements.netzeroContainer, this.elements.netzeroVal);
+        }
+        this._prevMetrics.netZero = netZeroClamped;
         if (this.elements.netzeroVal) {
           this.elements.netzeroVal.textContent = `${netZeroClamped}%`;
         }
@@ -2242,6 +2895,11 @@
         }
       }
       if (metrics.budget !== void 0) {
+        const currentBudget = Math.round(metrics.budget);
+        if (changes && typeof changes.budget === "number" && changes.budget !== 0) {
+          this._triggerMetricFeedback("budget", changes.budget, this.elements.budgetContainer, this.elements.budgetVal);
+        }
+        this._prevMetrics.budget = currentBudget;
         if (this.elements.budgetVal) {
           this.elements.budgetVal.textContent = formatBudget(metrics.budget);
         }
@@ -2254,6 +2912,10 @@
       }
       if (metrics.trust !== void 0) {
         const trustClamped = Math.max(0, Math.min(100, Math.round(metrics.trust)));
+        if (changes && typeof changes.trust === "number" && changes.trust !== 0) {
+          this._triggerMetricFeedback("trust", changes.trust, this.elements.trustContainer, this.elements.trustVal);
+        }
+        this._prevMetrics.trust = trustClamped;
         if (this.elements.trustVal) {
           this.elements.trustVal.textContent = `${trustClamped}%`;
         }
@@ -2274,11 +2936,25 @@
         this.elements.timerDisplay.textContent = formatTimer(seconds);
       }
       if (this.elements.timerContainer) {
-        if (typeof seconds === "number" && seconds <= 30 && seconds > 0) {
+        const sec = typeof seconds === "number" ? seconds : null;
+        if (sec !== null && sec <= 30 && sec > 0) {
           this.elements.timerContainer.classList.add("timer-warning");
+          if (sec <= 10) {
+            this.elements.timerContainer.classList.add("timer-critical");
+          } else {
+            this.elements.timerContainer.classList.remove("timer-critical");
+          }
+          if (sec <= 10 && this._prevTimerSeconds !== sec) {
+            soundEngine.playTick(true);
+            if (sec === 10 || sec === 5) {
+              soundEngine.playCountdownSting();
+            }
+          }
         } else {
           this.elements.timerContainer.classList.remove("timer-warning");
+          this.elements.timerContainer.classList.remove("timer-critical");
         }
+        this._prevTimerSeconds = sec;
       }
     }
   };
@@ -3088,6 +3764,9 @@ ${optionsHtml}`;
       this.screenElement = this._query("#screen-gameplay");
       this.workspaceGrid = this._query("#workspace");
       this.tabsBar = this._query(".workspace-tabs-bar");
+      this.ambientOfficeLayer = this._query("#ambient-office-layer");
+      this.currentDayLighting = 1;
+      this.setOfficeLighting(1);
       this.topBar = createTopBar(root);
       this.rulebook = createRulebookPanel(root);
       this.dossier = createDossierPanel(root, {
@@ -3215,11 +3894,59 @@ ${optionsHtml}`;
       return Boolean(this.screenElement?.classList?.contains("active"));
     }
     /**
+     * P5B-06: Sets the ambient office daylight variation to match campaign day/shift.
+     * Day 1: Morning sunlight
+     * Day 2: Bright midday heat haze
+     * Day 3: Sunset terracotta amber
+     *
+     * @param {number} day
+     */
+    setOfficeLighting(day) {
+      const dayNum = Number(day) || 1;
+      this.currentDayLighting = dayNum;
+      const dayClass = `day-${dayNum}`;
+      if (this.screenElement?.setAttribute) {
+        this.screenElement.setAttribute("data-office-lighting", dayClass);
+      }
+      if (this.ambientOfficeLayer?.setAttribute) {
+        this.ambientOfficeLayer.setAttribute("data-office-lighting", dayClass);
+      }
+    }
+    /**
+     * P5B-03 / P5B-06: Registers working scenes so the office can transition
+     * in from the briefing and settle into case review.
+     *
+     * @param {import('../scene-director.js').SceneDirector} sceneDirector
+     */
+    registerWithSceneDirector(sceneDirector) {
+      if (!sceneDirector || typeof sceneDirector.registerScene !== "function") return;
+      const enterWorkingScene = () => {
+        this.show();
+        if (!this.screenElement?.classList) return;
+        this.screenElement.classList.remove("scene-entry-active");
+        void (this.screenElement.offsetWidth || 0);
+        this.screenElement.classList.add("scene-entry-active");
+      };
+      sceneDirector.registerScene(SCENE_NAMES.SHIFT_START, {
+        enter: enterWorkingScene,
+        skip: () => this.screenElement?.classList?.remove("scene-entry-active"),
+        duration: 300
+      });
+      sceneDirector.registerScene(SCENE_NAMES.CASE_REVIEW, {
+        enter: () => this.show(),
+        duration: 0
+      });
+    }
+    /**
      * Updates all assembled sub-components from a unified state or partial updates.
      *
      * @param {Object} [data]
      */
     update(data = {}) {
+      const day = data.currentDay ?? data.day ?? data.topBar?.day;
+      if (day !== void 0) {
+        this.setOfficeLighting(day);
+      }
       if (data.topBar) {
         this.topBar.update(data.topBar);
       } else if (data.day !== void 0 || data.metrics || data.timeRemaining !== void 0) {
@@ -3306,6 +4033,7 @@ ${optionsHtml}`;
     constructor(root = document, options = {}) {
       this.root = root;
       this.options = options;
+      this._lastSoundKey = null;
       this.elements = this._queryElements();
       this._attachEvents();
     }
@@ -3313,6 +4041,10 @@ ${optionsHtml}`;
       const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
       return {
         screen: q("#screen-game-over"),
+        container: q(".game-over-container"),
+        backdropDim: q(".game-over-backdrop-dim"),
+        sealWrap: q(".game-over-seal-wrap"),
+        sealImg: q(".game-over-seal-img"),
         badge: q("#game-over-badge"),
         title: q("#game-over-title"),
         reason: q("#game-over-reason"),
@@ -3332,6 +4064,7 @@ ${optionsHtml}`;
     _attachEvents() {
       if (this.elements.btnRestart) {
         this.elements.btnRestart.addEventListener("click", (event) => {
+          soundEngine.playWhoosh();
           if (typeof this.options.onRestart === "function") {
             this.options.onRestart(event);
           }
@@ -3339,11 +4072,44 @@ ${optionsHtml}`;
       }
       if (this.elements.btnReturnMenu) {
         this.elements.btnReturnMenu.addEventListener("click", (event) => {
+          soundEngine.playWhoosh();
           if (typeof this.options.onReturnMenu === "function") {
             this.options.onReturnMenu(event);
           }
         });
       }
+    }
+    _isReducedMotion() {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        try {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        } catch (_) {
+          return false;
+        }
+      }
+      return false;
+    }
+    /**
+     * P5B-10: Registers the VERDICT scene with Agent A's SceneDirector.
+     *
+     * @param {import('../scene-director.js').SceneDirector} sceneDirector
+     */
+    registerWithSceneDirector(sceneDirector) {
+      if (!sceneDirector || typeof sceneDirector.registerScene !== "function") return;
+      sceneDirector.registerScene(SCENE_NAMES.VERDICT, {
+        // The controller decides when the verdict screen becomes visible (after
+        // a victory shift report, or immediately on failure). Only refresh the
+        // presentation if the verdict screen is already active.
+        enter: (data) => {
+          if (this.isActive()) {
+            this.render(data);
+          }
+        },
+        exit: () => this.hide(),
+        skip: () => {
+        },
+        duration: 500
+      });
     }
     /**
      * Renders victory or failure outcome content and final statistics.
@@ -3352,6 +4118,39 @@ ${optionsHtml}`;
      */
     render(data = {}) {
       const isVictory = Boolean(data.isVictory || data.outcome === "VICTORY");
+      const isReduced = this.options.reducedMotion || this._isReducedMotion();
+      if (this.elements.screen?.classList) {
+        if (isVictory) {
+          this.elements.screen.classList.add("verdict-mode--victory");
+          this.elements.screen.classList.remove("verdict-mode--failure", "terminal-malfunction-flicker");
+        } else {
+          this.elements.screen.classList.add("verdict-mode--failure");
+          this.elements.screen.classList.remove("verdict-mode--victory");
+          if (!isReduced && (data.reason === "PUBLIC_TRUST" || data.reason === "BANKRUPTCY")) {
+            this.elements.screen.classList.add("terminal-malfunction-flicker");
+          } else {
+            this.elements.screen.classList.remove("terminal-malfunction-flicker");
+          }
+        }
+      }
+      if (this.elements.container?.classList) {
+        if (isVictory) {
+          this.elements.container.classList.add("victory-certificate-card");
+          this.elements.container.classList.remove("failure-notice-card");
+        } else {
+          this.elements.container.classList.add("failure-notice-card");
+          this.elements.container.classList.remove("victory-certificate-card");
+        }
+      }
+      const soundKey = isVictory ? "VICTORY" : `FAILURE:${data.reason || "UNKNOWN"}`;
+      if (this._lastSoundKey !== soundKey) {
+        this._lastSoundKey = soundKey;
+        if (isVictory) {
+          soundEngine.playVictory();
+        } else {
+          soundEngine.playDefeat();
+        }
+      }
       if (this.elements.badge) {
         if (isVictory) {
           this.elements.badge.textContent = "COP31 TARGET ACHIEVED";
@@ -3422,8 +4221,9 @@ ${optionsHtml}`;
      */
     hide() {
       if (this.elements.screen?.classList) {
-        this.elements.screen.classList.remove("active");
+        this.elements.screen.classList.remove("active", "terminal-malfunction-flicker");
       }
+      this._lastSoundKey = null;
     }
     /**
      * Returns whether the game-over screen is active.
@@ -3455,6 +4255,7 @@ ${optionsHtml}`;
     constructor(root = document, options = {}) {
       this.root = root;
       this.options = options;
+      this._stampTimer = null;
       this.elements = this._queryElements();
       this._attachEvents();
     }
@@ -3462,6 +4263,9 @@ ${optionsHtml}`;
       const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
       return {
         modal: q("#summary-modal"),
+        documentCard: q(".shift-report-document") || q(".modal-card"),
+        sealWrap: q(".shift-report-seal-wrap"),
+        stampGraphic: q(".shift-report-stamp-graphic-wrap"),
         title: q("#modal-shift-title"),
         content: q("#summary-modal-content"),
         casesProcessed: q("#modal-cases-processed"),
@@ -3475,11 +4279,47 @@ ${optionsHtml}`;
     _attachEvents() {
       if (this.elements.btnNextShift) {
         this.elements.btnNextShift.addEventListener("click", (event) => {
+          soundEngine.playPaper();
           if (typeof this.options.onProceed === "function") {
             this.options.onProceed(event);
           }
         });
       }
+      if (this.elements.documentCard) {
+        this.elements.documentCard.addEventListener("click", () => {
+          this.skipAnimation();
+        });
+      }
+    }
+    _isReducedMotion() {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        try {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        } catch (_) {
+          return false;
+        }
+      }
+      return false;
+    }
+    /**
+     * P5B-09: Registers the DAY_SUMMARY scene with Agent A's SceneDirector.
+     *
+     * @param {import('../scene-director.js').SceneDirector} sceneDirector
+     */
+    registerWithSceneDirector(sceneDirector) {
+      if (!sceneDirector || typeof sceneDirector.registerScene !== "function") return;
+      sceneDirector.registerScene(SCENE_NAMES.DAY_SUMMARY, {
+        enter: (data) => {
+          if (this.isOpen()) {
+            if (data) this.render(data);
+          } else {
+            this.open(data);
+          }
+        },
+        exit: () => this.close(),
+        skip: () => this.skipAnimation(),
+        duration: 400
+      });
     }
     /**
      * Renders shift summary data into modal elements.
@@ -3523,11 +4363,12 @@ ${optionsHtml}`;
       }
     }
     /**
-     * Opens the summary modal and populates shift statistics.
+     * Opens the summary modal and populates shift statistics with physical landing.
      *
      * @param {ShiftSummaryData} [data]
      */
     open(data) {
+      const wasOpen = this.isOpen();
       if (data) {
         this.render(data);
       }
@@ -3536,6 +4377,44 @@ ${optionsHtml}`;
           this.elements.modal.removeAttribute("hidden");
         }
         this.elements.modal.hidden = false;
+        this.elements.modal.classList?.add("shift-report-active");
+      }
+      if (wasOpen) return;
+      soundEngine.playPaper();
+      const isReduced = this.options.reducedMotion || this._isReducedMotion();
+      if (this.elements.documentCard?.classList) {
+        if (isReduced) {
+          this.elements.documentCard.classList.remove("document-landing-anim");
+        } else {
+          this.elements.documentCard.classList.add("document-landing-anim");
+        }
+      }
+      if (this.elements.stampGraphic) {
+        if (isReduced) {
+          this.elements.stampGraphic.classList?.add("stamp-visible");
+        } else {
+          this.elements.stampGraphic.classList?.remove("stamp-visible");
+          if (this._stampTimer) clearTimeout(this._stampTimer);
+          this._stampTimer = setTimeout(() => {
+            this.elements.stampGraphic?.classList?.add("stamp-visible");
+            soundEngine.playStamp("APPROVE");
+          }, 450);
+        }
+      }
+    }
+    /**
+     * Immediately skips document reveal animations to completed resting state.
+     */
+    skipAnimation() {
+      if (this._stampTimer) {
+        clearTimeout(this._stampTimer);
+        this._stampTimer = null;
+      }
+      if (this.elements.documentCard?.classList) {
+        this.elements.documentCard.classList.remove("document-landing-anim");
+      }
+      if (this.elements.stampGraphic?.classList) {
+        this.elements.stampGraphic.classList.add("stamp-visible");
       }
     }
     /**
@@ -3550,24 +4429,32 @@ ${optionsHtml}`;
      * Closes and hides the summary modal.
      */
     close() {
+      if (this._stampTimer) {
+        clearTimeout(this._stampTimer);
+        this._stampTimer = null;
+      }
       if (this.elements.modal) {
         if (typeof this.elements.modal.setAttribute === "function") {
           this.elements.modal.setAttribute("hidden", "");
         }
         this.elements.modal.hidden = true;
+        this.elements.modal.classList?.remove("shift-report-active");
+      }
+      if (this.elements.documentCard?.classList) {
+        this.elements.documentCard.classList.remove("document-landing-anim");
+      }
+      if (this.elements.stampGraphic?.classList) {
+        this.elements.stampGraphic.classList.remove("stamp-visible");
       }
       if (typeof this.options.onClose === "function") {
         this.options.onClose();
       }
     }
-    /**
-     * Alias for close().
-     */
     hide() {
       this.close();
     }
     /**
-     * Returns whether the modal is currently open.
+     * Checks whether the summary modal is currently open.
      *
      * @returns {boolean}
      */
@@ -3575,6 +4462,9 @@ ${optionsHtml}`;
       if (!this.elements.modal) return false;
       const hasHiddenAttr = typeof this.elements.modal.hasAttribute === "function" ? this.elements.modal.hasAttribute("hidden") : Boolean(this.elements.modal.hidden);
       return !hasHiddenAttr && !this.elements.modal.hidden;
+    }
+    isVisible() {
+      return this.isOpen();
     }
   };
   function createSummaryModal(root = document, options = {}) {
@@ -3590,6 +4480,8 @@ ${optionsHtml}`;
     constructor(root = document, options = {}) {
       this.root = root;
       this.options = options;
+      this._typewriterTimer = null;
+      this._fullDescription = "";
       this.elements = this._queryElements();
       this._attachEvents();
     }
@@ -3599,11 +4491,14 @@ ${optionsHtml}`;
     _queryElements() {
       return {
         modal: this._query("#day-intro-modal"),
+        card: this._query(".briefing-scene-card") || this._query(".modal-card"),
+        timeOfDay: this._query("#day-intro-time-of-day"),
         badge: this._query("#day-intro-badge"),
         title: this._query("#day-intro-title"),
         description: this._query("#day-intro-description"),
         cases: this._query("#day-intro-cases"),
         time: this._query("#day-intro-time"),
+        statsGrid: this._query(".intro-stats-grid"),
         mechanicsList: this._query("#day-intro-mechanics"),
         btnStartShift: this._query("#btn-start-shift")
       };
@@ -3611,15 +4506,71 @@ ${optionsHtml}`;
     _attachEvents() {
       if (this.elements.btnStartShift) {
         this.elements.btnStartShift.addEventListener("click", (event) => {
-          this.close();
+          soundEngine.playDayBell();
+          this.skipTypewriter();
           if (typeof this.options.onStartShift === "function") {
             this.options.onStartShift(event);
           }
         });
       }
+      if (this.elements.card) {
+        this.elements.card.addEventListener("click", () => {
+          this.skipTypewriter();
+        });
+      }
+    }
+    _isReducedMotion() {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        try {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        } catch (_) {
+          return false;
+        }
+      }
+      return false;
     }
     /**
-     * Renders the day intro modal with configuration data.
+     * P5B-03: Registers the DAY_BRIEF scene with Agent A's SceneDirector.
+     *
+     * @param {import('../scene-director.js').SceneDirector} sceneDirector
+     */
+    registerWithSceneDirector(sceneDirector) {
+      if (!sceneDirector || typeof sceneDirector.registerScene !== "function") return;
+      sceneDirector.registerScene(SCENE_NAMES.DAY_BRIEF, {
+        enter: (data, context) => {
+          const introData = data?.dayConfig || data;
+          if (introData && introData.description) {
+            this.open(introData);
+          } else if (!this.isOpen()) {
+            this.open();
+          } else {
+            this._animateEnter();
+          }
+          if (context?.reducedMotion) {
+            this.snapToSettled();
+          }
+        },
+        exit: () => this.close(),
+        skip: () => this.snapToSettled(),
+        duration: 400
+      });
+    }
+    /**
+     * Replays the briefing card entrance without reopening or re-rendering.
+     *
+     * @private
+     */
+    _animateEnter() {
+      if (!this.elements.card?.classList) return;
+      this.elements.card.classList.remove("briefing-card-enter");
+      void (this.elements.card.offsetWidth || 0);
+      this.elements.card.classList.add("briefing-card-enter");
+      if (this._fullDescription && !this.options.reducedMotion && !this._isReducedMotion() && typeof window !== "undefined") {
+        this._startTypewriter(this._fullDescription);
+      }
+    }
+    /**
+     * Renders the day intro modal with configuration data and time-of-day lighting.
      *
      * @param {DayIntroData} data
      */
@@ -3630,6 +4581,18 @@ ${optionsHtml}`;
       const caseCount = data.caseCount ?? data.cases ?? 5;
       const timeLimit = data.timeLimitSeconds ?? data.shiftDuration ?? 120;
       const mechanics = Array.isArray(data.mechanics) ? data.mechanics : [];
+      this._fullDescription = description;
+      if (this.elements.modal) {
+        this.elements.modal.setAttribute("data-briefing-day", String(day));
+      }
+      if (this.elements.timeOfDay) {
+        const times = {
+          1: "08:00 EEST \u2022 MORNING BRIEFING",
+          2: "13:00 EEST \u2022 MIDDAY SOLAR PEAK",
+          3: "17:30 EEST \u2022 FINAL DUSK QUOTA"
+        };
+        this.elements.timeOfDay.textContent = times[day] || `DAY ${day} BRIEFING`;
+      }
       if (this.elements.badge) {
         this.elements.badge.textContent = `OPERATIONAL BRIEFING \u2022 DAY ${day} OF 3`;
       }
@@ -3653,7 +4616,50 @@ ${optionsHtml}`;
       }
     }
     /**
-     * Opens the day intro modal with data.
+     * Starts progressive typewriter reveal of the briefing text.
+     *
+     * @param {string} text
+     * @private
+     */
+    _startTypewriter(text) {
+      this._clearTypewriter();
+      if (!this.elements.description || !text) return;
+      this.elements.description.textContent = "";
+      let idx = 0;
+      const speed = 14;
+      this._typewriterTimer = setInterval(() => {
+        if (idx < text.length) {
+          this.elements.description.textContent += text[idx];
+          idx++;
+          if (idx % 6 === 0) {
+            soundEngine.playTypewriter();
+          }
+        } else {
+          this._clearTypewriter();
+        }
+      }, speed);
+    }
+    /**
+     * Cancels any active typewriter timer.
+     * @private
+     */
+    _clearTypewriter() {
+      if (this._typewriterTimer) {
+        clearInterval(this._typewriterTimer);
+        this._typewriterTimer = null;
+      }
+    }
+    /**
+     * Instantly snaps typewriter text to full content.
+     */
+    skipTypewriter() {
+      this._clearTypewriter();
+      if (this.elements.description && this._fullDescription) {
+        this.elements.description.textContent = this._fullDescription;
+      }
+    }
+    /**
+     * Opens the day intro modal with data and sliding animations.
      *
      * @param {DayIntroData} [data]
      */
@@ -3666,6 +4672,12 @@ ${optionsHtml}`;
           this.elements.modal.removeAttribute("hidden");
         }
         this.elements.modal.hidden = false;
+        this.elements.modal.classList?.add("briefing-active");
+        this.elements.card?.classList?.add("briefing-card-enter");
+      }
+      soundEngine.playDrawer();
+      if (this._fullDescription && !this.options.reducedMotion && !this._isReducedMotion() && typeof window !== "undefined") {
+        this._startTypewriter(this._fullDescription);
       }
     }
     show(data) {
@@ -3675,11 +4687,14 @@ ${optionsHtml}`;
      * Closes the day intro modal.
      */
     close() {
+      this._clearTypewriter();
       if (this.elements.modal) {
         if (typeof this.elements.modal.setAttribute === "function") {
           this.elements.modal.setAttribute("hidden", "");
         }
         this.elements.modal.hidden = true;
+        this.elements.modal.classList?.remove("briefing-active");
+        this.elements.card?.classList?.remove("briefing-card-enter");
       }
     }
     hide() {
@@ -3694,6 +4709,18 @@ ${optionsHtml}`;
       if (!this.elements.modal) return false;
       const hasHiddenAttr = typeof this.elements.modal.hasAttribute === "function" ? this.elements.modal.hasAttribute("hidden") : Boolean(this.elements.modal.hidden);
       return !hasHiddenAttr && !this.elements.modal.hidden;
+    }
+    isVisible() {
+      return this.isOpen();
+    }
+    /**
+     * Snaps briefing visual presentation to settled state.
+     */
+    snapToSettled() {
+      this.skipTypewriter();
+      if (this.elements.card?.classList) {
+        this.elements.card.classList.remove("briefing-card-enter");
+      }
     }
     _escapeHtml(str) {
       if (typeof str !== "string") return String(str ?? "");
@@ -4023,321 +5050,6 @@ ${optionsHtml}`;
     return manager;
   }
 
-  // js/frontend/scene-director.js
-  var SCENE_NAMES = Object.freeze({
-    MENU: "MENU",
-    DAY_BRIEF: "DAY_BRIEF",
-    SHIFT_START: "SHIFT_START",
-    CASE_INTAKE: "CASE_INTAKE",
-    CASE_REVIEW: "CASE_REVIEW",
-    CASE_RESOLVE: "CASE_RESOLVE",
-    NEXT_CASE: "NEXT_CASE",
-    DAY_SUMMARY: "DAY_SUMMARY",
-    NEXT_DAY: "NEXT_DAY",
-    VERDICT: "VERDICT"
-  });
-  var DEFAULT_TRANSITION_DURATIONS = Object.freeze({
-    MENU: 350,
-    DAY_BRIEF: 400,
-    SHIFT_START: 300,
-    CASE_INTAKE: 750,
-    // P5B-04: 0.6–0.9s physical delivery
-    CASE_REVIEW: 0,
-    CASE_RESOLVE: 700,
-    // P5B-05: resolution exit physics
-    NEXT_CASE: 250,
-    DAY_SUMMARY: 400,
-    NEXT_DAY: 350,
-    VERDICT: 500
-  });
-  var SceneDirector = class {
-    /**
-     * @param {SceneDirectorOptions} [options]
-     */
-    constructor(options = {}) {
-      this.root = options.root || (typeof document !== "undefined" ? document : null);
-      this._currentScene = options.initialScene || SCENE_NAMES.MENU;
-      this._durations = {
-        ...DEFAULT_TRANSITION_DURATIONS,
-        ...options.durations || {}
-      };
-      this._handlers = /* @__PURE__ */ new Map();
-      this._listeners = /* @__PURE__ */ new Map();
-      this._isTransitioning = false;
-      this._currentSkipFn = null;
-      this._fallbackTimeout = null;
-      this._reducedMotion = options.reducedMotion ?? this._detectReducedMotion();
-      this._setupReducedMotionListener();
-      this._applySceneAttribute(this._currentScene);
-    }
-    // ─── Reduced Motion ────────────────────────────────────────────────────────
-    _detectReducedMotion() {
-      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
-        try {
-          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        } catch (_) {
-          return false;
-        }
-      }
-      return false;
-    }
-    _setupReducedMotionListener() {
-      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
-        try {
-          const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-          if (mql && typeof mql.addEventListener === "function") {
-            mql.addEventListener("change", (e) => {
-              this._reducedMotion = e.matches;
-              this.emit("reducedMotionChange", { reducedMotion: e.matches });
-            });
-          }
-        } catch (_) {
-        }
-      }
-    }
-    /**
-     * Enables or disables reduced-motion mode.
-     * When enabled, transitions complete virtually instantaneously without physical physics.
-     *
-     * @param {boolean} enabled
-     */
-    setReducedMotion(enabled) {
-      this._reducedMotion = Boolean(enabled);
-      this.emit("reducedMotionChange", { reducedMotion: this._reducedMotion });
-    }
-    /**
-     * Returns whether reduced-motion is currently active.
-     *
-     * @returns {boolean}
-     */
-    isReducedMotion() {
-      return this._reducedMotion;
-    }
-    // ─── Configuration & Registration ──────────────────────────────────────────
-    /**
-     * Registers a scene with enter/exit/skip lifecycle hooks.
-     *
-     * @param {string} sceneName Scene name from SCENE_NAMES or custom string.
-     * @param {SceneHandler} handler Scene lifecycle handler.
-     */
-    registerScene(sceneName, handler) {
-      if (!sceneName) return;
-      this._handlers.set(sceneName, handler || {});
-    }
-    /**
-     * Sets the configured transition duration for a scene in milliseconds.
-     *
-     * @param {string} sceneName
-     * @param {number} durationMs
-     */
-    setTransitionDuration(sceneName, durationMs) {
-      if (sceneName && typeof durationMs === "number" && durationMs >= 0) {
-        this._durations[sceneName] = durationMs;
-      }
-    }
-    /**
-     * Gets the transition duration for a scene, factoring in reduced motion.
-     *
-     * @param {string} sceneName
-     * @returns {number}
-     */
-    getTransitionDuration(sceneName) {
-      if (this._reducedMotion) {
-        return 0;
-      }
-      const handler = this._handlers.get(sceneName);
-      if (handler && typeof handler.duration === "number") {
-        return handler.duration;
-      }
-      return this._durations[sceneName] ?? 200;
-    }
-    /**
-     * Returns the currently active scene identifier.
-     *
-     * @returns {string}
-     */
-    getCurrentScene() {
-      return this._currentScene;
-    }
-    /**
-     * Returns true if a transition is currently in progress.
-     *
-     * @returns {boolean}
-     */
-    isTransitioning() {
-      return this._isTransitioning;
-    }
-    // ─── Event Bus ─────────────────────────────────────────────────────────────
-    /**
-     * Subscribes to SceneDirector events.
-     *
-     * @param {string} event
-     * @param {Function} callback
-     * @returns {() => void} Unsubscribe function.
-     */
-    on(event, callback) {
-      if (!this._listeners.has(event)) {
-        this._listeners.set(event, /* @__PURE__ */ new Set());
-      }
-      this._listeners.get(event).add(callback);
-      return () => this.off(event, callback);
-    }
-    /**
-     * Unsubscribes from an event.
-     *
-     * @param {string} event
-     * @param {Function} callback
-     */
-    off(event, callback) {
-      const set = this._listeners.get(event);
-      if (set) {
-        set.delete(callback);
-      }
-    }
-    /**
-     * Emits an event to registered listeners.
-     *
-     * @param {string} event
-     * @param {any} payload
-     */
-    emit(event, payload) {
-      const set = this._listeners.get(event);
-      if (set) {
-        for (const cb of set) {
-          try {
-            cb(payload);
-          } catch (err) {
-            console.warn(`[SceneDirector] Error in listener for "${event}":`, err);
-          }
-        }
-      }
-    }
-    // ─── Scene Transition Orchestration ────────────────────────────────────────
-    /**
-     * Immediately skips the active transition if one is in flight, snapping to final state.
-     */
-    skipTransition() {
-      if (this._isTransitioning && typeof this._currentSkipFn === "function") {
-        const skipFn = this._currentSkipFn;
-        this._currentSkipFn = null;
-        skipFn();
-      }
-    }
-    /**
-     * Executes a coordinated scene transition to the target scene.
-     *
-     * @param {string} targetScene Identifier of the scene to transition to.
-     * @param {any} [data={}] Associated data payload (case, day info, result, etc.).
-     * @param {Object} [options]
-     * @param {boolean} [options.force=false] If true, cancels any running transition and immediately starts this one.
-     * @returns {Promise<{ from: string, to: string, data: any }>}
-     */
-    async transitionTo(targetScene, data = {}, options = {}) {
-      if (!targetScene) {
-        return { from: this._currentScene, to: this._currentScene, data };
-      }
-      if (this._isTransitioning) {
-        if (options.force) {
-          this.skipTransition();
-        } else {
-          this.skipTransition();
-        }
-      }
-      const fromScene = this._currentScene;
-      const duration = this.getTransitionDuration(targetScene);
-      const context = {
-        from: fromScene,
-        to: targetScene,
-        data,
-        reducedMotion: this._reducedMotion,
-        duration
-      };
-      this._isTransitioning = true;
-      this.emit("transitionStart", context);
-      const previousHandler = this._handlers.get(fromScene);
-      if (previousHandler && typeof previousHandler.exit === "function") {
-        try {
-          await Promise.resolve(previousHandler.exit(data, context));
-        } catch (err) {
-          console.warn(`[SceneDirector] Exit hook error for ${fromScene}:`, err);
-        }
-      }
-      this._currentScene = targetScene;
-      this._applySceneAttribute(targetScene);
-      const targetHandler = this._handlers.get(targetScene);
-      return new Promise((resolve) => {
-        let isSettled = false;
-        const finish = () => {
-          if (isSettled) return;
-          isSettled = true;
-          if (this._fallbackTimeout !== null) {
-            clearTimeout(this._fallbackTimeout);
-            this._fallbackTimeout = null;
-          }
-          this._isTransitioning = false;
-          this._currentSkipFn = null;
-          this.emit("transitionEnd", context);
-          this.emit("sceneChange", context);
-          resolve({ from: fromScene, to: targetScene, data });
-        };
-        this._currentSkipFn = () => {
-          if (targetHandler && typeof targetHandler.skip === "function") {
-            try {
-              targetHandler.skip();
-            } catch (_) {
-            }
-          }
-          this.emit("transitionSkipped", context);
-          finish();
-        };
-        if (duration === 0) {
-          if (targetHandler && typeof targetHandler.enter === "function") {
-            try {
-              targetHandler.enter(data, context);
-            } catch (err) {
-              console.warn(`[SceneDirector] Enter hook error for ${targetScene}:`, err);
-            }
-          }
-          finish();
-          return;
-        }
-        try {
-          if (targetHandler && typeof targetHandler.enter === "function") {
-            const enterRes = targetHandler.enter(data, context);
-            if (enterRes && typeof enterRes.then === "function") {
-              enterRes.then(() => finish()).catch(() => finish());
-            }
-          }
-        } catch (err) {
-          console.warn(`[SceneDirector] Enter hook error for ${targetScene}:`, err);
-        }
-        const fallbackMs = Math.max(duration + 60, 100);
-        this._fallbackTimeout = setTimeout(finish, fallbackMs);
-      });
-    }
-    _applySceneAttribute(sceneName) {
-      if (this.root && typeof this.root.setAttribute === "function") {
-        this.root.setAttribute("data-active-scene", sceneName);
-      }
-    }
-    /**
-     * Destroys the SceneDirector, clearing timeouts and listeners.
-     */
-    destroy() {
-      if (this._fallbackTimeout !== null) {
-        clearTimeout(this._fallbackTimeout);
-        this._fallbackTimeout = null;
-      }
-      this._listeners.clear();
-      this._handlers.clear();
-      this._isTransitioning = false;
-      this._currentSkipFn = null;
-    }
-  };
-  function createSceneDirector(options = {}) {
-    return new SceneDirector(options);
-  }
-
   // js/frontend/game-controller.js
   var TICK_INTERVAL_MS = 1e3;
   var SECONDS_PER_TICK = 1;
@@ -4468,6 +5180,9 @@ ${optionsHtml}`;
     _renderStateView(stateView) {
       if (!stateView) return;
       const dailyCasesCount = this._getDailyCasesCount(stateView);
+      if (typeof this.renderer.gameplay?.setOfficeLighting === "function") {
+        this.renderer.gameplay.setOfficeLighting(stateView.currentDay);
+      }
       if (this.renderer.gameplay?.topBar) {
         this.renderer.gameplay.topBar.update({
           day: stateView.currentDay,
@@ -4660,7 +5375,7 @@ ${optionsHtml}`;
         this.renderer.gameplay.dossier.animateResolution(action, { duration, reducedMotion });
       }
       if (this.renderer.gameplay?.topBar) {
-        this.renderer.gameplay.topBar.setMetrics(result.metrics);
+        this.renderer.gameplay.topBar.setMetrics(result.metrics, result.metricChanges || null);
       }
       this._showActionFeedback(result);
       setTimeout(() => {
@@ -5115,6 +5830,15 @@ ${optionsHtml}`;
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
     /**
+     * Stops the active session without tearing down the SceneDirector, so the
+     * same presentation scene bindings remain available if the player returns
+     * to the main menu and starts a new campaign.
+     */
+    stopSession() {
+      this._stopTimer();
+      this._hideFeedback();
+    }
+    /**
      * Cleans up the controller (stops timer, removes feedback).
      */
     destroy() {
@@ -5134,6 +5858,12 @@ ${optionsHtml}`;
     }
     const renderer = createRenderer(root);
     const controller = createGameController(backendApi, renderer, { root });
+    const sceneDirector = controller.sceneDirector;
+    renderer.mainMenu?.registerWithSceneDirector?.(sceneDirector);
+    renderer.dayIntroModal?.registerWithSceneDirector?.(sceneDirector);
+    renderer.summaryModal?.registerWithSceneDirector?.(sceneDirector);
+    renderer.gameOver?.registerWithSceneDirector?.(sceneDirector);
+    renderer.gameplay?.registerWithSceneDirector?.(sceneDirector);
     const events = setupUIEvents(root, {
       // Main menu
       onStartGame: () => {
@@ -5167,7 +5897,7 @@ ${optionsHtml}`;
       },
       onReturnMenu: () => {
         controller.sceneDirector?.transitionTo("MENU");
-        controller.destroy();
+        controller.stopSession();
         renderer.showScreen("main-menu");
       }
     });

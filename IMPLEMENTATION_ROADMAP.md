@@ -745,6 +745,8 @@ Requirements:
 
 **Ownership:** Agent B — Frontend Presentation.
 
+**P5B-02 status:** Completed — Cinematic main menu implemented in `index.html`, `css/components.css`, and `js/frontend/screens/main-menu.js`. The Antalya office background uses a slow Ken Burns drift, with CSS-generated film grain and vignette overlays, a staggered badge/title/subtitle/briefing/start-button reveal, and reduced-motion fallbacks. The MENU scene registers with the SceneDirector contract.
+
 ## P5B-03 — Day Briefing
 
 Create a full-screen day briefing scene.
@@ -760,6 +762,8 @@ Requirements:
 Use existing campaign data. Do not change quotas or day progression.
 
 **Ownership:** Agent B — Frontend Presentation.
+
+**P5B-03 status:** Completed — Full-screen day briefing implemented in `index.html`, `css/components.css`, and `js/frontend/screens/day-intro-modal.js`. Time-of-day lighting, a sliding quota card, cancellable typewriter briefing text, the Begin Shift action, and a SHIFT_START working-scene entrance are wired through the SceneDirector. All quota, timer, and mechanic values come from existing campaign data.
 
 ## P5B-04 — Citizen Intake Animation
 
@@ -818,6 +822,8 @@ Requirements:
 
 **Ownership:** Agent B — Frontend Presentation.
 
+**P5B-06 status:** Completed — Ambient office layer implemented in `index.html`, `css/components.css`, `css/layout.css`, and `js/frontend/screens/gameplay-screen.js`. Dust motes, drifting window light, day-specific daylight washes, and a blinking terminal LED run behind the workspace with `pointer-events: none`. The controller passes the backend campaign day to `setOfficeLighting()`; reduced-motion disables the ambient animations.
+
 ## P5B-07 — Metric HUD
 
 Improve the visual feedback of metric changes and timer urgency.
@@ -833,6 +839,8 @@ Requirements:
 The frontend must display supplied values and must not calculate or modify metrics.
 
 **Ownership:** Agent B — Frontend Presentation.
+
+**P5B-07 status:** Completed — Metric HUD feedback implemented in `js/frontend/components/top-bar.js` and `css/components.css`. Metric changes use backend-supplied `metricChanges` for bounce/emphasis animations and floating delta chips, negative changes flash red, and the timer gains warning/critical styling below 30/10 seconds with subtle tick and countdown cues. The frontend only displays supplied values.
 
 ## P5B-08 — Enhanced Decision Feedback
 
@@ -873,6 +881,8 @@ Use existing campaign results. Do not calculate or change report values.
 
 **Ownership:** Agent B — Frontend Presentation.
 
+**P5B-09 status:** Completed — Full-screen SHIFT REPORT implemented in `index.html`, `css/components.css`, and `js/frontend/screens/summary-screen.js`. The office backdrop dims, the report lands on the desk, header and report rows reveal progressively, the approval stamp slams down after the reveal, and the continue action advances through the existing campaign flow. Report values remain backend-supplied and unchanged.
+
 ## P5B-10 — Victory and Game-Over Cinematics
 
 Give the campaign ending a distinct visual identity.
@@ -894,6 +904,8 @@ Give the campaign ending a distinct visual identity.
 The backend determines the ending. The frontend only presents the outcome it provides.
 
 **Ownership:** Agent B — Frontend Presentation.
+
+**P5B-10 status:** Completed — Verdict cinematics implemented in `index.html`, `css/components.css`, and `js/frontend/screens/game-over-screen.js`. Failures dim the office, present a termination notice, and use restrained flicker for bankruptcy/trust collapse; victories brighten the office, present the municipal certificate card, and animate the official seal with a final stamp ceremony. The backend outcome remains authoritative and is only rendered by the frontend.
 
 ## P5B-11 — Optional Terminal Display Mode
 
@@ -933,6 +945,8 @@ Requirements:
 - Audio failures must not break gameplay.
 
 **Ownership:** Agent B — Frontend Presentation.
+
+**P5B-12 status:** Completed — Transition audio cues implemented in `js/frontend/audio.js` and consumed by the Agent B screens. Synthesized whoosh, drawer, paper, day-start bell, countdown sting, typewriter, victory, and defeat cues use the existing Web Audio engine and mute control; every cue is guarded by try/catch so audio failures cannot break gameplay.
 
 ## P5B-13 — Responsive and Reduced-Motion Support
 

@@ -228,6 +228,11 @@ export class GameController {
 
     const dailyCasesCount = this._getDailyCasesCount(stateView);
 
+    // P5B-06: Reflect the campaign day's ambient office lighting.
+    if (typeof this.renderer.gameplay?.setOfficeLighting === 'function') {
+      this.renderer.gameplay.setOfficeLighting(stateView.currentDay);
+    }
+
     if (this.renderer.gameplay?.topBar) {
       this.renderer.gameplay.topBar.update({
         day: stateView.currentDay,
@@ -455,9 +460,9 @@ export class GameController {
       this.renderer.gameplay.dossier.animateResolution(action, { duration, reducedMotion });
     }
 
-    // P3-02 – Update metrics immediately
+    // P3-02 – Update metrics immediately (P5B-07: pass backend-supplied deltas)
     if (this.renderer.gameplay?.topBar) {
-      this.renderer.gameplay.topBar.setMetrics(result.metrics);
+      this.renderer.gameplay.topBar.setMetrics(result.metrics, result.metricChanges || null);
     }
 
     // P3-09 & P5B-08 – Show enhanced feedback
@@ -1013,6 +1018,16 @@ export class GameController {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  /**
+   * Stops the active session without tearing down the SceneDirector, so the
+   * same presentation scene bindings remain available if the player returns
+   * to the main menu and starts a new campaign.
+   */
+  stopSession() {
+    this._stopTimer();
+    this._hideFeedback();
   }
 
   /**

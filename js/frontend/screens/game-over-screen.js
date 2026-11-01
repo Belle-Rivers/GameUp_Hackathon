@@ -1,4 +1,5 @@
 import { soundEngine } from '../audio.js';
+import { SCENE_NAMES } from '../scene-director.js';
 
 /**
  * Returns human-readable failure explanation based on backend failure reason code.
@@ -54,6 +55,7 @@ export class GameOverScreenComponent {
   constructor(root = document, options = {}) {
     this.root = root;
     this.options = options;
+    this._lastSoundKey = null;
     this.elements = this._queryElements();
     this._attachEvents();
   }
@@ -115,6 +117,29 @@ export class GameOverScreenComponent {
   }
 
   /**
+   * P5B-10: Registers the VERDICT scene with Agent A's SceneDirector.
+   *
+   * @param {import('../scene-director.js').SceneDirector} sceneDirector
+   */
+  registerWithSceneDirector(sceneDirector) {
+    if (!sceneDirector || typeof sceneDirector.registerScene !== 'function') return;
+
+    sceneDirector.registerScene(SCENE_NAMES.VERDICT, {
+      // The controller decides when the verdict screen becomes visible (after
+      // a victory shift report, or immediately on failure). Only refresh the
+      // presentation if the verdict screen is already active.
+      enter: (data) => {
+        if (this.isActive()) {
+          this.render(data);
+        }
+      },
+      exit: () => this.hide(),
+      skip: () => {},
+      duration: 500,
+    });
+  }
+
+  /**
    * Renders victory or failure outcome content and final statistics.
    *
    * @param {CampaignOutcomeViewData} [data]
@@ -148,10 +173,16 @@ export class GameOverScreenComponent {
       }
     }
 
-    if (isVictory) {
-      soundEngine.playVictory();
-    } else {
-      soundEngine.playDefeat();
+    // Play the verdict sting only once per distinct outcome, even when the
+    // SceneDirector and controller both render the same result.
+    const soundKey = isVictory ? 'VICTORY' : `FAILURE:${data.reason || 'UNKNOWN'}`;
+    if (this._lastSoundKey !== soundKey) {
+      this._lastSoundKey = soundKey;
+      if (isVictory) {
+        soundEngine.playVictory();
+      } else {
+        soundEngine.playDefeat();
+      }
     }
 
     if (this.elements.badge) {
@@ -239,6 +270,7 @@ export class GameOverScreenComponent {
     if (this.elements.screen?.classList) {
       this.elements.screen.classList.remove('active', 'terminal-malfunction-flicker');
     }
+    this._lastSoundKey = null;
   }
 
   /**

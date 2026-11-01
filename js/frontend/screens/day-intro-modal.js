@@ -1,4 +1,5 @@
 import { soundEngine } from '../audio.js';
+import { SCENE_NAMES } from '../scene-director.js';
 
 /**
  * @file day-intro-modal.js
@@ -70,7 +71,7 @@ export class DayIntroModalComponent {
     if (this.elements.btnStartShift) {
       this.elements.btnStartShift.addEventListener('click', (event) => {
         soundEngine.playDayBell();
-        this.close();
+        this.skipTypewriter();
         if (typeof this.options.onStartShift === 'function') {
           this.options.onStartShift(event);
         }
@@ -94,6 +95,49 @@ export class DayIntroModalComponent {
       }
     }
     return false;
+  }
+
+  /**
+   * P5B-03: Registers the DAY_BRIEF scene with Agent A's SceneDirector.
+   *
+   * @param {import('../scene-director.js').SceneDirector} sceneDirector
+   */
+  registerWithSceneDirector(sceneDirector) {
+    if (!sceneDirector || typeof sceneDirector.registerScene !== 'function') return;
+
+    sceneDirector.registerScene(SCENE_NAMES.DAY_BRIEF, {
+      enter: (data, context) => {
+        const introData = data?.dayConfig || data;
+        if (introData && introData.description) {
+          this.open(introData);
+        } else if (!this.isOpen()) {
+          this.open();
+        } else {
+          this._animateEnter();
+        }
+        if (context?.reducedMotion) {
+          this.snapToSettled();
+        }
+      },
+      exit: () => this.close(),
+      skip: () => this.snapToSettled(),
+      duration: 400,
+    });
+  }
+
+  /**
+   * Replays the briefing card entrance without reopening or re-rendering.
+   *
+   * @private
+   */
+  _animateEnter() {
+    if (!this.elements.card?.classList) return;
+    this.elements.card.classList.remove('briefing-card-enter');
+    void (this.elements.card.offsetWidth || 0);
+    this.elements.card.classList.add('briefing-card-enter');
+    if (this._fullDescription && !this.options.reducedMotion && !this._isReducedMotion() && typeof window !== 'undefined') {
+      this._startTypewriter(this._fullDescription);
+    }
   }
 
   /**
