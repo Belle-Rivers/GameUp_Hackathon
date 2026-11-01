@@ -227,7 +227,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   Reduced Motion Preferences (Accessibility P5-09)
+   Reduced Motion Preferences (Accessibility P5-09 & P5B-13)
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -237,9 +237,29 @@
     scroll-behavior: auto !important;
   }
 
-  .stamp-drop-anim {
+  .stamp-drop-anim,
+  .dossier-intake-anim,
+  .dossier-exit-approve,
+  .dossier-exit-fine,
+  .dossier-exit-grant,
+  .resolution-flash--fine,
+  .resolution-shimmer--grant,
+  .reveal-id-stamp,
+  .reveal-name-in,
+  .verdict-badge--overruled {
     animation: none !important;
+    transition: none !important;
+    transform: none !important;
     opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .reveal-hidden {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .stamp-drop-anim {
     transform: rotate(-6deg) !important;
   }
 }

@@ -62,6 +62,7 @@ export class TopBarComponent {
     this.root = root;
     this.elements = this._queryElements();
     this._initAudioToggle();
+    this._initTerminalToggle();
   }
 
   _queryElements() {
@@ -78,6 +79,7 @@ export class TopBarComponent {
       timerDisplay: q('#timer-display'),
       timerContainer: q('#timer-container'),
       btnAudioToggle: q('#btn-audio-toggle'),
+      btnTerminalToggle: q('#btn-terminal-toggle'),
     };
   }
 
@@ -88,6 +90,90 @@ export class TopBarComponent {
       soundEngine.toggleMute();
       this._updateAudioIcon();
     });
+  }
+
+  _initTerminalToggle() {
+    this._terminalMode = false;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        this._terminalMode = localStorage.getItem('gameup_terminal_mode') === 'true';
+      }
+    } catch (_) {
+      this._terminalMode = false;
+    }
+
+    if (this._terminalMode) {
+      this._applyTerminalMode(true);
+    }
+
+    if (this.elements.btnTerminalToggle) {
+      this._updateTerminalButton();
+      this.elements.btnTerminalToggle.addEventListener('click', () => {
+        this.toggleTerminalMode();
+      });
+    }
+  }
+
+  /**
+   * Toggles the CRT/terminal display mode on and off.
+   *
+   * @returns {boolean} New terminal mode state.
+   */
+  toggleTerminalMode() {
+    this.setTerminalMode(!this._terminalMode);
+    return this._terminalMode;
+  }
+
+  /**
+   * Sets CRT/terminal mode state.
+   *
+   * @param {boolean} enabled
+   */
+  setTerminalMode(enabled) {
+    this._terminalMode = Boolean(enabled);
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('gameup_terminal_mode', this._terminalMode ? 'true' : 'false');
+      }
+    } catch (_) {
+      // Ignored if storage unavailable
+    }
+    this._applyTerminalMode(this._terminalMode);
+    this._updateTerminalButton();
+  }
+
+  /**
+   * Returns whether terminal mode is active.
+   *
+   * @returns {boolean}
+   */
+  isTerminalMode() {
+    return this._terminalMode;
+  }
+
+  _applyTerminalMode(enabled) {
+    const target = (typeof document !== 'undefined' && document.body) ? document.body : (this.root?.body || this.root);
+    if (target?.classList) {
+      if (enabled) {
+        target.classList.add('terminal-mode');
+      } else {
+        target.classList.remove('terminal-mode');
+      }
+    }
+  }
+
+  _updateTerminalButton() {
+    if (!this.elements.btnTerminalToggle) return;
+    const btn = this.elements.btnTerminalToggle;
+    if (this._terminalMode) {
+      btn.classList.add('terminal-active');
+      btn.setAttribute('aria-label', 'Disable CRT Terminal Mode');
+      btn.setAttribute('title', 'CRT Mode: Active (Click to Disable)');
+    } else {
+      btn.classList.remove('terminal-active');
+      btn.setAttribute('aria-label', 'Enable CRT Terminal Mode');
+      btn.setAttribute('title', 'CRT Mode: Off (Click to Enable)');
+    }
   }
 
   _updateAudioIcon() {

@@ -1,3 +1,5 @@
+import { soundEngine } from '../audio.js';
+
 /**
  * @typedef {Object} ReceiptItemData
  * @property {string} label Activity name.
@@ -139,6 +141,9 @@ export class DossierPanelComponent {
   _queryElements() {
     const q = (sel) => (this.root && typeof this.root.querySelector === 'function' ? this.root.querySelector(sel) : null);
     return {
+      panel: q('#dossier-panel'),
+      content: q('#dossier-content'),
+      paper: q('#dossier-panel .dossier-paper'),
       name: q('#dossier-citizen-name'),
       id: q('#dossier-citizen-id'),
       district: q('#dossier-district'),
@@ -150,6 +155,13 @@ export class DossierPanelComponent {
   }
 
   _attachEvents() {
+    // P5B-04: Allow clicking dossier during intake to immediately complete/settle animation
+    if (this.elements.panel) {
+      this.elements.panel.addEventListener('click', () => {
+        this.skipIntakeAnimation();
+      });
+    }
+
     if (!this.elements.receiptsContainer) return;
     this.elements.receiptsContainer.addEventListener('click', (e) => {
       const row = e.target.closest?.('.receipt-item-row');
@@ -177,12 +189,200 @@ export class DossierPanelComponent {
   }
 
   /**
+   * Resets any active transition/intake/exit CSS classes on the dossier elements.
+   */
+  resetDossierTransform() {
+    const q = (sel) => (this.root && typeof this.root.querySelector === 'function' ? this.root.querySelector(sel) : null);
+    const paper = this.elements.paper || q('.dossier-paper');
+    const receipts = this.elements.receiptsContainer;
+    const panel = this.elements.panel || q('#dossier-panel');
+    const idEl = this.elements.id;
+    const nameEl = this.elements.name;
+
+    const animClasses = [
+      'dossier-exit-approve',
+      'dossier-exit-fine',
+      'dossier-exit-grant',
+      'dossier-intake-anim',
+      'dossier-settled',
+    ];
+
+    if (paper?.classList) {
+      animClasses.forEach((cls) => paper.classList.remove(cls));
+    }
+    if (receipts?.classList) {
+      animClasses.forEach((cls) => receipts.classList.remove(cls));
+    }
+    if (panel?.classList) {
+      panel.classList.remove('resolution-flash--fine', 'resolution-shimmer--grant');
+    }
+    if (idEl?.classList) {
+      idEl.classList.remove('reveal-hidden', 'reveal-id-stamp');
+    }
+    if (nameEl?.classList) {
+      nameEl.classList.remove('reveal-hidden', 'reveal-name-in');
+    }
+  }
+
+  /**
+   * P5B-04: Plays a physical citizen intake animation.
+   * Slides the dossier upward from the bottom, settles with rotation/shadow,
+   * reveals Case ID and Citizen Name in sequence, and plays paper audio.
+   *
+   * @param {CitizenDossierData} citizenCase
+   * @param {Object} [options]
+   * @param {number} [options.duration=750]
+   * @param {boolean} [options.reducedMotion=false]
+   * @returns {Promise<void>}
+   */
+  animateIntake(citizenCase, { duration = 750, reducedMotion = false } = {}) {
+    this.resetDossierTransform();
+    this.loadCitizen(citizenCase);
+
+    if (reducedMotion || duration === 0) {
+      return Promise.resolve();
+    }
+
+    try {
+      soundEngine.playPaper();
+    } catch (_) {
+      // Audio engine fallback
+    }
+
+    const q = (sel) => (this.root && typeof this.root.querySelector === 'function' ? this.root.querySelector(sel) : null);
+    const paper = this.elements.paper || q('.dossier-paper');
+    const receipts = this.elements.receiptsContainer;
+    const idEl = this.elements.id;
+    const nameEl = this.elements.name;
+
+    if (idEl?.classList) {
+      idEl.classList.add('reveal-hidden');
+    }
+    if (nameEl?.classList) {
+      nameEl.classList.add('reveal-hidden');
+    }
+
+    if (paper?.classList) paper.classList.add('dossier-intake-anim');
+    if (receipts?.classList) receipts.classList.add('dossier-intake-anim');
+
+    return new Promise((resolve) => {
+      let isSettled = false;
+      const timers = [];
+
+      const complete = () => {
+        if (isSettled) return;
+        isSettled = true;
+        timers.forEach((t) => clearTimeout(t));
+
+        if (paper?.classList) {
+          paper.classList.remove('dossier-intake-anim');
+          paper.classList.add('dossier-settled');
+        }
+        if (receipts?.classList) {
+          receipts.classList.remove('dossier-intake-anim');
+        }
+        if (idEl?.classList) {
+          idEl.classList.remove('reveal-hidden');
+          idEl.classList.add('reveal-id-stamp');
+        }
+        if (nameEl?.classList) {
+          nameEl.classList.remove('reveal-hidden');
+          nameEl.classList.add('reveal-name-in');
+        }
+
+        this._activeIntakeComplete = null;
+        resolve();
+      };
+
+      this._activeIntakeComplete = complete;
+
+      // Sequential reveals: ID first (~45%), then Name (~70%)
+      timers.push(setTimeout(() => {
+        if (idEl?.classList) {
+          idEl.classList.remove('reveal-hidden');
+          idEl.classList.add('reveal-id-stamp');
+        }
+      }, Math.round(duration * 0.45)));
+
+      timers.push(setTimeout(() => {
+        if (nameEl?.classList) {
+          nameEl.classList.remove('reveal-hidden');
+          nameEl.classList.add('reveal-name-in');
+        }
+      }, Math.round(duration * 0.70)));
+
+      // Final complete fallback
+      timers.push(setTimeout(complete, duration));
+    });
+  }
+
+  /**
+   * Immediately finishes any in-progress intake animation, snapping to settled state.
+   */
+  skipIntakeAnimation() {
+    if (typeof this._activeIntakeComplete === 'function') {
+      this._activeIntakeComplete();
+    }
+  }
+
+  /**
+   * P5B-05: Case Resolution Animation.
+   * Animates the dossier exit according to the decision:
+   * - APPROVE: exits to the right.
+   * - FINE: exits downward with red visual flash.
+   * - GRANT: exits upward with gold shimmer.
+   *
+   * @param {'APPROVE'|'FINE'|'GRANT'} action
+   * @param {Object} [options]
+   * @param {number} [options.duration=650]
+   * @param {boolean} [options.reducedMotion=false]
+   * @returns {Promise<void>}
+   */
+  animateResolution(action, { duration = 650, reducedMotion = false } = {}) {
+    if (reducedMotion || duration === 0) {
+      return Promise.resolve();
+    }
+
+    const q = (sel) => (this.root && typeof this.root.querySelector === 'function' ? this.root.querySelector(sel) : null);
+    const paper = this.elements.paper || q('.dossier-paper');
+    const receipts = this.elements.receiptsContainer;
+    const panel = this.elements.panel || q('#dossier-panel');
+
+    const actionUpper = String(action || '').toUpperCase();
+    let exitClass = 'dossier-exit-approve';
+    let flashClass = '';
+
+    if (actionUpper === 'FINE') {
+      exitClass = 'dossier-exit-fine';
+      flashClass = 'resolution-flash--fine';
+    } else if (actionUpper === 'GRANT') {
+      exitClass = 'dossier-exit-grant';
+      flashClass = 'resolution-shimmer--grant';
+    }
+
+    if (paper?.classList) paper.classList.add(exitClass);
+    if (receipts?.classList) receipts.classList.add(exitClass);
+    if (panel?.classList && flashClass) panel.classList.add(flashClass);
+
+    return new Promise((resolve) => {
+      let resolved = false;
+      const finish = () => {
+        if (resolved) return;
+        resolved = true;
+        resolve();
+      };
+      setTimeout(finish, duration);
+    });
+  }
+
+  /**
    * Loads and renders a citizen case dossier.
    *
    * @param {CitizenDossierData} citizenCase
    */
   loadCitizen(citizenCase) {
     if (!citizenCase) return;
+    this.resetDossierTransform();
     this.currentCase = citizenCase;
 
     if (this.elements.name) {

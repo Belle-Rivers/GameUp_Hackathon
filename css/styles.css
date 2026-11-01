@@ -185,3 +185,42 @@ body {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   P5B-11 — Optional Terminal / CRT Display Mode
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body.terminal-mode .rulebook-panel,
+body.terminal-mode .calculator-container,
+body.terminal-mode .top-bar {
+  position: relative;
+}
+
+body.terminal-mode .rulebook-panel::before,
+body.terminal-mode .calculator-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.22) 3px,
+    rgba(0, 0, 0, 0.22) 4px
+  );
+  z-index: 20;
+  opacity: 0.65;
+}
+
+/* Restrained Chromatic Aberration & Phosphor Glow */
+body.terminal-mode .terminal-brand,
+body.terminal-mode .calc-display,
+body.terminal-mode .rulebook-panel .panel-title,
+body.terminal-mode .meter-label {
+  text-shadow: 1px 0 1px rgba(255, 40, 80, 0.35), -1px 0 1px rgba(0, 220, 255, 0.35);
+}
+
+body.terminal-mode .top-bar {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), inset 0 -1px 0 rgba(69, 219, 212, 0.25);
+}

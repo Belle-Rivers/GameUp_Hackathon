@@ -2090,6 +2090,7 @@
       this.root = root;
       this.elements = this._queryElements();
       this._initAudioToggle();
+      this._initTerminalToggle();
     }
     _queryElements() {
       const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
@@ -2104,7 +2105,8 @@
         trustBar: q("#meter-trust-bar"),
         timerDisplay: q("#timer-display"),
         timerContainer: q("#timer-container"),
-        btnAudioToggle: q("#btn-audio-toggle")
+        btnAudioToggle: q("#btn-audio-toggle"),
+        btnTerminalToggle: q("#btn-terminal-toggle")
       };
     }
     _initAudioToggle() {
@@ -2114,6 +2116,81 @@
         soundEngine.toggleMute();
         this._updateAudioIcon();
       });
+    }
+    _initTerminalToggle() {
+      this._terminalMode = false;
+      try {
+        if (typeof localStorage !== "undefined") {
+          this._terminalMode = localStorage.getItem("gameup_terminal_mode") === "true";
+        }
+      } catch (_) {
+        this._terminalMode = false;
+      }
+      if (this._terminalMode) {
+        this._applyTerminalMode(true);
+      }
+      if (this.elements.btnTerminalToggle) {
+        this._updateTerminalButton();
+        this.elements.btnTerminalToggle.addEventListener("click", () => {
+          this.toggleTerminalMode();
+        });
+      }
+    }
+    /**
+     * Toggles the CRT/terminal display mode on and off.
+     *
+     * @returns {boolean} New terminal mode state.
+     */
+    toggleTerminalMode() {
+      this.setTerminalMode(!this._terminalMode);
+      return this._terminalMode;
+    }
+    /**
+     * Sets CRT/terminal mode state.
+     *
+     * @param {boolean} enabled
+     */
+    setTerminalMode(enabled) {
+      this._terminalMode = Boolean(enabled);
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("gameup_terminal_mode", this._terminalMode ? "true" : "false");
+        }
+      } catch (_) {
+      }
+      this._applyTerminalMode(this._terminalMode);
+      this._updateTerminalButton();
+    }
+    /**
+     * Returns whether terminal mode is active.
+     *
+     * @returns {boolean}
+     */
+    isTerminalMode() {
+      return this._terminalMode;
+    }
+    _applyTerminalMode(enabled) {
+      const target = typeof document !== "undefined" && document.body ? document.body : this.root?.body || this.root;
+      if (target?.classList) {
+        if (enabled) {
+          target.classList.add("terminal-mode");
+        } else {
+          target.classList.remove("terminal-mode");
+        }
+      }
+    }
+    _updateTerminalButton() {
+      if (!this.elements.btnTerminalToggle) return;
+      const btn = this.elements.btnTerminalToggle;
+      if (this._terminalMode) {
+        btn.classList.add("terminal-active");
+        btn.setAttribute("aria-label", "Disable CRT Terminal Mode");
+        btn.setAttribute("title", "CRT Mode: Active (Click to Disable)");
+      } else {
+        btn.classList.remove("terminal-active");
+        btn.setAttribute("aria-label", "Enable CRT Terminal Mode");
+        btn.setAttribute("title", "CRT Mode: Off (Click to Enable)");
+      }
     }
     _updateAudioIcon() {
       if (!this.elements.btnAudioToggle) return;
@@ -2400,6 +2477,9 @@ ${itemsHtml}`;
     _queryElements() {
       const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
       return {
+        panel: q("#dossier-panel"),
+        content: q("#dossier-content"),
+        paper: q("#dossier-panel .dossier-paper"),
         name: q("#dossier-citizen-name"),
         id: q("#dossier-citizen-id"),
         district: q("#dossier-district"),
@@ -2410,6 +2490,11 @@ ${itemsHtml}`;
       };
     }
     _attachEvents() {
+      if (this.elements.panel) {
+        this.elements.panel.addEventListener("click", () => {
+          this.skipIntakeAnimation();
+        });
+      }
       if (!this.elements.receiptsContainer) return;
       this.elements.receiptsContainer.addEventListener("click", (e) => {
         const row = e.target.closest?.(".receipt-item-row");
@@ -2432,12 +2517,173 @@ ${itemsHtml}`;
       });
     }
     /**
+     * Resets any active transition/intake/exit CSS classes on the dossier elements.
+     */
+    resetDossierTransform() {
+      const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
+      const paper = this.elements.paper || q(".dossier-paper");
+      const receipts = this.elements.receiptsContainer;
+      const panel = this.elements.panel || q("#dossier-panel");
+      const idEl = this.elements.id;
+      const nameEl = this.elements.name;
+      const animClasses = [
+        "dossier-exit-approve",
+        "dossier-exit-fine",
+        "dossier-exit-grant",
+        "dossier-intake-anim",
+        "dossier-settled"
+      ];
+      if (paper?.classList) {
+        animClasses.forEach((cls) => paper.classList.remove(cls));
+      }
+      if (receipts?.classList) {
+        animClasses.forEach((cls) => receipts.classList.remove(cls));
+      }
+      if (panel?.classList) {
+        panel.classList.remove("resolution-flash--fine", "resolution-shimmer--grant");
+      }
+      if (idEl?.classList) {
+        idEl.classList.remove("reveal-hidden", "reveal-id-stamp");
+      }
+      if (nameEl?.classList) {
+        nameEl.classList.remove("reveal-hidden", "reveal-name-in");
+      }
+    }
+    /**
+     * P5B-04: Plays a physical citizen intake animation.
+     * Slides the dossier upward from the bottom, settles with rotation/shadow,
+     * reveals Case ID and Citizen Name in sequence, and plays paper audio.
+     *
+     * @param {CitizenDossierData} citizenCase
+     * @param {Object} [options]
+     * @param {number} [options.duration=750]
+     * @param {boolean} [options.reducedMotion=false]
+     * @returns {Promise<void>}
+     */
+    animateIntake(citizenCase, { duration = 750, reducedMotion = false } = {}) {
+      this.resetDossierTransform();
+      this.loadCitizen(citizenCase);
+      if (reducedMotion || duration === 0) {
+        return Promise.resolve();
+      }
+      try {
+        soundEngine.playPaper();
+      } catch (_) {
+      }
+      const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
+      const paper = this.elements.paper || q(".dossier-paper");
+      const receipts = this.elements.receiptsContainer;
+      const idEl = this.elements.id;
+      const nameEl = this.elements.name;
+      if (idEl?.classList) {
+        idEl.classList.add("reveal-hidden");
+      }
+      if (nameEl?.classList) {
+        nameEl.classList.add("reveal-hidden");
+      }
+      if (paper?.classList) paper.classList.add("dossier-intake-anim");
+      if (receipts?.classList) receipts.classList.add("dossier-intake-anim");
+      return new Promise((resolve) => {
+        let isSettled = false;
+        const timers = [];
+        const complete = () => {
+          if (isSettled) return;
+          isSettled = true;
+          timers.forEach((t) => clearTimeout(t));
+          if (paper?.classList) {
+            paper.classList.remove("dossier-intake-anim");
+            paper.classList.add("dossier-settled");
+          }
+          if (receipts?.classList) {
+            receipts.classList.remove("dossier-intake-anim");
+          }
+          if (idEl?.classList) {
+            idEl.classList.remove("reveal-hidden");
+            idEl.classList.add("reveal-id-stamp");
+          }
+          if (nameEl?.classList) {
+            nameEl.classList.remove("reveal-hidden");
+            nameEl.classList.add("reveal-name-in");
+          }
+          this._activeIntakeComplete = null;
+          resolve();
+        };
+        this._activeIntakeComplete = complete;
+        timers.push(setTimeout(() => {
+          if (idEl?.classList) {
+            idEl.classList.remove("reveal-hidden");
+            idEl.classList.add("reveal-id-stamp");
+          }
+        }, Math.round(duration * 0.45)));
+        timers.push(setTimeout(() => {
+          if (nameEl?.classList) {
+            nameEl.classList.remove("reveal-hidden");
+            nameEl.classList.add("reveal-name-in");
+          }
+        }, Math.round(duration * 0.7)));
+        timers.push(setTimeout(complete, duration));
+      });
+    }
+    /**
+     * Immediately finishes any in-progress intake animation, snapping to settled state.
+     */
+    skipIntakeAnimation() {
+      if (typeof this._activeIntakeComplete === "function") {
+        this._activeIntakeComplete();
+      }
+    }
+    /**
+     * P5B-05: Case Resolution Animation.
+     * Animates the dossier exit according to the decision:
+     * - APPROVE: exits to the right.
+     * - FINE: exits downward with red visual flash.
+     * - GRANT: exits upward with gold shimmer.
+     *
+     * @param {'APPROVE'|'FINE'|'GRANT'} action
+     * @param {Object} [options]
+     * @param {number} [options.duration=650]
+     * @param {boolean} [options.reducedMotion=false]
+     * @returns {Promise<void>}
+     */
+    animateResolution(action, { duration = 650, reducedMotion = false } = {}) {
+      if (reducedMotion || duration === 0) {
+        return Promise.resolve();
+      }
+      const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
+      const paper = this.elements.paper || q(".dossier-paper");
+      const receipts = this.elements.receiptsContainer;
+      const panel = this.elements.panel || q("#dossier-panel");
+      const actionUpper = String(action || "").toUpperCase();
+      let exitClass = "dossier-exit-approve";
+      let flashClass = "";
+      if (actionUpper === "FINE") {
+        exitClass = "dossier-exit-fine";
+        flashClass = "resolution-flash--fine";
+      } else if (actionUpper === "GRANT") {
+        exitClass = "dossier-exit-grant";
+        flashClass = "resolution-shimmer--grant";
+      }
+      if (paper?.classList) paper.classList.add(exitClass);
+      if (receipts?.classList) receipts.classList.add(exitClass);
+      if (panel?.classList && flashClass) panel.classList.add(flashClass);
+      return new Promise((resolve) => {
+        let resolved = false;
+        const finish = () => {
+          if (resolved) return;
+          resolved = true;
+          resolve();
+        };
+        setTimeout(finish, duration);
+      });
+    }
+    /**
      * Loads and renders a citizen case dossier.
      *
      * @param {CitizenDossierData} citizenCase
      */
     loadCitizen(citizenCase) {
       if (!citizenCase) return;
+      this.resetDossierTransform();
       this.currentCase = citizenCase;
       if (this.elements.name) {
         this.elements.name.textContent = citizenCase.name || "Unknown Citizen";
@@ -3777,6 +4023,321 @@ ${optionsHtml}`;
     return manager;
   }
 
+  // js/frontend/scene-director.js
+  var SCENE_NAMES = Object.freeze({
+    MENU: "MENU",
+    DAY_BRIEF: "DAY_BRIEF",
+    SHIFT_START: "SHIFT_START",
+    CASE_INTAKE: "CASE_INTAKE",
+    CASE_REVIEW: "CASE_REVIEW",
+    CASE_RESOLVE: "CASE_RESOLVE",
+    NEXT_CASE: "NEXT_CASE",
+    DAY_SUMMARY: "DAY_SUMMARY",
+    NEXT_DAY: "NEXT_DAY",
+    VERDICT: "VERDICT"
+  });
+  var DEFAULT_TRANSITION_DURATIONS = Object.freeze({
+    MENU: 350,
+    DAY_BRIEF: 400,
+    SHIFT_START: 300,
+    CASE_INTAKE: 750,
+    // P5B-04: 0.6–0.9s physical delivery
+    CASE_REVIEW: 0,
+    CASE_RESOLVE: 700,
+    // P5B-05: resolution exit physics
+    NEXT_CASE: 250,
+    DAY_SUMMARY: 400,
+    NEXT_DAY: 350,
+    VERDICT: 500
+  });
+  var SceneDirector = class {
+    /**
+     * @param {SceneDirectorOptions} [options]
+     */
+    constructor(options = {}) {
+      this.root = options.root || (typeof document !== "undefined" ? document : null);
+      this._currentScene = options.initialScene || SCENE_NAMES.MENU;
+      this._durations = {
+        ...DEFAULT_TRANSITION_DURATIONS,
+        ...options.durations || {}
+      };
+      this._handlers = /* @__PURE__ */ new Map();
+      this._listeners = /* @__PURE__ */ new Map();
+      this._isTransitioning = false;
+      this._currentSkipFn = null;
+      this._fallbackTimeout = null;
+      this._reducedMotion = options.reducedMotion ?? this._detectReducedMotion();
+      this._setupReducedMotionListener();
+      this._applySceneAttribute(this._currentScene);
+    }
+    // ─── Reduced Motion ────────────────────────────────────────────────────────
+    _detectReducedMotion() {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        try {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        } catch (_) {
+          return false;
+        }
+      }
+      return false;
+    }
+    _setupReducedMotionListener() {
+      if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+        try {
+          const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+          if (mql && typeof mql.addEventListener === "function") {
+            mql.addEventListener("change", (e) => {
+              this._reducedMotion = e.matches;
+              this.emit("reducedMotionChange", { reducedMotion: e.matches });
+            });
+          }
+        } catch (_) {
+        }
+      }
+    }
+    /**
+     * Enables or disables reduced-motion mode.
+     * When enabled, transitions complete virtually instantaneously without physical physics.
+     *
+     * @param {boolean} enabled
+     */
+    setReducedMotion(enabled) {
+      this._reducedMotion = Boolean(enabled);
+      this.emit("reducedMotionChange", { reducedMotion: this._reducedMotion });
+    }
+    /**
+     * Returns whether reduced-motion is currently active.
+     *
+     * @returns {boolean}
+     */
+    isReducedMotion() {
+      return this._reducedMotion;
+    }
+    // ─── Configuration & Registration ──────────────────────────────────────────
+    /**
+     * Registers a scene with enter/exit/skip lifecycle hooks.
+     *
+     * @param {string} sceneName Scene name from SCENE_NAMES or custom string.
+     * @param {SceneHandler} handler Scene lifecycle handler.
+     */
+    registerScene(sceneName, handler) {
+      if (!sceneName) return;
+      this._handlers.set(sceneName, handler || {});
+    }
+    /**
+     * Sets the configured transition duration for a scene in milliseconds.
+     *
+     * @param {string} sceneName
+     * @param {number} durationMs
+     */
+    setTransitionDuration(sceneName, durationMs) {
+      if (sceneName && typeof durationMs === "number" && durationMs >= 0) {
+        this._durations[sceneName] = durationMs;
+      }
+    }
+    /**
+     * Gets the transition duration for a scene, factoring in reduced motion.
+     *
+     * @param {string} sceneName
+     * @returns {number}
+     */
+    getTransitionDuration(sceneName) {
+      if (this._reducedMotion) {
+        return 0;
+      }
+      const handler = this._handlers.get(sceneName);
+      if (handler && typeof handler.duration === "number") {
+        return handler.duration;
+      }
+      return this._durations[sceneName] ?? 200;
+    }
+    /**
+     * Returns the currently active scene identifier.
+     *
+     * @returns {string}
+     */
+    getCurrentScene() {
+      return this._currentScene;
+    }
+    /**
+     * Returns true if a transition is currently in progress.
+     *
+     * @returns {boolean}
+     */
+    isTransitioning() {
+      return this._isTransitioning;
+    }
+    // ─── Event Bus ─────────────────────────────────────────────────────────────
+    /**
+     * Subscribes to SceneDirector events.
+     *
+     * @param {string} event
+     * @param {Function} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    on(event, callback) {
+      if (!this._listeners.has(event)) {
+        this._listeners.set(event, /* @__PURE__ */ new Set());
+      }
+      this._listeners.get(event).add(callback);
+      return () => this.off(event, callback);
+    }
+    /**
+     * Unsubscribes from an event.
+     *
+     * @param {string} event
+     * @param {Function} callback
+     */
+    off(event, callback) {
+      const set = this._listeners.get(event);
+      if (set) {
+        set.delete(callback);
+      }
+    }
+    /**
+     * Emits an event to registered listeners.
+     *
+     * @param {string} event
+     * @param {any} payload
+     */
+    emit(event, payload) {
+      const set = this._listeners.get(event);
+      if (set) {
+        for (const cb of set) {
+          try {
+            cb(payload);
+          } catch (err) {
+            console.warn(`[SceneDirector] Error in listener for "${event}":`, err);
+          }
+        }
+      }
+    }
+    // ─── Scene Transition Orchestration ────────────────────────────────────────
+    /**
+     * Immediately skips the active transition if one is in flight, snapping to final state.
+     */
+    skipTransition() {
+      if (this._isTransitioning && typeof this._currentSkipFn === "function") {
+        const skipFn = this._currentSkipFn;
+        this._currentSkipFn = null;
+        skipFn();
+      }
+    }
+    /**
+     * Executes a coordinated scene transition to the target scene.
+     *
+     * @param {string} targetScene Identifier of the scene to transition to.
+     * @param {any} [data={}] Associated data payload (case, day info, result, etc.).
+     * @param {Object} [options]
+     * @param {boolean} [options.force=false] If true, cancels any running transition and immediately starts this one.
+     * @returns {Promise<{ from: string, to: string, data: any }>}
+     */
+    async transitionTo(targetScene, data = {}, options = {}) {
+      if (!targetScene) {
+        return { from: this._currentScene, to: this._currentScene, data };
+      }
+      if (this._isTransitioning) {
+        if (options.force) {
+          this.skipTransition();
+        } else {
+          this.skipTransition();
+        }
+      }
+      const fromScene = this._currentScene;
+      const duration = this.getTransitionDuration(targetScene);
+      const context = {
+        from: fromScene,
+        to: targetScene,
+        data,
+        reducedMotion: this._reducedMotion,
+        duration
+      };
+      this._isTransitioning = true;
+      this.emit("transitionStart", context);
+      const previousHandler = this._handlers.get(fromScene);
+      if (previousHandler && typeof previousHandler.exit === "function") {
+        try {
+          await Promise.resolve(previousHandler.exit(data, context));
+        } catch (err) {
+          console.warn(`[SceneDirector] Exit hook error for ${fromScene}:`, err);
+        }
+      }
+      this._currentScene = targetScene;
+      this._applySceneAttribute(targetScene);
+      const targetHandler = this._handlers.get(targetScene);
+      return new Promise((resolve) => {
+        let isSettled = false;
+        const finish = () => {
+          if (isSettled) return;
+          isSettled = true;
+          if (this._fallbackTimeout !== null) {
+            clearTimeout(this._fallbackTimeout);
+            this._fallbackTimeout = null;
+          }
+          this._isTransitioning = false;
+          this._currentSkipFn = null;
+          this.emit("transitionEnd", context);
+          this.emit("sceneChange", context);
+          resolve({ from: fromScene, to: targetScene, data });
+        };
+        this._currentSkipFn = () => {
+          if (targetHandler && typeof targetHandler.skip === "function") {
+            try {
+              targetHandler.skip();
+            } catch (_) {
+            }
+          }
+          this.emit("transitionSkipped", context);
+          finish();
+        };
+        if (duration === 0) {
+          if (targetHandler && typeof targetHandler.enter === "function") {
+            try {
+              targetHandler.enter(data, context);
+            } catch (err) {
+              console.warn(`[SceneDirector] Enter hook error for ${targetScene}:`, err);
+            }
+          }
+          finish();
+          return;
+        }
+        try {
+          if (targetHandler && typeof targetHandler.enter === "function") {
+            const enterRes = targetHandler.enter(data, context);
+            if (enterRes && typeof enterRes.then === "function") {
+              enterRes.then(() => finish()).catch(() => finish());
+            }
+          }
+        } catch (err) {
+          console.warn(`[SceneDirector] Enter hook error for ${targetScene}:`, err);
+        }
+        const fallbackMs = Math.max(duration + 60, 100);
+        this._fallbackTimeout = setTimeout(finish, fallbackMs);
+      });
+    }
+    _applySceneAttribute(sceneName) {
+      if (this.root && typeof this.root.setAttribute === "function") {
+        this.root.setAttribute("data-active-scene", sceneName);
+      }
+    }
+    /**
+     * Destroys the SceneDirector, clearing timeouts and listeners.
+     */
+    destroy() {
+      if (this._fallbackTimeout !== null) {
+        clearTimeout(this._fallbackTimeout);
+        this._fallbackTimeout = null;
+      }
+      this._listeners.clear();
+      this._handlers.clear();
+      this._isTransitioning = false;
+      this._currentSkipFn = null;
+    }
+  };
+  function createSceneDirector(options = {}) {
+    return new SceneDirector(options);
+  }
+
   // js/frontend/game-controller.js
   var TICK_INTERVAL_MS = 1e3;
   var SECONDS_PER_TICK = 1;
@@ -3797,6 +4358,7 @@ ${optionsHtml}`;
       this._started = false;
       this._currentCase = null;
       this._feedbackEl = null;
+      this.sceneDirector = options.sceneDirector || createSceneDirector({ root: this.root });
     }
     // ─── Internal helpers ────────────────────────────────────────────────────
     _query(sel) {
@@ -3819,6 +4381,10 @@ ${optionsHtml}`;
       this._pendingGameOverData = null;
       this._renderInitialState(stateView);
       this._showDayIntro(stateView.currentDay);
+      this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_BRIEF, {
+        day: stateView.currentDay,
+        stateView
+      });
       this._startTimer();
     }
     /**
@@ -3831,6 +4397,11 @@ ${optionsHtml}`;
       if (!this._timerHandle) {
         this._startTimer();
       }
+      this.sceneDirector?.transitionTo(SCENE_NAMES.SHIFT_START).then(() => {
+        this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_REVIEW, {
+          citizenCase: this._currentCase
+        });
+      });
     }
     /**
      * Restarts the campaign from Day 1 with fresh state. (P4-14)
@@ -3846,6 +4417,10 @@ ${optionsHtml}`;
       this.renderer.showScreen("gameplay");
       this._renderInitialState(stateView);
       this._showDayIntro(stateView.currentDay);
+      this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_BRIEF, {
+        day: stateView.currentDay,
+        stateView
+      });
       this._startTimer();
     }
     /**
@@ -3940,8 +4515,17 @@ ${optionsHtml}`;
         return;
       }
       if (this.renderer.gameplay?.dossier) {
-        this.renderer.gameplay.dossier.loadCitizen(citizenCase);
-        soundEngine.playPaper();
+        if (typeof this.renderer.gameplay.dossier.animateIntake === "function") {
+          const duration = this.sceneDirector?.getTransitionDuration(SCENE_NAMES.CASE_INTAKE) ?? 750;
+          const reducedMotion = this.sceneDirector?.isReducedMotion() ?? false;
+          this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_INTAKE, { citizenCase });
+          this.renderer.gameplay.dossier.animateIntake(citizenCase, { duration, reducedMotion }).then(() => {
+            this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_REVIEW, { citizenCase });
+          });
+        } else {
+          this.renderer.gameplay.dossier.loadCitizen(citizenCase);
+          soundEngine.playPaper();
+        }
       }
       if (this.renderer.gameplay?.calculator) {
         this.renderer.gameplay.calculator.clear();
@@ -4069,6 +4653,12 @@ ${optionsHtml}`;
         this._awaitingTransition = false;
         return;
       }
+      this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_RESOLVE, { action, result });
+      if (this.renderer.gameplay?.dossier?.animateResolution) {
+        const duration = this.sceneDirector?.getTransitionDuration(SCENE_NAMES.CASE_RESOLVE) ?? 650;
+        const reducedMotion = this.sceneDirector?.isReducedMotion() ?? false;
+        this.renderer.gameplay.dossier.animateResolution(action, { duration, reducedMotion });
+      }
       if (this.renderer.gameplay?.topBar) {
         this.renderer.gameplay.topBar.setMetrics(result.metrics);
       }
@@ -4077,7 +4667,23 @@ ${optionsHtml}`;
         this._handleActionResult(result);
       }, FEEDBACK_DISPLAY_MS);
     }
-    // ─── P3-09  Action feedback ──────────────────────────────────────────────
+    // ─── P3-09 & P5B-08  Action feedback ──────────────────────────────────────
+    /**
+     * Derives distinct verdict label per P5B-08.
+     * VERIFIED: Valid APPROVE or GRANT
+     * VIOLATION: Valid FINE issued
+     * OVERRULED: Incorrect decision
+     *
+     * @param {ActionResult} result
+     * @returns {'VERIFIED'|'VIOLATION'|'OVERRULED'}
+     * @private
+     */
+    _getVerdictLabel(result) {
+      if (result.isValid) {
+        return result.action === "FINE" ? "VIOLATION" : "VERIFIED";
+      }
+      return "OVERRULED";
+    }
     /**
      * Renders the action feedback overlay/stamp and explanation text.
      *
@@ -4097,7 +4703,9 @@ ${optionsHtml}`;
       this._showFeedbackOverlay(result);
     }
     /**
-     * Displays a transient feedback banner with the backend explanation.
+     * P5B-08: Displays an enhanced feedback banner with prominent stamp,
+     * torn-paper-style result strip, clear ruling text, distinct verdict label,
+     * and animated counting metric chips.
      *
      * @param {ActionResult} result
      * @private
@@ -4106,12 +4714,17 @@ ${optionsHtml}`;
       const dossierPanel = this._query("#dossier-panel");
       if (!dossierPanel) return;
       this._hideFeedback();
-      const overlay = document.createElement("div");
+      const doc = typeof document !== "undefined" ? document : this.root && typeof this.root.createElement === "function" ? this.root : this.root?.ownerDocument;
+      if (!doc || typeof doc.createElement !== "function") return;
+      const overlay = doc.createElement("div");
       overlay.id = "action-feedback-overlay";
       overlay.setAttribute("role", "status");
       overlay.setAttribute("aria-live", "polite");
       const stampClass = result.isValid ? "feedback--valid" : "feedback--invalid";
       const stampLabel = result.action;
+      const verdict = this._getVerdictLabel(result);
+      const verdictClass = `verdict-badge--${verdict.toLowerCase()}`;
+      const metricChipsHtml = this._buildEnhancedMetricChips(result.metricChanges);
       const metricLines = this._buildMetricChangeLines(result.metricChanges);
       const stampMap = {
         APPROVE: "assets/Approved_Stamp.png",
@@ -4119,19 +4732,124 @@ ${optionsHtml}`;
         GRANT: "assets/GrantApproved_Stamp.png"
       };
       const stampAsset = stampMap[result.action] || "assets/Approved_Stamp.png";
-      overlay.className = `action-feedback-overlay ${stampClass}`;
+      overlay.className = `action-feedback-overlay ${stampClass} verdict-mode--${verdict.toLowerCase()}`;
       overlay.innerHTML = `
       <div class="feedback-stamp-graphic-wrap">
         <img src="${stampAsset}" alt="${this._escapeHtml(stampLabel)} Stamp" class="feedback-stamp-image stamp-drop-anim" />
       </div>
-      <div class="feedback-stamp">${this._escapeHtml(stampLabel)}</div>
-      <div class="feedback-explanation">${this._escapeHtml(result.explanation)}</div>
-      ${metricLines ? `<div class="feedback-metrics font-mono">${metricLines}</div>` : ""}
+
+      <div class="torn-paper-strip ${stampClass}">
+        <div class="torn-strip-header">
+          <span class="torn-strip-seal-text">COP31 MUNICIPAL AUDIT RULING</span>
+          <span class="verdict-badge ${verdictClass}">${verdict}</span>
+        </div>
+        <div class="feedback-stamp">${this._escapeHtml(stampLabel)}</div>
+        <div class="feedback-explanation">
+          <p class="ruling-text">${this._escapeHtml(result.explanation)}</p>
+        </div>
+        ${metricChipsHtml}
+        ${metricLines ? `<div class="feedback-metrics font-mono" style="display:none;">${metricLines}</div>` : ""}
+      </div>
     `.trim();
       dossierPanel.appendChild(overlay);
       this._feedbackEl = overlay;
       void overlay.offsetHeight;
       overlay.classList.add("feedback-visible");
+      if (!this.sceneDirector?.isReducedMotion()) {
+        this._animateMetricCounters(overlay);
+      }
+    }
+    /**
+     * P5B-08: Generates animated metric change chips for Net-Zero, Budget, and Trust.
+     *
+     * @param {import('../backend/index.js').MetricChanges} changes
+     * @returns {string}
+     * @private
+     */
+    _buildEnhancedMetricChips(changes) {
+      if (!changes) return "";
+      const chips = [];
+      if (typeof changes.netZero === "number" && changes.netZero !== 0) {
+        const isPos = changes.netZero > 0;
+        const sign = isPos ? "+" : "";
+        const cls = isPos ? "metric-chip--positive" : "metric-chip--negative";
+        chips.push(`
+        <span class="metric-chip ${cls}" data-metric="netzero" data-val="${changes.netZero}">
+          <span class="chip-label">NET-ZERO:</span>
+          <span class="chip-val font-mono">${sign}${changes.netZero.toFixed(1)}%</span>
+        </span>
+      `.trim());
+      }
+      if (typeof changes.budget === "number" && changes.budget !== 0) {
+        const isPos = changes.budget > 0;
+        const sign = isPos ? "+" : "-";
+        const cls = isPos ? "metric-chip--positive" : "metric-chip--negative";
+        const formatted = `${sign}$${Math.round(Math.abs(changes.budget))}`;
+        chips.push(`
+        <span class="metric-chip ${cls}" data-metric="budget" data-val="${changes.budget}">
+          <span class="chip-label">BUDGET:</span>
+          <span class="chip-val font-mono">${formatted}</span>
+        </span>
+      `.trim());
+      }
+      if (typeof changes.trust === "number" && changes.trust !== 0) {
+        const isPos = changes.trust > 0;
+        const sign = isPos ? "+" : "";
+        const cls = isPos ? "metric-chip--positive" : "metric-chip--negative";
+        chips.push(`
+        <span class="metric-chip ${cls}" data-metric="trust" data-val="${changes.trust}">
+          <span class="chip-label">TRUST:</span>
+          <span class="chip-val font-mono">${sign}${changes.trust.toFixed(1)}%</span>
+        </span>
+      `.trim());
+      }
+      if (chips.length === 0) return "";
+      return `
+      <div class="torn-strip-metrics" role="region" aria-label="Municipal Adjustments">
+        <span class="torn-strip-seal-text">MUNICIPAL IMPACT:</span>
+        <div class="metric-chips-group">${chips.join(" ")}</div>
+      </div>
+    `.trim();
+    }
+    /**
+     * P5B-08: Smoothly counts up/down metric chip numbers into their final values.
+     *
+     * @param {HTMLElement} overlay
+     * @private
+     */
+    _animateMetricCounters(overlay) {
+      if (!overlay || typeof overlay.querySelectorAll !== "function") return;
+      const chips = overlay.querySelectorAll(".metric-chip");
+      chips.forEach((chip) => {
+        const valEl = chip.querySelector?.(".chip-val");
+        const rawVal = parseFloat(chip.getAttribute("data-val") || "0");
+        const metric = chip.getAttribute("data-metric");
+        if (!valEl || isNaN(rawVal)) return;
+        const duration = 300;
+        const startTime = Date.now();
+        const isPos = rawVal > 0;
+        const sign = isPos ? "+" : "";
+        const timer = setInterval(() => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const current = rawVal * progress;
+          if (metric === "budget") {
+            const sign2 = rawVal > 0 ? "+" : rawVal < 0 ? "-" : "";
+            valEl.textContent = `${sign2}$${Math.round(Math.abs(current))}`;
+          } else {
+            valEl.textContent = `${sign}${current.toFixed(1)}%`;
+          }
+          if (progress >= 1) {
+            clearInterval(timer);
+            if (metric === "budget") {
+              const sign2 = rawVal > 0 ? "+" : rawVal < 0 ? "-" : "";
+              valEl.textContent = `${sign2}$${Math.round(Math.abs(rawVal))}`;
+            } else {
+              valEl.textContent = `${sign}${rawVal.toFixed(1)}%`;
+            }
+          }
+        }, 30);
+      });
     }
     /**
      * Builds a compact human-readable metric change summary.
@@ -4206,6 +4924,7 @@ ${optionsHtml}`;
         this._handleShiftEnd(null, result.shiftStats);
         return;
       }
+      this.sceneDirector?.transitionTo(SCENE_NAMES.NEXT_CASE);
       const stateView = this.backend.getState();
       this._renderStateView(stateView);
       this._loadCurrentCitizen(stateView);
@@ -4232,6 +4951,7 @@ ${optionsHtml}`;
         finesIssued: stats.finesIssued,
         grantsIssued: stats.grantsIssued
       };
+      this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_SUMMARY, summaryData);
       this.renderer.showSummaryModal(summaryData);
     }
     /**
@@ -4263,6 +4983,7 @@ ${optionsHtml}`;
         budget: outcome.metrics.budget,
         campaignStats
       };
+      this.sceneDirector?.transitionTo(SCENE_NAMES.VERDICT, gameOverData);
       if (isVictory) {
         const summaryData = {
           day: stateView.currentDay,
@@ -4291,6 +5012,7 @@ ${optionsHtml}`;
       if (this._pendingGameOverData) {
         const data = this._pendingGameOverData;
         this._pendingGameOverData = null;
+        this.sceneDirector?.transitionTo(SCENE_NAMES.VERDICT, data);
         this.renderer.showScreen("game-over");
         if (this.renderer.gameOver) {
           this.renderer.gameOver.render(data);
@@ -4298,6 +5020,7 @@ ${optionsHtml}`;
         return;
       }
       try {
+        this.sceneDirector?.transitionTo(SCENE_NAMES.NEXT_DAY);
         const stateView = this.backend.advanceDay();
         this._awaitingTransition = false;
         this._hideFeedback();
@@ -4310,6 +5033,7 @@ ${optionsHtml}`;
         this._loadCurrentCitizen(stateView);
         this._setActionsEnabled(true);
         this._showDayIntro(currentDay);
+        this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_BRIEF, { day: currentDay });
       } catch (err) {
         console.warn("[GameController] advanceDay error:", err.message);
       }
@@ -4396,6 +5120,7 @@ ${optionsHtml}`;
     destroy() {
       this._stopTimer();
       this._hideFeedback();
+      this.sceneDirector?.destroy();
     }
   };
   function createGameController(backend, renderer, options = {}) {
@@ -4441,6 +5166,7 @@ ${optionsHtml}`;
         controller.restartCampaign();
       },
       onReturnMenu: () => {
+        controller.sceneDirector?.transitionTo("MENU");
         controller.destroy();
         renderer.showScreen("main-menu");
       }
@@ -4450,7 +5176,7 @@ ${optionsHtml}`;
         controller.onReceiptItemClick(detail);
       });
     }
-    return { renderer, events, controller };
+    return { renderer, events, controller, sceneDirector: controller.sceneDirector };
   }
   if (typeof window !== "undefined" && typeof document !== "undefined") {
     if (!window.__GAMEUP_INITIALIZED__) {

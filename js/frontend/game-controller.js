@@ -1,4 +1,5 @@
 import { soundEngine } from './audio.js';
+import { createSceneDirector, SCENE_NAMES } from './scene-director.js';
 
 /**
  * @file game-controller.js
@@ -79,6 +80,9 @@ export class GameController {
     this._currentCase = null;
 
     this._feedbackEl = null;
+
+    /** @type {import('./scene-director.js').SceneDirector} */
+    this.sceneDirector = options.sceneDirector || createSceneDirector({ root: this.root });
   }
 
   // ─── Internal helpers ────────────────────────────────────────────────────
@@ -111,6 +115,12 @@ export class GameController {
     // P4-09: Show day intro modal
     this._showDayIntro(stateView.currentDay);
 
+    // P5B-01: Coordinate scene transition to DAY_BRIEF
+    this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_BRIEF, {
+      day: stateView.currentDay,
+      stateView,
+    });
+
     // Start shift timer
     this._startTimer();
   }
@@ -125,6 +135,12 @@ export class GameController {
     if (!this._timerHandle) {
       this._startTimer();
     }
+    // P5B-01: Transition through SHIFT_START to active CASE_REVIEW
+    this.sceneDirector?.transitionTo(SCENE_NAMES.SHIFT_START).then(() => {
+      this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_REVIEW, {
+        citizenCase: this._currentCase,
+      });
+    });
   }
 
   /**
@@ -144,6 +160,10 @@ export class GameController {
 
     // P4-09/P4-14: Show day intro for Day 1 and start timer
     this._showDayIntro(stateView.currentDay);
+    this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_BRIEF, {
+      day: stateView.currentDay,
+      stateView,
+    });
     this._startTimer();
   }
 
@@ -262,10 +282,20 @@ export class GameController {
       return;
     }
 
-    // Render dossier
+    // Render dossier (P5B-04: Physical intake delivery)
     if (this.renderer.gameplay?.dossier) {
-      this.renderer.gameplay.dossier.loadCitizen(citizenCase);
-      soundEngine.playPaper();
+      if (typeof this.renderer.gameplay.dossier.animateIntake === 'function') {
+        const duration = this.sceneDirector?.getTransitionDuration(SCENE_NAMES.CASE_INTAKE) ?? 750;
+        const reducedMotion = this.sceneDirector?.isReducedMotion() ?? false;
+        this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_INTAKE, { citizenCase });
+        this.renderer.gameplay.dossier.animateIntake(citizenCase, { duration, reducedMotion })
+          .then(() => {
+            this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_REVIEW, { citizenCase });
+          });
+      } else {
+        this.renderer.gameplay.dossier.loadCitizen(citizenCase);
+        soundEngine.playPaper();
+      }
     }
 
     // Reset calculator for new citizen
@@ -417,12 +447,20 @@ export class GameController {
       return;
     }
 
+    // P5B-01 & P5B-05: Coordinate resolution exit animation
+    this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_RESOLVE, { action, result });
+    if (this.renderer.gameplay?.dossier?.animateResolution) {
+      const duration = this.sceneDirector?.getTransitionDuration(SCENE_NAMES.CASE_RESOLVE) ?? 650;
+      const reducedMotion = this.sceneDirector?.isReducedMotion() ?? false;
+      this.renderer.gameplay.dossier.animateResolution(action, { duration, reducedMotion });
+    }
+
     // P3-02 – Update metrics immediately
     if (this.renderer.gameplay?.topBar) {
       this.renderer.gameplay.topBar.setMetrics(result.metrics);
     }
 
-    // P3-09 – Show feedback
+    // P3-09 & P5B-08 – Show enhanced feedback
     this._showActionFeedback(result);
 
     // P3-10 – Transition to next citizen after delay
@@ -431,7 +469,24 @@ export class GameController {
     }, FEEDBACK_DISPLAY_MS);
   }
 
-  // ─── P3-09  Action feedback ──────────────────────────────────────────────
+  // ─── P3-09 & P5B-08  Action feedback ──────────────────────────────────────
+
+  /**
+   * Derives distinct verdict label per P5B-08.
+   * VERIFIED: Valid APPROVE or GRANT
+   * VIOLATION: Valid FINE issued
+   * OVERRULED: Incorrect decision
+   *
+   * @param {ActionResult} result
+   * @returns {'VERIFIED'|'VIOLATION'|'OVERRULED'}
+   * @private
+   */
+  _getVerdictLabel(result) {
+    if (result.isValid) {
+      return result.action === 'FINE' ? 'VIOLATION' : 'VERIFIED';
+    }
+    return 'OVERRULED';
+  }
 
   /**
    * Renders the action feedback overlay/stamp and explanation text.
@@ -455,7 +510,9 @@ export class GameController {
   }
 
   /**
-   * Displays a transient feedback banner with the backend explanation.
+   * P5B-08: Displays an enhanced feedback banner with prominent stamp,
+   * torn-paper-style result strip, clear ruling text, distinct verdict label,
+   * and animated counting metric chips.
    *
    * @param {ActionResult} result
    * @private
@@ -467,13 +524,21 @@ export class GameController {
     // Remove any previous feedback element
     this._hideFeedback();
 
-    const overlay = document.createElement('div');
+    const doc = typeof document !== 'undefined'
+      ? document
+      : (this.root && typeof this.root.createElement === 'function' ? this.root : this.root?.ownerDocument);
+    if (!doc || typeof doc.createElement !== 'function') return;
+
+    const overlay = doc.createElement('div');
     overlay.id = 'action-feedback-overlay';
     overlay.setAttribute('role', 'status');
     overlay.setAttribute('aria-live', 'polite');
 
     const stampClass = result.isValid ? 'feedback--valid' : 'feedback--invalid';
     const stampLabel = result.action;
+    const verdict = this._getVerdictLabel(result);
+    const verdictClass = `verdict-badge--${verdict.toLowerCase()}`;
+    const metricChipsHtml = this._buildEnhancedMetricChips(result.metricChanges);
     const metricLines = this._buildMetricChangeLines(result.metricChanges);
 
     const stampMap = {
@@ -483,14 +548,24 @@ export class GameController {
     };
     const stampAsset = stampMap[result.action] || 'assets/Approved_Stamp.png';
 
-    overlay.className = `action-feedback-overlay ${stampClass}`;
+    overlay.className = `action-feedback-overlay ${stampClass} verdict-mode--${verdict.toLowerCase()}`;
     overlay.innerHTML = `
       <div class="feedback-stamp-graphic-wrap">
         <img src="${stampAsset}" alt="${this._escapeHtml(stampLabel)} Stamp" class="feedback-stamp-image stamp-drop-anim" />
       </div>
-      <div class="feedback-stamp">${this._escapeHtml(stampLabel)}</div>
-      <div class="feedback-explanation">${this._escapeHtml(result.explanation)}</div>
-      ${metricLines ? `<div class="feedback-metrics font-mono">${metricLines}</div>` : ''}
+
+      <div class="torn-paper-strip ${stampClass}">
+        <div class="torn-strip-header">
+          <span class="torn-strip-seal-text">COP31 MUNICIPAL AUDIT RULING</span>
+          <span class="verdict-badge ${verdictClass}">${verdict}</span>
+        </div>
+        <div class="feedback-stamp">${this._escapeHtml(stampLabel)}</div>
+        <div class="feedback-explanation">
+          <p class="ruling-text">${this._escapeHtml(result.explanation)}</p>
+        </div>
+        ${metricChipsHtml}
+        ${metricLines ? `<div class="feedback-metrics font-mono" style="display:none;">${metricLines}</div>` : ''}
+      </div>
     `.trim();
 
     dossierPanel.appendChild(overlay);
@@ -499,6 +574,113 @@ export class GameController {
     // Force reflow for CSS transition
     void overlay.offsetHeight;
     overlay.classList.add('feedback-visible');
+
+    // P5B-08: Animate counting values if motion is not reduced
+    if (!this.sceneDirector?.isReducedMotion()) {
+      this._animateMetricCounters(overlay);
+    }
+  }
+
+  /**
+   * P5B-08: Generates animated metric change chips for Net-Zero, Budget, and Trust.
+   *
+   * @param {import('../backend/index.js').MetricChanges} changes
+   * @returns {string}
+   * @private
+   */
+  _buildEnhancedMetricChips(changes) {
+    if (!changes) return '';
+    const chips = [];
+
+    if (typeof changes.netZero === 'number' && changes.netZero !== 0) {
+      const isPos = changes.netZero > 0;
+      const sign = isPos ? '+' : '';
+      const cls = isPos ? 'metric-chip--positive' : 'metric-chip--negative';
+      chips.push(`
+        <span class="metric-chip ${cls}" data-metric="netzero" data-val="${changes.netZero}">
+          <span class="chip-label">NET-ZERO:</span>
+          <span class="chip-val font-mono">${sign}${changes.netZero.toFixed(1)}%</span>
+        </span>
+      `.trim());
+    }
+
+    if (typeof changes.budget === 'number' && changes.budget !== 0) {
+      const isPos = changes.budget > 0;
+      const sign = isPos ? '+' : '-';
+      const cls = isPos ? 'metric-chip--positive' : 'metric-chip--negative';
+      const formatted = `${sign}$${Math.round(Math.abs(changes.budget))}`;
+      chips.push(`
+        <span class="metric-chip ${cls}" data-metric="budget" data-val="${changes.budget}">
+          <span class="chip-label">BUDGET:</span>
+          <span class="chip-val font-mono">${formatted}</span>
+        </span>
+      `.trim());
+    }
+
+    if (typeof changes.trust === 'number' && changes.trust !== 0) {
+      const isPos = changes.trust > 0;
+      const sign = isPos ? '+' : '';
+      const cls = isPos ? 'metric-chip--positive' : 'metric-chip--negative';
+      chips.push(`
+        <span class="metric-chip ${cls}" data-metric="trust" data-val="${changes.trust}">
+          <span class="chip-label">TRUST:</span>
+          <span class="chip-val font-mono">${sign}${changes.trust.toFixed(1)}%</span>
+        </span>
+      `.trim());
+    }
+
+    if (chips.length === 0) return '';
+    return `
+      <div class="torn-strip-metrics" role="region" aria-label="Municipal Adjustments">
+        <span class="torn-strip-seal-text">MUNICIPAL IMPACT:</span>
+        <div class="metric-chips-group">${chips.join(' ')}</div>
+      </div>
+    `.trim();
+  }
+
+  /**
+   * P5B-08: Smoothly counts up/down metric chip numbers into their final values.
+   *
+   * @param {HTMLElement} overlay
+   * @private
+   */
+  _animateMetricCounters(overlay) {
+    if (!overlay || typeof overlay.querySelectorAll !== 'function') return;
+    const chips = overlay.querySelectorAll('.metric-chip');
+    chips.forEach((chip) => {
+      const valEl = chip.querySelector?.('.chip-val');
+      const rawVal = parseFloat(chip.getAttribute('data-val') || '0');
+      const metric = chip.getAttribute('data-metric');
+      if (!valEl || isNaN(rawVal)) return;
+
+      const duration = 300;
+      const startTime = Date.now();
+      const isPos = rawVal > 0;
+      const sign = isPos ? '+' : '';
+
+      const timer = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const current = rawVal * progress;
+
+        if (metric === 'budget') {
+          const sign = rawVal > 0 ? '+' : (rawVal < 0 ? '-' : '');
+          valEl.textContent = `${sign}$${Math.round(Math.abs(current))}`;
+        } else {
+          valEl.textContent = `${sign}${current.toFixed(1)}%`;
+        }
+
+        if (progress >= 1) {
+          clearInterval(timer);
+          if (metric === 'budget') {
+            const sign = rawVal > 0 ? '+' : (rawVal < 0 ? '-' : '');
+            valEl.textContent = `${sign}$${Math.round(Math.abs(rawVal))}`;
+          } else {
+            valEl.textContent = `${sign}${rawVal.toFixed(1)}%`;
+          }
+        }
+      }, 30);
+    });
   }
 
   /**
@@ -584,7 +766,8 @@ export class GameController {
       return;
     }
 
-    // Load next citizen (P3-10)
+    // Load next citizen (P3-10) with P5B-01 transition coordination
+    this.sceneDirector?.transitionTo(SCENE_NAMES.NEXT_CASE);
     const stateView = this.backend.getState();
     this._renderStateView(stateView);
     this._loadCurrentCitizen(stateView);
@@ -614,6 +797,9 @@ export class GameController {
       finesIssued: stats.finesIssued,
       grantsIssued: stats.grantsIssued,
     };
+
+    // P5B-01: Transition to DAY_SUMMARY
+    this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_SUMMARY, summaryData);
 
     // Show summary modal
     this.renderer.showSummaryModal(summaryData);
@@ -653,6 +839,9 @@ export class GameController {
       campaignStats,
     };
 
+    // P5B-01: Transition to VERDICT
+    this.sceneDirector?.transitionTo(SCENE_NAMES.VERDICT, gameOverData);
+
     if (isVictory) {
       // P4-12: Show a brief summary first, then navigate to game-over screen
       const summaryData = {
@@ -688,6 +877,7 @@ export class GameController {
     if (this._pendingGameOverData) {
       const data = this._pendingGameOverData;
       this._pendingGameOverData = null;
+      this.sceneDirector?.transitionTo(SCENE_NAMES.VERDICT, data);
       this.renderer.showScreen('game-over');
       if (this.renderer.gameOver) {
         this.renderer.gameOver.render(data);
@@ -695,8 +885,9 @@ export class GameController {
       return;
     }
 
-    // P4-11 – Advance to the next day
+    // P4-11 & P5B-01 – Advance to the next day
     try {
+      this.sceneDirector?.transitionTo(SCENE_NAMES.NEXT_DAY);
       const stateView = this.backend.advanceDay();
 
       // Re-render the gameplay screen with the new day's state
@@ -721,6 +912,7 @@ export class GameController {
 
       // P4-09/P4-11 – Show day intro for the new day
       this._showDayIntro(currentDay);
+      this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_BRIEF, { day: currentDay });
     } catch (err) {
       console.warn('[GameController] advanceDay error:', err.message);
     }
@@ -829,6 +1021,7 @@ export class GameController {
   destroy() {
     this._stopTimer();
     this._hideFeedback();
+    this.sceneDirector?.destroy();
   }
 }
 

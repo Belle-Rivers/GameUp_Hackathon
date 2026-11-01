@@ -76,6 +76,7 @@ export function initApp(root = typeof document !== 'undefined' ? document : null
       controller.restartCampaign();
     },
     onReturnMenu: () => {
+      controller.sceneDirector?.transitionTo('MENU');
       controller.destroy();
       renderer.showScreen('main-menu');
     },
@@ -90,7 +91,7 @@ export function initApp(root = typeof document !== 'undefined' ? document : null
     });
   }
 
-  return { renderer, events, controller };
+  return { renderer, events, controller, sceneDirector: controller.sceneDirector };
 }
 
 // Auto-bootstrap when loaded in a browser environment

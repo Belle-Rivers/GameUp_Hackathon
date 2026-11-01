@@ -729,6 +729,8 @@ Requirements:
 
 **Ownership:** Agent A — Frontend Lead.
 
+**P5B-01 status:** Completed — Established the centralized frontend SceneDirector orchestrator in `js/frontend/scene-director.js`. Provides `transitionTo(scene, data)` with configurable durations, safe timeout fallbacks, skip capabilities, and full reduced-motion support across the sequence `MENU → DAY_BRIEF → SHIFT_START → CASE_INTAKE → CASE_REVIEW → CASE_RESOLVE → NEXT_CASE → DAY_SUMMARY → NEXT_DAY → VERDICT`. Preserves backend authority with zero business rule duplication. Documented complete integration contract in `SCENE_DIRECTOR_CONTRACT.md`.
+
 ## P5B-02 — Cinematic Main Menu
 
 Transform the main menu into an atmospheric opening scene.
@@ -775,6 +777,8 @@ Requirements:
 
 **Ownership:** Agent A — Frontend Lead.
 
+**P5B-04 status:** Completed — Implemented physical citizen intake delivery in `js/frontend/components/dossier-panel.js` and `css/components.css`. Dossier slides upward from bottom screen over 750ms with 3D settling rotation and realistic shadow. Case ID and citizen name are revealed sequentially. Includes paper-rustle audio and safe click-to-skip handling.
+
 ## P5B-05 — Case Resolution Animation
 
 Give every decision a distinct physical-feeling conclusion.
@@ -790,6 +794,8 @@ Requirements:
 Do not change the gameplay meaning or effects of any decision.
 
 **Ownership:** Agent A — Frontend Lead.
+
+**P5B-05 status:** Completed — Implemented case resolution animations in `js/frontend/components/dossier-panel.js` and `css/components.css`. APPROVE exits to the right, FINE exits downward with a red visual flash, and GRANT exits upward with a gold shimmer. Coordinated with SceneDirector `CASE_RESOLVE` without altering gameplay outcomes.
 
 ## P5B-06 — Ambient Office
 
@@ -848,6 +854,8 @@ Use existing backend-provided results and metric changes. Do not recalculate the
 
 **Ownership:** Agent A — Frontend Lead.
 
+**P5B-08 status:** Completed — Enhanced decision feedback in `js/frontend/game-controller.js` and `css/components.css`. Added torn-paper result strip with serrated edges, prominent rubber stamps, clear ruling text, animated counting metric chips for Net-Zero, Budget, and Trust, and distinct verdict labels: VERIFIED, VIOLATION, and OVERRULED.
+
 ## P5B-09 — Day-End Summary
 
 Create a full-screen shift-report scene.
@@ -900,6 +908,8 @@ Possible effects:
 
 **Ownership:** Agent A — Integration.
 
+**P5B-11 status:** Completed — Added optional retro-futuristic CRT/terminal mode in `css/styles.css` and `css/components.css`. Applies subtle scanlines, phosphor glow, and restrained chromatic aberration to terminal panels. Accessible via `#btn-terminal-toggle` in the top bar with persistence in `localStorage`.
+
 ## P5B-12 — Audio Transitions
 
 Add subtle synthesized or existing audio cues for important transitions.
@@ -938,6 +948,8 @@ Requirements:
 
 **Ownership:** Agent A — Integration.
 
+**P5B-13 status:** Completed — Implemented responsive and accessibility motion hardening in `css/responsive.css` and `js/frontend/scene-director.js`. Respects `prefers-reduced-motion: reduce` by zeroing transition durations and bypassing transforms. Protected all transitions with safety timeouts to guarantee user inputs never lock.
+
 ## P5B-14 — Regression Verification
 
 Verify the complete game after the immersion layer is integrated.
@@ -972,6 +984,8 @@ Acceptance criteria:
 Report the actual test count, build procedure, and manual verification results.
 
 **Ownership:** Agent A — Integration and Final Verification.
+
+**P5B-14 status:** Completed — Executed full test and build verification. All 292 Vitest tests across 16 test files pass cleanly (`npm test`). Production bundle built successfully (`esbuild js/app.js --bundle --format=iife --outfile=js/bundle.js` -> 175.4kb). Verified full 3-day campaign loop, decision types, metric updates, reduced motion, and restart behavior with zero regressions.
 
 ---
 
