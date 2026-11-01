@@ -2,7 +2,9 @@
 
 A single-page browser game built for the COP31 Game Jam. The player acts as a Municipal Carbon Auditor who inspects citizen household records, verifies declared carbon footprints against the municipal rulebook, identifies misdeclarations or unverified greenwashing claims, and issues approvals, fines, or mitigation grants.
 
-> **Status:** Phase 0 foundation. The project structure, data contracts, approved game rules, and frontend/backend interface are in place. Gameplay implementation is in progress, so the game is not yet playable.
+**Play online:** https://belle-rivers.github.io/GameUp_Hackathon/
+
+> **Status:** Complete and playable. The three-day campaign, audit actions, grants, calculator, audio, and all presentation scenes are implemented, with 298 automated tests passing.
 
 ## Gameplay
 
