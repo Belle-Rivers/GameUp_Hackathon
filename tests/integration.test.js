@@ -642,6 +642,7 @@ describe('P3-12 — Shift timer', () => {
     const ctrl = createGameController(backendApi, renderer);
 
     ctrl.startCampaign();
+    ctrl.onStartShift();
 
     const timerUpdatesBefore = renderer._topBarUpdates.filter((u) => u.timeRemaining !== undefined).length;
 
@@ -659,6 +660,7 @@ describe('P3-12 — Shift timer', () => {
     const ctrl = createGameController(backendApi, renderer);
 
     ctrl.startCampaign();
+    ctrl.onStartShift();
 
     // Day 1 timer is 120 seconds
     vi.advanceTimersByTime(121_000);

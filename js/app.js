@@ -7,7 +7,7 @@
  * event listeners; it delegates to GameController callbacks.
  *
  * P3-01  Application bootstrap (startCampaign → first citizen + initial render)
- * P3-12  Timer is started inside GameController.startCampaign()
+ * P3-12  Timer is started when the player begins a shift from its briefing.
  */
 
 import { backendApi } from './backend/index.js';

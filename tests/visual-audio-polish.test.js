@@ -97,9 +97,12 @@ describe('Phase 5: Visual Polish, Animation and Audio (P5-01 to P5-10)', () => {
       expect(html).toContain('120 kWh');
     });
 
-    it('contains official COP31 seal and paperclip elements in the HTML structure', () => {
+    it('uses a Material Symbol paperclip without the removed dossier decorations', () => {
       expect(indexHtml).toContain('Official_Seal.png');
-      expect(indexHtml).toContain('Paperclips_and_Note.png');
+      expect(indexHtml).not.toContain('COP31 OFFICIAL RECORD');
+      expect(indexHtml).not.toContain('Paperclips_and_Note.png');
+      expect(indexHtml).toContain('paperclip-icon material-symbols-outlined');
+      expect(indexHtml).toContain('attach_file');
     });
   });
 

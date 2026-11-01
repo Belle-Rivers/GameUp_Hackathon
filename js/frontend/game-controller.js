@@ -20,7 +20,8 @@ import { createSceneDirector, SCENE_NAMES } from './scene-director.js';
  * P3-09  Action feedback (correct/incorrect stamp + explanation).
  * P3-10  Citizen transitions (load next citizen after action resolves).
  * P3-11  Shift statistics → summary modal.
- * P3-12  Shift timer — real interval connected to campaign.tick().
+ * P3-12  Shift timer — real interval connected to campaign.tick() after the
+ * player dismisses the day briefing.
  *
  * @typedef {import('../backend/index.js').BackendApi} BackendApi
  * @typedef {import('./renderer.js').Renderer} Renderer
@@ -79,6 +80,9 @@ export class GameController {
     /** @type {import('../backend/index.js').CitizenCaseView | null} */
     this._currentCase = null;
 
+    /** @type {boolean} True only after the player dismisses the day briefing. */
+    this._shiftActive = false;
+
     this._feedbackEl = null;
 
     /** @type {import('./scene-director.js').SceneDirector} */
@@ -98,17 +102,17 @@ export class GameController {
   /**
    * Initialises (or re-initialises) the backend campaign and performs the
    * initial full render of all connected UI panels.
-   * P4-09: Shows day introduction modal and starts the shift timer.
+ * P4-09: Shows day introduction modal. The shift timer starts only after the
+ * player explicitly clicks Begin Shift.
    *
-   * @param {object} [options]
-   * @param {boolean} [options.autoStartTimer=true] Whether to start the timer immediately.
    * @returns {void}
    */
-  startCampaign(options = {}) {
+  startCampaign() {
     const stateView = this.backend.startCampaign();
     this._started = true;
     this._awaitingTransition = false;
     this._pendingGameOverData = null;
+    this._shiftActive = false;
 
     this._renderInitialState(stateView);
 
@@ -121,8 +125,6 @@ export class GameController {
       stateView,
     });
 
-    // Start shift timer
-    this._startTimer();
   }
 
   /**
@@ -130,6 +132,8 @@ export class GameController {
    * Dismisses the intro modal and ensures the timer is running. (P4-09)
    */
   onStartShift() {
+    if (this._shiftActive) return;
+    this._shiftActive = true;
     this.renderer.hideDayIntroModal();
     soundEngine.playTransition();
     if (!this._timerHandle) {
@@ -153,18 +157,18 @@ export class GameController {
     const stateView = this.backend.restartCampaign();
     this._awaitingTransition = false;
     this._pendingGameOverData = null;
+    this._shiftActive = false;
     this._hideFeedback();
 
     this.renderer.showScreen('gameplay');
     this._renderInitialState(stateView);
 
-    // P4-09/P4-14: Show day intro for Day 1 and start timer
+    // P4-09/P4-14: The player starts the Day 1 timer from the briefing.
     this._showDayIntro(stateView.currentDay);
     this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_BRIEF, {
       day: stateView.currentDay,
       stateView,
     });
-    this._startTimer();
   }
 
   /**
@@ -277,7 +281,7 @@ export class GameController {
    * @param {import('../backend/index.js').GameStateView} [stateView]
    * @private
    */
-  _loadCurrentCitizen(stateView) {
+  _loadCurrentCitizen(stateView, options = {}) {
     const citizenCase = this.backend.getCurrentCase();
     this._currentCase = citizenCase;
 
@@ -289,7 +293,8 @@ export class GameController {
 
     // Render dossier (P5B-04: Physical intake delivery)
     if (this.renderer.gameplay?.dossier) {
-      if (typeof this.renderer.gameplay.dossier.animateIntake === 'function') {
+      const shouldAnimate = options.animate ?? this._shiftActive;
+      if (shouldAnimate && typeof this.renderer.gameplay.dossier.animateIntake === 'function') {
         const duration = this.sceneDirector?.getTransitionDuration(SCENE_NAMES.CASE_INTAKE) ?? 750;
         const reducedMotion = this.sceneDirector?.isReducedMotion() ?? false;
         this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_INTAKE, { citizenCase });
@@ -761,12 +766,14 @@ export class GameController {
     if (result.campaignOutcome) {
       // Campaign ended (victory or failure)
       this._stopTimer();
+      this._shiftActive = false;
       this._handleCampaignEnd(result.campaignOutcome, result.shiftStats);
       return;
     }
 
     if (result.shiftEnded) {
       this._stopTimer();
+      this._shiftActive = false;
       this._handleShiftEnd(null, result.shiftStats);
       return;
     }
@@ -789,6 +796,8 @@ export class GameController {
    * @private
    */
   _handleShiftEnd(stateView, statsOverride) {
+    this._stopTimer();
+    this._shiftActive = false;
     soundEngine.playTransition();
     const summary = this.backend.getShiftSummary();
     const stats = statsOverride || summary.shiftStats;
@@ -820,6 +829,8 @@ export class GameController {
    * @private
    */
   _handleCampaignEnd(outcome, shiftStats) {
+    this._stopTimer();
+    this._shiftActive = false;
     const isVictory = outcome.status === 'VICTORY';
     const stateView = this.backend.getState();
 
@@ -897,6 +908,7 @@ export class GameController {
 
       // Re-render the gameplay screen with the new day's state
       this._awaitingTransition = false;
+      this._shiftActive = false;
       this._hideFeedback();
 
       // Update grant selector for the new day's available grants
@@ -1027,6 +1039,7 @@ export class GameController {
    */
   stopSession() {
     this._stopTimer();
+    this._shiftActive = false;
     this._hideFeedback();
   }
 
@@ -1035,6 +1048,7 @@ export class GameController {
    */
   destroy() {
     this._stopTimer();
+    this._shiftActive = false;
     this._hideFeedback();
     this.sceneDirector?.destroy();
   }

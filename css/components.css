@@ -207,11 +207,19 @@
 }
 
 .meter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.68rem;
   font-weight: 700;
   color: var(--text-muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.meter-icon {
+  color: var(--accent-cyan-bright);
+  font-size: 15px;
 }
 
 .meter-value {
@@ -640,6 +648,8 @@
   background: rgba(18, 28, 44, 0.88);
   backdrop-filter: blur(4px);
   border-radius: var(--radius-sm);
+  overflow-y: auto;
+  overflow-x: hidden;
 
   /* Initial hidden state for transition */
   opacity: 0;
@@ -722,13 +732,19 @@
 
 .feedback-explanation {
   font-size: var(--text-sm);
-  color: var(--text-main);
-  max-width: 90%;
+  color: #243447;
+  width: 100%;
+  max-width: 100%;
   line-height: 1.5;
-  background: rgba(10, 16, 26, 0.85);
+  background: #fbf7ee;
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-xs);
   border: 1px solid var(--border-subtle);
+}
+
+.feedback-explanation .ruling-text {
+  color: #243447;
+  overflow-wrap: anywhere;
 }
 
 .feedback-metrics {
@@ -1414,45 +1430,6 @@
     transform: scale(1) translateY(0) rotate(-0.5deg);
     box-shadow: var(--shadow-modal);
   }
-}
-
-.shift-report-seal-wrap {
-  position: absolute;
-  bottom: 20px;
-  right: 24px;
-  width: 110px;
-  height: 110px;
-  opacity: 0.18;
-  pointer-events: none;
-}
-
-.shift-report-seal-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.shift-report-stamp-graphic-wrap {
-  position: absolute;
-  top: 18px;
-  right: 24px;
-  width: 160px;
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0;
-  transform: scale(1.5) rotate(-14deg);
-  transition: opacity 0.15s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.shift-report-stamp-graphic-wrap.stamp-visible {
-  opacity: 0.94;
-  transform: scale(1) rotate(-8deg);
-}
-
-.shift-report-stamp-img {
-  width: 100%;
-  height: auto;
-  display: block;
 }
 
 /* --------------------------------------------------------------------------

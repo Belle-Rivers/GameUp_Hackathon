@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Municipal Carbon Assessor - Retro-futuristic municipal assessment terminal under the COP31 Antalya Protocol.">
-  <title>Municipal Carbon Assessor | COP31 Antalya Protocol</title>
+  <meta name="description" content="The Carbon Dossier - Retro-futuristic municipal emissions assessment terminal.">
+  <title>The Carbon Dossier</title>
 
   <!-- Google Fonts: Anta for display, Chakra Petch for technical UI, Inter for body copy -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,8 +28,7 @@
 
       <div class="menu-container">
         <header class="menu-header">
-          <div class="badge badge-gold menu-badge-reveal">COP31 Antalya Protocol • Municipal Terminal v3.1</div>
-          <h1 class="menu-title">MUNICIPAL CARBON ASSESSOR</h1>
+          <h1 class="menu-title">THE CARBON DOSSIER</h1>
           <p class="menu-subtitle">Department of Environmental Compliance • District Assessment Division</p>
         </header>
 
@@ -78,10 +77,6 @@
       <header id="top-bar" class="top-bar" aria-label="Municipal Assessment Terminal Header">
         <div class="terminal-brand">
           <div class="terminal-indicator pulse-indicator" aria-hidden="true"></div>
-          <div class="terminal-title-group">
-            <span class="terminal-version font-mono">TERM-v3.1 // COP31 AGENDA</span>
-            <span class="terminal-station font-mono">MURATPAŞA AUDIT DESK</span>
-          </div>
         </div>
 
         <div class="shift-info font-mono">
@@ -93,7 +88,7 @@
           <!-- Net-Zero Progress Meter -->
           <div class="meter-widget" id="meter-netzero-container">
             <div class="meter-header">
-              <span class="meter-label">NET-ZERO</span>
+              <span class="meter-label"><span class="meter-icon material-symbols-outlined" aria-hidden="true">co2</span>NET-ZERO</span>
               <span class="meter-value font-mono" id="meter-netzero-val">30%</span>
             </div>
             <div class="meter-track" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" aria-label="Net-Zero Progress">
@@ -104,7 +99,7 @@
           <!-- Municipal Budget Meter -->
           <div class="meter-widget" id="meter-budget-container">
             <div class="meter-header">
-              <span class="meter-label">BUDGET</span>
+              <span class="meter-label"><span class="meter-icon material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>BUDGET</span>
               <span class="meter-value font-mono" id="meter-budget-val">$5,000</span>
             </div>
             <div class="meter-track" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Municipal Budget Level">
@@ -115,7 +110,7 @@
           <!-- Public Trust Meter -->
           <div class="meter-widget" id="meter-trust-container">
             <div class="meter-header">
-              <span class="meter-label">PUBLIC TRUST</span>
+              <span class="meter-label"><span class="meter-icon material-symbols-outlined" aria-hidden="true">verified_user</span>PUBLIC TRUST</span>
               <span class="meter-value font-mono" id="meter-trust-val">70%</span>
             </div>
             <div class="meter-track" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" aria-label="Public Trust">
@@ -228,11 +223,6 @@
           <div class="panel-body dossier-body" id="dossier-content">
             <!-- Citizen Identity and Declaration -->
             <div class="dossier-paper">
-              <div class="dossier-stamp-seal" aria-hidden="true">
-                <img src="assets/Official_Seal.png" alt="" class="seal-graphic" />
-                <span class="seal-text">COP31 OFFICIAL RECORD</span>
-              </div>
-
               <div class="dossier-meta-grid">
                 <div class="meta-field">
                   <span class="meta-label">District:</span>
@@ -250,7 +240,7 @@
 
               <div class="dossier-plea-card">
                 <div class="plea-paperclip-graphic" aria-hidden="true">
-                  <img src="assets/Paperclips_and_Note.png" alt="" class="paperclip-img" />
+                  <span class="paperclip-icon material-symbols-outlined">attach_file</span>
                 </div>
                 <h4 class="plea-title">Citizen Statement / Note:</h4>
                 <p class="plea-text" id="dossier-note">
@@ -433,12 +423,6 @@
     <!-- Summary Modal: Shift End Transition (P5B-09) -->
     <div id="summary-modal" class="modal-backdrop shift-report-scene" role="dialog" aria-modal="true" aria-labelledby="modal-shift-title" hidden>
       <div class="modal-card card shift-report-document">
-        <div class="shift-report-seal-wrap" aria-hidden="true">
-          <img src="assets/Official_Seal.png" alt="Official Seal" class="shift-report-seal-img" />
-        </div>
-        <div class="shift-report-stamp-graphic-wrap" aria-hidden="true">
-          <img src="assets/Approved_Stamp.png" alt="Approved Stamp" class="shift-report-stamp-img" />
-        </div>
         <header class="modal-header">
           <div class="badge badge-gold">SHIFT AUDIT COMPLETE</div>
           <h2 id="modal-shift-title" class="modal-title">DAY 1 PERFORMANCE REPORT</h2>

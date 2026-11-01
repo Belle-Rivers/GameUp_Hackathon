@@ -4279,7 +4279,6 @@ ${optionsHtml}`;
     constructor(root = document, options = {}) {
       this.root = root;
       this.options = options;
-      this._stampTimer = null;
       this.elements = this._queryElements();
       this._attachEvents();
     }
@@ -4288,8 +4287,6 @@ ${optionsHtml}`;
       return {
         modal: q("#summary-modal"),
         documentCard: q(".shift-report-document") || q(".modal-card"),
-        sealWrap: q(".shift-report-seal-wrap"),
-        stampGraphic: q(".shift-report-stamp-graphic-wrap"),
         title: q("#modal-shift-title"),
         content: q("#summary-modal-content"),
         casesProcessed: q("#modal-cases-processed"),
@@ -4413,32 +4410,13 @@ ${optionsHtml}`;
           this.elements.documentCard.classList.add("document-landing-anim");
         }
       }
-      if (this.elements.stampGraphic) {
-        if (isReduced) {
-          this.elements.stampGraphic.classList?.add("stamp-visible");
-        } else {
-          this.elements.stampGraphic.classList?.remove("stamp-visible");
-          if (this._stampTimer) clearTimeout(this._stampTimer);
-          this._stampTimer = setTimeout(() => {
-            this.elements.stampGraphic?.classList?.add("stamp-visible");
-            soundEngine.playStamp("APPROVE");
-          }, 450);
-        }
-      }
     }
     /**
      * Immediately skips document reveal animations to completed resting state.
      */
     skipAnimation() {
-      if (this._stampTimer) {
-        clearTimeout(this._stampTimer);
-        this._stampTimer = null;
-      }
       if (this.elements.documentCard?.classList) {
         this.elements.documentCard.classList.remove("document-landing-anim");
-      }
-      if (this.elements.stampGraphic?.classList) {
-        this.elements.stampGraphic.classList.add("stamp-visible");
       }
     }
     /**
@@ -4453,10 +4431,6 @@ ${optionsHtml}`;
      * Closes and hides the summary modal.
      */
     close() {
-      if (this._stampTimer) {
-        clearTimeout(this._stampTimer);
-        this._stampTimer = null;
-      }
       if (this.elements.modal) {
         if (typeof this.elements.modal.setAttribute === "function") {
           this.elements.modal.setAttribute("hidden", "");
@@ -4466,9 +4440,6 @@ ${optionsHtml}`;
       }
       if (this.elements.documentCard?.classList) {
         this.elements.documentCard.classList.remove("document-landing-anim");
-      }
-      if (this.elements.stampGraphic?.classList) {
-        this.elements.stampGraphic.classList.remove("stamp-visible");
       }
       if (typeof this.options.onClose === "function") {
         this.options.onClose();
@@ -5093,6 +5064,7 @@ ${optionsHtml}`;
       this._awaitingTransition = false;
       this._started = false;
       this._currentCase = null;
+      this._shiftActive = false;
       this._feedbackEl = null;
       this.sceneDirector = options.sceneDirector || createSceneDirector({ root: this.root });
     }
@@ -5102,32 +5074,33 @@ ${optionsHtml}`;
     }
     // ─── P3-01  Bootstrap ────────────────────────────────────────────────────
     /**
-     * Initialises (or re-initialises) the backend campaign and performs the
-     * initial full render of all connected UI panels.
-     * P4-09: Shows day introduction modal and starts the shift timer.
-     *
-     * @param {object} [options]
-     * @param {boolean} [options.autoStartTimer=true] Whether to start the timer immediately.
-     * @returns {void}
-     */
-    startCampaign(options = {}) {
+      * Initialises (or re-initialises) the backend campaign and performs the
+      * initial full render of all connected UI panels.
+    * P4-09: Shows day introduction modal. The shift timer starts only after the
+    * player explicitly clicks Begin Shift.
+      *
+      * @returns {void}
+      */
+    startCampaign() {
       const stateView = this.backend.startCampaign();
       this._started = true;
       this._awaitingTransition = false;
       this._pendingGameOverData = null;
+      this._shiftActive = false;
       this._renderInitialState(stateView);
       this._showDayIntro(stateView.currentDay);
       this.sceneDirector?.transitionTo(SCENE_NAMES.DAY_BRIEF, {
         day: stateView.currentDay,
         stateView
       });
-      this._startTimer();
     }
     /**
      * Called when the player clicks "Begin Shift" on the day intro modal.
      * Dismisses the intro modal and ensures the timer is running. (P4-09)
      */
     onStartShift() {
+      if (this._shiftActive) return;
+      this._shiftActive = true;
       this.renderer.hideDayIntroModal();
       soundEngine.playTransition();
       if (!this._timerHandle) {
@@ -5149,6 +5122,7 @@ ${optionsHtml}`;
       const stateView = this.backend.restartCampaign();
       this._awaitingTransition = false;
       this._pendingGameOverData = null;
+      this._shiftActive = false;
       this._hideFeedback();
       this.renderer.showScreen("gameplay");
       this._renderInitialState(stateView);
@@ -5157,7 +5131,6 @@ ${optionsHtml}`;
         day: stateView.currentDay,
         stateView
       });
-      this._startTimer();
     }
     /**
      * Performs the full initial render for a freshly started/reset state.
@@ -5246,7 +5219,7 @@ ${optionsHtml}`;
      * @param {import('../backend/index.js').GameStateView} [stateView]
      * @private
      */
-    _loadCurrentCitizen(stateView) {
+    _loadCurrentCitizen(stateView, options = {}) {
       const citizenCase = this.backend.getCurrentCase();
       this._currentCase = citizenCase;
       if (!citizenCase) {
@@ -5254,7 +5227,8 @@ ${optionsHtml}`;
         return;
       }
       if (this.renderer.gameplay?.dossier) {
-        if (typeof this.renderer.gameplay.dossier.animateIntake === "function") {
+        const shouldAnimate = options.animate ?? this._shiftActive;
+        if (shouldAnimate && typeof this.renderer.gameplay.dossier.animateIntake === "function") {
           const duration = this.sceneDirector?.getTransitionDuration(SCENE_NAMES.CASE_INTAKE) ?? 750;
           const reducedMotion = this.sceneDirector?.isReducedMotion() ?? false;
           this.sceneDirector?.transitionTo(SCENE_NAMES.CASE_INTAKE, { citizenCase });
@@ -5655,11 +5629,13 @@ ${optionsHtml}`;
       this._awaitingTransition = false;
       if (result.campaignOutcome) {
         this._stopTimer();
+        this._shiftActive = false;
         this._handleCampaignEnd(result.campaignOutcome, result.shiftStats);
         return;
       }
       if (result.shiftEnded) {
         this._stopTimer();
+        this._shiftActive = false;
         this._handleShiftEnd(null, result.shiftStats);
         return;
       }
@@ -5678,6 +5654,8 @@ ${optionsHtml}`;
      * @private
      */
     _handleShiftEnd(stateView, statsOverride) {
+      this._stopTimer();
+      this._shiftActive = false;
       soundEngine.playTransition();
       const summary = this.backend.getShiftSummary();
       const stats = statsOverride || summary.shiftStats;
@@ -5703,6 +5681,8 @@ ${optionsHtml}`;
      * @private
      */
     _handleCampaignEnd(outcome, shiftStats) {
+      this._stopTimer();
+      this._shiftActive = false;
       const isVictory = outcome.status === "VICTORY";
       const stateView = this.backend.getState();
       const summary = this.backend.getShiftSummary();
@@ -5762,6 +5742,7 @@ ${optionsHtml}`;
         this.sceneDirector?.transitionTo(SCENE_NAMES.NEXT_DAY);
         const stateView = this.backend.advanceDay();
         this._awaitingTransition = false;
+        this._shiftActive = false;
         this._hideFeedback();
         const currentDay = stateView.currentDay ?? 1;
         const grants = this.backend.getGrantsForDay ? this.backend.getGrantsForDay(currentDay) : this.backend.getGrants();
@@ -5860,6 +5841,7 @@ ${optionsHtml}`;
      */
     stopSession() {
       this._stopTimer();
+      this._shiftActive = false;
       this._hideFeedback();
     }
     /**
@@ -5867,6 +5849,7 @@ ${optionsHtml}`;
      */
     destroy() {
       this._stopTimer();
+      this._shiftActive = false;
       this._hideFeedback();
       this.sceneDirector?.destroy();
     }

@@ -21,9 +21,8 @@
     min-width: 110px;
   }
 
-  .feedback-stamp-graphic-wrap {
-    width: 140px;
-    height: 140px;
+  .action-feedback-overlay {
+    padding: var(--space-md);
   }
 }
 
