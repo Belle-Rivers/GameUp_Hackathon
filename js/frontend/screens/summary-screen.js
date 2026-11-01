@@ -1,3 +1,5 @@
+import { soundEngine } from '../audio.js';
+
 /**
  * Formats the audit accuracy percentage.
  *
@@ -30,11 +32,13 @@ export function formatAccuracy(correctActions, processedCount) {
  * @typedef {Object} SummaryModalOptions
  * @property {() => void} [onProceed] Callback invoked when the user proceeds to the next shift.
  * @property {() => void} [onClose] Callback invoked when modal is dismissed.
+ * @property {boolean} [reducedMotion] Whether animations should complete immediately.
  */
 
 /**
  * SummaryModalComponent manages the end-of-shift performance dialog (#summary-modal).
- * It presents cases processed, audit accuracy, and CO2 corrected/mitigated.
+ * P5B-09: Presents physical SHIFT REPORT document landing on the desk, progressive
+ * data reveal, official approval seal animation, and smooth shift advance.
  */
 export class SummaryModalComponent {
   /**
@@ -44,6 +48,7 @@ export class SummaryModalComponent {
   constructor(root = document, options = {}) {
     this.root = root;
     this.options = options;
+    this._stampTimer = null;
     this.elements = this._queryElements();
     this._attachEvents();
   }
@@ -52,6 +57,9 @@ export class SummaryModalComponent {
     const q = (sel) => (this.root && typeof this.root.querySelector === 'function' ? this.root.querySelector(sel) : null);
     return {
       modal: q('#summary-modal'),
+      documentCard: q('.shift-report-document') || q('.modal-card'),
+      sealWrap: q('.shift-report-seal-wrap'),
+      stampGraphic: q('.shift-report-stamp-graphic-wrap'),
       title: q('#modal-shift-title'),
       content: q('#summary-modal-content'),
       casesProcessed: q('#modal-cases-processed'),
@@ -66,11 +74,30 @@ export class SummaryModalComponent {
   _attachEvents() {
     if (this.elements.btnNextShift) {
       this.elements.btnNextShift.addEventListener('click', (event) => {
+        soundEngine.playPaper();
         if (typeof this.options.onProceed === 'function') {
           this.options.onProceed(event);
         }
       });
     }
+
+    // Clicking document skips progressive reveal and stamp delay
+    if (this.elements.documentCard) {
+      this.elements.documentCard.addEventListener('click', () => {
+        this.skipAnimation();
+      });
+    }
+  }
+
+  _isReducedMotion() {
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      try {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (_) {
+        return false;
+      }
+    }
+    return false;
   }
 
   /**
@@ -121,7 +148,7 @@ export class SummaryModalComponent {
   }
 
   /**
-   * Opens the summary modal and populates shift statistics.
+   * Opens the summary modal and populates shift statistics with physical landing.
    *
    * @param {ShiftSummaryData} [data]
    */
@@ -134,8 +161,120 @@ export class SummaryModalComponent {
         this.elements.modal.removeAttribute('hidden');
       }
       this.elements.modal.hidden = false;
+      this.elements.modal.classList?.add('shift-report-active');
+    }
+
+    soundEngine.playPaper();
+
+    const isReduced = this.options.reducedMotion || this._isReducedMotion();
+    if (this.elements.documentCard?.classList) {
+      if (isReduced) {
+        this.elements.documentCard.classList.remove('document-landing-anim');
+      } else {
+        this.elements.documentCard.classList.add('document-landing-anim');
+      }
+    }
+
+    // Progressive stamp seal slam
+    if (this.elements.stampGraphic) {
+      if (isReduced) {
+        this.elements.stampGraphic.classList?.add('stamp-visible');
+      } else {
+        this.elements.stampGraphic.classList?.remove('stamp-visible');
+        if (this._stampTimer) clearTimeout(this._stampTimer);
+        this._stampTimer = setTimeout(() => {
+          this.elements.stampGraphic?.classList?.add('stamp-visible');
+          soundEngine.playStamp('APPROVE');
+        }, 450);
+      }
     }
   }
+
+  /**
+   * Immediately skips document reveal animations to completed resting state.
+   */
+  skipAnimation() {
+    if (this._stampTimer) {
+      clearTimeout(this._stampTimer);
+      this._stampTimer = null;
+    }
+    if (this.elements.documentCard?.classList) {
+      this.elements.documentCard.classList.remove('document-landing-anim');
+    }
+    if (this.elements.stampGraphic?.classList) {
+      this.elements.stampGraphic.classList.add('stamp-visible');
+    }
+  }
+
+  /**
+   * Alias for open().
+   *
+   * @param {ShiftSummaryData} [data]
+   */
+  show(data) {
+    this.open(data);
+  }
+
+  /**
+   * Closes and hides the summary modal.
+   */
+  close() {
+    if (this._stampTimer) {
+      clearTimeout(this._stampTimer);
+      this._stampTimer = null;
+    }
+    if (this.elements.modal) {
+      if (typeof this.elements.modal.setAttribute === 'function') {
+        this.elements.modal.setAttribute('hidden', '');
+      }
+      this.elements.modal.hidden = true;
+      this.elements.modal.classList?.remove('shift-report-active');
+    }
+    if (this.elements.documentCard?.classList) {
+      this.elements.documentCard.classList.remove('document-landing-anim');
+    }
+    if (this.elements.stampGraphic?.classList) {
+      this.elements.stampGraphic.classList.remove('stamp-visible');
+    }
+    if (typeof this.options.onClose === 'function') {
+      this.options.onClose();
+    }
+  }
+
+  hide() {
+    this.close();
+  }
+
+  /**
+   * Checks whether the summary modal is currently open.
+   *
+   * @returns {boolean}
+   */
+  isOpen() {
+    if (!this.elements.modal) return false;
+    const hasHiddenAttr = typeof this.elements.modal.hasAttribute === 'function'
+      ? this.elements.modal.hasAttribute('hidden')
+      : Boolean(this.elements.modal.hidden);
+    return !hasHiddenAttr && !this.elements.modal.hidden;
+  }
+
+  isVisible() {
+    return this.isOpen();
+  }
+}
+
+export const SummaryModal = SummaryModalComponent;
+
+/**
+ * Factory for creating a SummaryModalComponent instance.
+ *
+ * @param {HTMLElement|Document} [root]
+ * @param {SummaryModalOptions} [options]
+ * @returns {SummaryModalComponent}
+ */
+export function createSummaryModal(root = document, options = {}) {
+  return new SummaryModalComponent(root, options);
+}
 
   /**
    * Alias for open().

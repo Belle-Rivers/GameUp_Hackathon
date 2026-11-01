@@ -273,6 +273,259 @@ class SoundEngine {
       osc.stop(now + 0.35);
     } catch (_) {}
   }
+
+  /**
+   * P5B-12: Transition whoosh — subtle air sweep for scene shifts.
+   */
+  playWhoosh() {
+    if (this.muted || !this.init() || !this.ctx) return;
+
+    try {
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.25);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(280, this.ctx.currentTime + 0.24);
+      filter.Q.setValueAtTime(1.8, this.ctx.currentTime);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.08, this.ctx.currentTime + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      noise.start();
+    } catch (_) {}
+  }
+
+  /**
+   * P5B-12: Drawer movement — mechanical wood/metal glide.
+   */
+  playDrawer() {
+    if (this.muted || !this.init() || !this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(95, now);
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.2);
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(320, now);
+
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } catch (_) {}
+  }
+
+  /**
+   * P5B-12: Day-start brass desk bell.
+   */
+  playDayBell() {
+    if (this.muted || !this.init() || !this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const fundamental = 1046.5; // C6
+      const harmonic = 2093.0; // C7
+
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(fundamental, now);
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(harmonic, now);
+
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.65);
+      osc2.stop(now + 0.65);
+    } catch (_) {}
+  }
+
+  /**
+   * P5B-12: Final countdown sting when timer enters critical threshold.
+   */
+  playCountdownSting() {
+    if (this.muted || !this.init() || !this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.setValueAtTime(830.6, now + 0.1);
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(900, now);
+
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.28);
+    } catch (_) {}
+  }
+
+  /**
+   * P5B-12: Clock tick-tock for countdown timer pacing.
+   *
+   * @param {boolean} [isUrgent=false] Higher pitch and accent when in critical warning.
+   */
+  playTick(isUrgent = false) {
+    if (this.muted || !this.init() || !this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      const freq = isUrgent ? 1600 : 1100;
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.exponentialRampToValueAtTime(300, now + 0.025);
+
+      const vol = isUrgent ? 0.09 : 0.04;
+      gain.gain.setValueAtTime(vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.025);
+    } catch (_) {}
+  }
+
+  /**
+   * P5B-12: Typewriter keystroke tap for progressive briefing & report reveals.
+   */
+  playTypewriter() {
+    if (this.muted || !this.init() || !this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      const freq = 1400 + Math.random() * 300;
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + 0.018);
+
+      gain.gain.setValueAtTime(0.035, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.018);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.018);
+    } catch (_) {}
+  }
+
+  /**
+   * P5B-12: Ceremonial victory fanfare chords.
+   */
+  playVictory() {
+    if (this.muted || !this.init() || !this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const startTime = now + idx * 0.12;
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, startTime);
+
+        gain.gain.setValueAtTime(0.18, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.7);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + 0.7);
+      });
+    } catch (_) {}
+  }
+
+  /**
+   * P5B-12: Somber defeat / terminal decommission tone.
+   */
+  playDefeat() {
+    if (this.muted || !this.init() || !this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const notes = [185.0, 174.6, 164.8]; // F#3, F3, E3
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const startTime = now + idx * 0.18;
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, startTime);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(380, startTime);
+
+        gain.gain.setValueAtTime(0.16, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.6);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + 0.6);
+      });
+    } catch (_) {}
+  }
 }
 
 export const soundEngine = new SoundEngine();

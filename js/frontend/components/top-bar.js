@@ -60,6 +60,8 @@ export class TopBarComponent {
    */
   constructor(root = document) {
     this.root = root;
+    this._prevMetrics = { netZero: null, budget: null, trust: null };
+    this._prevTimerSeconds = null;
     this.elements = this._queryElements();
     this._initAudioToggle();
     this._initTerminalToggle();
@@ -70,10 +72,13 @@ export class TopBarComponent {
     return {
       dayBadge: q('#top-bar-day'),
       caseBadge: q('#top-bar-case'),
+      netzeroContainer: q('#meter-netzero-container'),
       netzeroVal: q('#meter-netzero-val'),
       netzeroBar: q('#meter-netzero-bar'),
+      budgetContainer: q('#meter-budget-container'),
       budgetVal: q('#meter-budget-val'),
       budgetBar: q('#meter-budget-bar'),
+      trustContainer: q('#meter-trust-container'),
       trustVal: q('#meter-trust-val'),
       trustBar: q('#meter-trust-bar'),
       timerDisplay: q('#timer-display'),
@@ -219,6 +224,73 @@ export class TopBarComponent {
   }
 
   /**
+   * P5B-07: Triggers expressive feedback (bounce animation & floating delta chip)
+   * when a metric changes.
+   *
+   * @param {'netZero'|'budget'|'trust'} type
+   * @param {number} delta
+   * @param {HTMLElement|null} container
+   * @param {HTMLElement|null} valEl
+   * @private
+   */
+  _triggerMetricFeedback(type, delta, container, valEl) {
+    if (!delta || delta === 0) return;
+    const isPos = delta > 0;
+    const bounceCls = isPos ? 'metric-bounce-up' : 'metric-bounce-down';
+
+    // 1. Value / container bounce
+    if (valEl?.classList) {
+      valEl.classList.remove('metric-bounce-up', 'metric-bounce-down');
+      void (valEl.offsetWidth || 0); // trigger reflow
+      valEl.classList.add(bounceCls);
+      setTimeout(() => {
+        valEl.classList?.remove(bounceCls);
+      }, 450);
+    }
+
+    // 2. Floating delta chip
+    if (container && typeof container.appendChild === 'function' && !this._isReducedMotion()) {
+      const doc = typeof document !== 'undefined'
+        ? document
+        : (this.root && typeof this.root.createElement === 'function' ? this.root : this.root?.ownerDocument);
+      if (doc && typeof doc.createElement === 'function') {
+        const chip = doc.createElement('span');
+        chip.className = `floating-delta-chip ${isPos ? 'delta-pos' : 'delta-neg'}`;
+
+        let text = '';
+        if (type === 'budget') {
+          const sign = isPos ? '+' : '-';
+          text = `${sign}$${Math.round(Math.abs(delta))}`;
+        } else {
+          const sign = isPos ? '+' : '';
+          text = `${sign}${delta.toFixed(0)}%`;
+        }
+        chip.textContent = text;
+        container.appendChild(chip);
+
+        setTimeout(() => {
+          if (typeof chip.remove === 'function') {
+            chip.remove();
+          } else if (chip.parentNode) {
+            chip.parentNode.removeChild(chip);
+          }
+        }, 750);
+      }
+    }
+  }
+
+  _isReducedMotion() {
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      try {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (_) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Sets city metrics values and progress bar widths.
    *
    * @param {TopBarMetrics} metrics
@@ -226,6 +298,12 @@ export class TopBarComponent {
   setMetrics(metrics = {}) {
     if (metrics.netZero !== undefined) {
       const netZeroClamped = Math.max(0, Math.min(100, Math.round(metrics.netZero)));
+      if (this._prevMetrics.netZero !== null && this._prevMetrics.netZero !== netZeroClamped) {
+        const delta = netZeroClamped - this._prevMetrics.netZero;
+        this._triggerMetricFeedback('netZero', delta, this.elements.netzeroContainer, this.elements.netzeroVal);
+      }
+      this._prevMetrics.netZero = netZeroClamped;
+
       if (this.elements.netzeroVal) {
         this.elements.netzeroVal.textContent = `${netZeroClamped}%`;
       }
@@ -237,6 +315,13 @@ export class TopBarComponent {
     }
 
     if (metrics.budget !== undefined) {
+      const currentBudget = Math.round(metrics.budget);
+      if (this._prevMetrics.budget !== null && this._prevMetrics.budget !== currentBudget) {
+        const delta = currentBudget - this._prevMetrics.budget;
+        this._triggerMetricFeedback('budget', delta, this.elements.budgetContainer, this.elements.budgetVal);
+      }
+      this._prevMetrics.budget = currentBudget;
+
       if (this.elements.budgetVal) {
         this.elements.budgetVal.textContent = formatBudget(metrics.budget);
       }
@@ -251,6 +336,12 @@ export class TopBarComponent {
 
     if (metrics.trust !== undefined) {
       const trustClamped = Math.max(0, Math.min(100, Math.round(metrics.trust)));
+      if (this._prevMetrics.trust !== null && this._prevMetrics.trust !== trustClamped) {
+        const delta = trustClamped - this._prevMetrics.trust;
+        this._triggerMetricFeedback('trust', delta, this.elements.trustContainer, this.elements.trustVal);
+      }
+      this._prevMetrics.trust = trustClamped;
+
       if (this.elements.trustVal) {
         this.elements.trustVal.textContent = `${trustClamped}%`;
       }
@@ -272,11 +363,27 @@ export class TopBarComponent {
       this.elements.timerDisplay.textContent = formatTimer(seconds);
     }
     if (this.elements.timerContainer) {
-      if (typeof seconds === 'number' && seconds <= 30 && seconds > 0) {
+      const sec = typeof seconds === 'number' ? seconds : null;
+      if (sec !== null && sec <= 30 && sec > 0) {
         this.elements.timerContainer.classList.add('timer-warning');
+        if (sec <= 10) {
+          this.elements.timerContainer.classList.add('timer-critical');
+        } else {
+          this.elements.timerContainer.classList.remove('timer-critical');
+        }
+
+        // P5B-07 / P5B-12: Clock tick audio on seconds change
+        if (this._prevTimerSeconds !== sec) {
+          soundEngine.playTick(sec <= 10);
+          if (sec === 10 || sec === 5) {
+            soundEngine.playCountdownSting();
+          }
+        }
       } else {
         this.elements.timerContainer.classList.remove('timer-warning');
+        this.elements.timerContainer.classList.remove('timer-critical');
       }
+      this._prevTimerSeconds = sec;
     }
   }
 }

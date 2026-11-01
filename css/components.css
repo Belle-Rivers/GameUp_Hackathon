@@ -1061,3 +1061,432 @@
   color: var(--accent-cyan);
   box-shadow: 0 0 10px rgba(69, 219, 212, 0.35);
 }
+
+/* ==========================================================================
+   PHASE 5B: FRONTEND PRESENTATION & ATMOSPHERE (AGENT B)
+   P5B-02, P5B-03, P5B-06, P5B-07, P5B-09, P5B-10
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   P5B-02: Cinematic Main Menu
+   -------------------------------------------------------------------------- */
+.menu-backdrop-kenburns {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  background: url('../assets/Antalya_Office_background.jpg') center center / cover no-repeat;
+  animation: kenBurnsOffice 28s infinite alternate ease-in-out;
+  pointer-events: none;
+  z-index: 1;
+  filter: brightness(0.65) contrast(1.1);
+}
+
+.menu-vignette-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.25) 0%, rgba(8, 14, 24, 0.82) 70%, rgba(4, 7, 14, 0.98) 100%);
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
+}
+
+.main-menu-screen .menu-container {
+  position: relative;
+  z-index: 3;
+}
+
+@keyframes kenBurnsOffice {
+  0% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.07) translate(-1.5%, -1%); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+.menu-reveal-active .menu-badge-reveal {
+  animation: fadeInDown 0.6s ease-out both;
+}
+
+.menu-reveal-active .menu-title {
+  animation: titleRevealSlide 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+.menu-reveal-active .menu-subtitle {
+  animation: fadeInDown 0.6s ease-out 0.45s both;
+}
+
+.menu-reveal-active .menu-briefing {
+  animation: cardPopIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
+}
+
+.menu-reveal-active #btn-start-game {
+  animation: btnAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.05s both;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes titleRevealSlide {
+  from { opacity: 0; transform: translateY(-14px) scale(0.97); letter-spacing: 0.16em; }
+  to { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 0.1em; }
+}
+
+@keyframes cardPopIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes btnAppear {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --------------------------------------------------------------------------
+   P5B-03: Full-Screen Day Briefing Scene
+   -------------------------------------------------------------------------- */
+.day-briefing-scene {
+  background: radial-gradient(circle at center, rgba(14, 22, 34, 0.85) 0%, rgba(8, 14, 24, 0.98) 100%);
+  backdrop-filter: blur(12px);
+  transition: background 0.5s ease;
+}
+
+.day-briefing-scene[data-briefing-day="1"] {
+  background: radial-gradient(circle at 65% 25%, rgba(45, 68, 96, 0.88) 0%, rgba(8, 14, 24, 0.98) 100%);
+}
+
+.day-briefing-scene[data-briefing-day="2"] {
+  background: radial-gradient(circle at 50% 20%, rgba(75, 62, 32, 0.88) 0%, rgba(12, 16, 24, 0.98) 100%);
+}
+
+.day-briefing-scene[data-briefing-day="3"] {
+  background: radial-gradient(circle at 35% 35%, rgba(80, 40, 28, 0.9) 0%, rgba(8, 10, 18, 0.98) 100%);
+}
+
+.briefing-scene-card.briefing-card-enter {
+  animation: briefingSlideIn 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes briefingSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-35px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.briefing-time-indicator {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   P5B-06: Ambient Office Atmospheric Layer
+   -------------------------------------------------------------------------- */
+.ambient-office-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.ambient-daylight-wash {
+  position: absolute;
+  inset: 0;
+  transition: background 1.5s ease;
+  pointer-events: none;
+}
+
+[data-office-lighting="day-1"] .ambient-daylight-wash {
+  background: radial-gradient(circle at 75% 20%, rgba(147, 197, 253, 0.08) 0%, transparent 60%);
+}
+
+[data-office-lighting="day-2"] .ambient-daylight-wash {
+  background: radial-gradient(circle at 50% 15%, rgba(251, 191, 36, 0.1) 0%, transparent 65%);
+}
+
+[data-office-lighting="day-3"] .ambient-daylight-wash {
+  background: radial-gradient(circle at 25% 40%, rgba(249, 115, 22, 0.09) 0%, transparent 60%);
+}
+
+.ambient-window-beam {
+  position: absolute;
+  top: -20%;
+  right: 8%;
+  width: 48%;
+  height: 140%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 70%);
+  transform: rotate(-24deg);
+  filter: blur(35px);
+  animation: windowBeamDrift 22s infinite alternate ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes windowBeamDrift {
+  0% {
+    opacity: 0.12;
+    transform: rotate(-24deg) translateX(-15px);
+  }
+  100% {
+    opacity: 0.24;
+    transform: rotate(-21deg) translateX(25px);
+  }
+}
+
+.ambient-dust-motes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ambient-dust-motes .mote {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  animation: floatDustMote 18s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.ambient-dust-motes .mote-1 { top: 20%; left: 30%; animation-duration: 22s; animation-delay: 0s; }
+.ambient-dust-motes .mote-2 { top: 55%; left: 45%; animation-duration: 25s; animation-delay: -4s; width: 2px; height: 2px; }
+.ambient-dust-motes .mote-3 { top: 35%; left: 70%; animation-duration: 19s; animation-delay: -7s; }
+.ambient-dust-motes .mote-4 { top: 75%; left: 25%; animation-duration: 24s; animation-delay: -11s; width: 4px; height: 4px; }
+.ambient-dust-motes .mote-5 { top: 15%; left: 60%; animation-duration: 26s; animation-delay: -14s; }
+.ambient-dust-motes .mote-6 { top: 65%; left: 80%; animation-duration: 20s; animation-delay: -17s; width: 2px; height: 2px; }
+
+@keyframes floatDustMote {
+  0% {
+    opacity: 0.1;
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-30px) translateX(15px);
+  }
+  100% {
+    opacity: 0.1;
+    transform: translateY(-60px) translateX(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   P5B-07: Metric HUD Feedback (Bounces & Delta Chips)
+   -------------------------------------------------------------------------- */
+.metric-widget {
+  position: relative;
+}
+
+.metric-bounce-up {
+  animation: metricBounceUp 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.metric-bounce-down {
+  animation: metricBounceDown 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes metricBounceUp {
+  0% { transform: scale(1); filter: brightness(1); }
+  35% { transform: scale(1.16); filter: brightness(1.3) drop-shadow(0 0 8px rgba(34, 197, 94, 0.65)); color: #86efac; }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+@keyframes metricBounceDown {
+  0% { transform: scale(1); filter: brightness(1); }
+  35% { transform: scale(0.92); filter: brightness(1.4) drop-shadow(0 0 10px rgba(239, 68, 68, 0.8)); color: #fca5a5; }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.floating-delta-chip {
+  position: absolute;
+  top: -14px;
+  right: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 35;
+  animation: floatDeltaUp 750ms ease-out forwards;
+}
+
+.floating-delta-chip.delta-pos {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.22);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.floating-delta-chip.delta-neg {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.22);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+@keyframes floatDeltaUp {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.9);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 0.9;
+    transform: translateY(-16px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+
+.timer-widget.timer-critical {
+  border-color: #ef4444;
+  color: #fee2e2;
+  background: rgba(185, 28, 28, 0.35);
+  animation: criticalTimerFlash 0.5s infinite alternate ease-in-out;
+}
+
+@keyframes criticalTimerFlash {
+  0% {
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.95);
+    transform: scale(1.03);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   P5B-09: Shift Report Document (Full-Screen Landing)
+   -------------------------------------------------------------------------- */
+.shift-report-scene {
+  background: radial-gradient(circle at center, rgba(10, 16, 26, 0.88) 0%, rgba(5, 8, 14, 0.98) 100%);
+  backdrop-filter: blur(12px);
+}
+
+.shift-report-document {
+  position: relative;
+  overflow: visible;
+  background: linear-gradient(180deg, #18263a 0%, #101a28 100%);
+  border: 2px solid var(--accent-gold);
+}
+
+.shift-report-document.document-landing-anim {
+  animation: documentLand 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes documentLand {
+  0% {
+    opacity: 0;
+    transform: scale(1.16) translateY(-40px) rotate(-3deg);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(-0.5deg);
+    box-shadow: var(--shadow-modal);
+  }
+}
+
+.shift-report-seal-wrap {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
+  width: 110px;
+  height: 110px;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.shift-report-seal-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.shift-report-stamp-graphic-wrap {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  width: 160px;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transform: scale(1.5) rotate(-14deg);
+  transition: opacity 0.15s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shift-report-stamp-graphic-wrap.stamp-visible {
+  opacity: 0.94;
+  transform: scale(1) rotate(-8deg);
+}
+
+.shift-report-stamp-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   P5B-10: Victory & Game Over Cinematics
+   -------------------------------------------------------------------------- */
+.game-over-screen.verdict-mode--victory {
+  background: radial-gradient(circle at center, rgba(18, 42, 54, 0.85) 0%, rgba(8, 18, 24, 0.96) 100%),
+              url('../assets/Antalya_Office_background.jpg') center center / cover no-repeat;
+}
+
+.victory-certificate-card {
+  border: 2px solid var(--accent-gold);
+  box-shadow: 0 0 50px rgba(245, 158, 11, 0.35), 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+.game-over-screen.verdict-mode--failure {
+  background: radial-gradient(circle at center, rgba(35, 12, 16, 0.9) 0%, rgba(6, 8, 14, 0.98) 100%),
+              url('../assets/Antalya_Office_background.jpg') center center / cover no-repeat;
+}
+
+.failure-notice-card {
+  border: 2px solid var(--stamp-fine-bg);
+  box-shadow: 0 0 50px rgba(239, 68, 68, 0.4), 0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+.game-over-seal-wrap {
+  margin: 0 auto -6px auto;
+  width: 90px;
+  height: 90px;
+  opacity: 0.85;
+}
+
+.game-over-seal-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.terminal-malfunction-flicker {
+  animation: screenMalfunctionFlicker 3s infinite;
+}
+
+@keyframes screenMalfunctionFlicker {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  92% { opacity: 1; filter: brightness(1); }
+  93% { opacity: 0.75; filter: brightness(0.7); }
+  94% { opacity: 1; filter: brightness(1); }
+  96% { opacity: 0.82; filter: brightness(0.85); }
+  97% { opacity: 1; filter: brightness(1); }
+}

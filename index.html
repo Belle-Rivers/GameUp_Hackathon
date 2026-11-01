@@ -22,9 +22,13 @@
 
     <!-- Screen 1: Main Menu -->
     <section id="screen-main-menu" class="screen main-menu-screen active" aria-label="Main Menu Screen">
+      <!-- Atmospheric Ken Burns and Film Grain / Vignette Overlays (P5B-02) -->
+      <div class="menu-backdrop-kenburns" aria-hidden="true"></div>
+      <div class="menu-vignette-grain" aria-hidden="true"></div>
+
       <div class="menu-container">
         <header class="menu-header">
-          <div class="badge badge-gold">COP31 Antalya Protocol • Municipal Terminal v3.1</div>
+          <div class="badge badge-gold menu-badge-reveal">COP31 Antalya Protocol • Municipal Terminal v3.1</div>
           <h1 class="menu-title">MUNICIPAL CARBON ASSESSOR</h1>
           <p class="menu-subtitle">Department of Environmental Compliance • District Assessment Division</p>
         </header>
@@ -54,6 +58,20 @@
 
     <!-- Screen 2: Gameplay Workstation Screen -->
     <section id="screen-gameplay" class="screen gameplay-screen" aria-label="Workstation Assessment Screen">
+
+      <!-- Ambient Office Layer: Atmospheric Living Environment (P5B-06) -->
+      <div id="ambient-office-layer" class="ambient-office-layer" aria-hidden="true">
+        <div class="ambient-daylight-wash"></div>
+        <div class="ambient-window-beam"></div>
+        <div class="ambient-dust-motes">
+          <span class="mote mote-1"></span>
+          <span class="mote mote-2"></span>
+          <span class="mote mote-3"></span>
+          <span class="mote mote-4"></span>
+          <span class="mote mote-5"></span>
+          <span class="mote mote-6"></span>
+        </div>
+      </div>
 
       <!-- Top Bar: Header and City Metrics -->
       <header id="top-bar" class="top-bar" aria-label="Municipal Assessment Terminal Header">
@@ -358,7 +376,11 @@
 
     <!-- Screen 3: Game Over / Campaign Outcome Screen -->
     <section id="screen-game-over" class="screen game-over-screen" aria-label="Campaign Outcome Screen">
+      <div class="game-over-backdrop-dim" aria-hidden="true"></div>
       <div class="game-over-container card">
+        <div class="game-over-seal-wrap" aria-hidden="true">
+          <img src="assets/Official_Seal.png" alt="COP31 Official Municipal Seal" class="game-over-seal-img" />
+        </div>
         <header class="game-over-header">
           <div class="badge badge-danger" id="game-over-badge">TERMINATION OF COMMISSION</div>
           <h1 class="game-over-title" id="game-over-title">CAMPAIGN FAILED</h1>
@@ -407,9 +429,15 @@
       </div>
     </section>
 
-    <!-- Summary Modal: Shift End Transition -->
-    <div id="summary-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-shift-title" hidden>
-      <div class="modal-card card">
+    <!-- Summary Modal: Shift End Transition (P5B-09) -->
+    <div id="summary-modal" class="modal-backdrop shift-report-scene" role="dialog" aria-modal="true" aria-labelledby="modal-shift-title" hidden>
+      <div class="modal-card card shift-report-document">
+        <div class="shift-report-seal-wrap" aria-hidden="true">
+          <img src="assets/Official_Seal.png" alt="Official Seal" class="shift-report-seal-img" />
+        </div>
+        <div class="shift-report-stamp-graphic-wrap" aria-hidden="true">
+          <img src="assets/Approved_Stamp.png" alt="Approved Stamp" class="shift-report-stamp-img" />
+        </div>
         <header class="modal-header">
           <div class="badge badge-gold">SHIFT AUDIT COMPLETE</div>
           <h2 id="modal-shift-title" class="modal-title">DAY 1 PERFORMANCE REPORT</h2>
@@ -446,9 +474,10 @@
       </div>
     </div>
 
-    <!-- Day Introduction Modal: Subphase 4B (P4-09) -->
-    <div id="day-intro-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="day-intro-title" hidden>
-      <div class="modal-card card">
+    <!-- Day Introduction Modal: Subphase 4B & P5B-03 Day Briefing -->
+    <div id="day-intro-modal" class="modal-backdrop day-briefing-scene" role="dialog" aria-modal="true" aria-labelledby="day-intro-title" hidden>
+      <div class="modal-card card briefing-scene-card">
+        <div class="briefing-time-indicator font-mono" id="day-intro-time-of-day">08:00 EEST • MORNING BRIEFING</div>
         <header class="modal-header">
           <div class="badge badge-gold" id="day-intro-badge">OPERATIONAL BRIEFING • DAY 1 OF 3</div>
           <h2 id="day-intro-title" class="modal-title">DAY 1: INTRODUCTION</h2>

@@ -36,6 +36,10 @@ export class GameplayScreen {
     this.screenElement = this._query('#screen-gameplay');
     this.workspaceGrid = this._query('#workspace');
     this.tabsBar = this._query('.workspace-tabs-bar');
+    this.ambientOfficeLayer = this._query('#ambient-office-layer');
+
+    this.currentDayLighting = 1;
+    this.setOfficeLighting(1);
 
     this.topBar = createTopBar(root);
     this.rulebook = createRulebookPanel(root);
@@ -182,11 +186,37 @@ export class GameplayScreen {
   }
 
   /**
+   * P5B-06: Sets the ambient office daylight variation to match campaign day/shift.
+   * Day 1: Morning sunlight
+   * Day 2: Bright midday heat haze
+   * Day 3: Sunset terracotta amber
+   *
+   * @param {number} day
+   */
+  setOfficeLighting(day) {
+    const dayNum = Number(day) || 1;
+    this.currentDayLighting = dayNum;
+    const dayClass = `day-${dayNum}`;
+
+    if (this.screenElement?.setAttribute) {
+      this.screenElement.setAttribute('data-office-lighting', dayClass);
+    }
+    if (this.ambientOfficeLayer?.setAttribute) {
+      this.ambientOfficeLayer.setAttribute('data-office-lighting', dayClass);
+    }
+  }
+
+  /**
    * Updates all assembled sub-components from a unified state or partial updates.
    *
    * @param {Object} [data]
    */
   update(data = {}) {
+    const day = data.currentDay ?? data.day ?? data.topBar?.day;
+    if (day !== undefined) {
+      this.setOfficeLighting(day);
+    }
+
     if (data.topBar) {
       this.topBar.update(data.topBar);
     } else if (data.day !== undefined || data.metrics || data.timeRemaining !== undefined) {

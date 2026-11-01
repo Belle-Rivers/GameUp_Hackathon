@@ -1,3 +1,5 @@
+import { soundEngine } from '../audio.js';
+
 /**
  * Returns human-readable failure explanation based on backend failure reason code.
  *
@@ -29,16 +31,20 @@ export function getFailureMessage(reason) {
  * @property {number} [netZero] Final Net-Zero percentage.
  * @property {number} [trust] Final Public Trust percentage.
  * @property {number} [budget] Final budget amount.
+ * @property {object} [campaignStats] Comprehensive statistics across all shifts.
  */
 
 /**
  * @typedef {Object} GameOverScreenOptions
  * @property {() => void} [onRestart] Callback invoked when Restart Campaign is clicked.
  * @property {() => void} [onReturnMenu] Callback invoked when Return to Main Menu is clicked.
+ * @property {boolean} [reducedMotion] Whether animations/flicker should be disabled.
  */
 
 /**
  * GameOverScreenComponent controls the terminal termination / campaign victory screen (#screen-game-over).
+ * Implements P5B-10: Distinct visual identity for Victory (illuminated municipal certificate)
+ * and Game Over (dimmed emergency lighting, decommission notice, restrained flicker).
  */
 export class GameOverScreenComponent {
   /**
@@ -56,6 +62,10 @@ export class GameOverScreenComponent {
     const q = (sel) => (this.root && typeof this.root.querySelector === 'function' ? this.root.querySelector(sel) : null);
     return {
       screen: q('#screen-game-over'),
+      container: q('.game-over-container'),
+      backdropDim: q('.game-over-backdrop-dim'),
+      sealWrap: q('.game-over-seal-wrap'),
+      sealImg: q('.game-over-seal-img'),
       badge: q('#game-over-badge'),
       title: q('#game-over-title'),
       reason: q('#game-over-reason'),
@@ -76,6 +86,7 @@ export class GameOverScreenComponent {
   _attachEvents() {
     if (this.elements.btnRestart) {
       this.elements.btnRestart.addEventListener('click', (event) => {
+        soundEngine.playWhoosh();
         if (typeof this.options.onRestart === 'function') {
           this.options.onRestart(event);
         }
@@ -84,11 +95,23 @@ export class GameOverScreenComponent {
 
     if (this.elements.btnReturnMenu) {
       this.elements.btnReturnMenu.addEventListener('click', (event) => {
+        soundEngine.playWhoosh();
         if (typeof this.options.onReturnMenu === 'function') {
           this.options.onReturnMenu(event);
         }
       });
     }
+  }
+
+  _isReducedMotion() {
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      try {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (_) {
+        return false;
+      }
+    }
+    return false;
   }
 
   /**
@@ -98,6 +121,38 @@ export class GameOverScreenComponent {
    */
   render(data = {}) {
     const isVictory = Boolean(data.isVictory || data.outcome === 'VICTORY');
+    const isReduced = this.options.reducedMotion || this._isReducedMotion();
+
+    if (this.elements.screen?.classList) {
+      if (isVictory) {
+        this.elements.screen.classList.add('verdict-mode--victory');
+        this.elements.screen.classList.remove('verdict-mode--failure', 'terminal-malfunction-flicker');
+      } else {
+        this.elements.screen.classList.add('verdict-mode--failure');
+        this.elements.screen.classList.remove('verdict-mode--victory');
+        if (!isReduced && (data.reason === 'PUBLIC_TRUST' || data.reason === 'BANKRUPTCY')) {
+          this.elements.screen.classList.add('terminal-malfunction-flicker');
+        } else {
+          this.elements.screen.classList.remove('terminal-malfunction-flicker');
+        }
+      }
+    }
+
+    if (this.elements.container?.classList) {
+      if (isVictory) {
+        this.elements.container.classList.add('victory-certificate-card');
+        this.elements.container.classList.remove('failure-notice-card');
+      } else {
+        this.elements.container.classList.add('failure-notice-card');
+        this.elements.container.classList.remove('victory-certificate-card');
+      }
+    }
+
+    if (isVictory) {
+      soundEngine.playVictory();
+    } else {
+      soundEngine.playDefeat();
+    }
 
     if (this.elements.badge) {
       if (isVictory) {
@@ -182,7 +237,7 @@ export class GameOverScreenComponent {
    */
   hide() {
     if (this.elements.screen?.classList) {
-      this.elements.screen.classList.remove('active');
+      this.elements.screen.classList.remove('active', 'terminal-malfunction-flicker');
     }
   }
 
@@ -208,4 +263,3 @@ export const GameOverScreen = GameOverScreenComponent;
 export function createGameOverScreen(root = document, options = {}) {
   return new GameOverScreenComponent(root, options);
 }
-
