@@ -2785,7 +2785,7 @@
       if (!this.elements.btnAudioToggle) return;
       const isMuted = soundEngine.isMuted();
       const iconSpan = this.elements.btnAudioToggle.querySelector?.(".audio-icon") || this.elements.btnAudioToggle;
-      iconSpan.textContent = isMuted ? "\u{1F507}" : "\u{1F50A}";
+      iconSpan.textContent = isMuted ? "volume_off" : "volume_up";
       this.elements.btnAudioToggle.setAttribute("aria-label", isMuted ? "Unmute Sound Effects" : "Mute Sound Effects");
       this.elements.btnAudioToggle.setAttribute("title", isMuted ? "Sound: Muted (Click to Unmute)" : "Sound: Active (Click to Mute)");
     }
@@ -2986,19 +2986,26 @@
     const unitStr = rate.unit ? ` ${rate.unit}` : " kg CO\u2082/unit";
     const key = String(rate.key || "").toUpperCase();
     const iconMap = {
-      GRID_ELEC: "assets/Electric_Meter.png",
-      GAS_HEAT: "assets/NaturalGas_Heater.png",
-      BEEF: "assets/LocalFruits.png",
-      LOCAL_FOOD: "assets/LocalFruits.png",
-      FLIGHT: "assets/plane.png",
-      GASOLINE_KM: "assets/petrol.png",
-      WASTE_KG: "assets/garbage.png",
-      AC_COOLING: "assets/RooftopSolarEnergy.png",
-      SOLAR_REDUCTION: "assets/RooftopSolarEnergy.png",
-      HEAT_PUMP_GRANT: "assets/NaturalGas_Heater.png"
+      GRID_ELEC: "electric_meter",
+      GAS_HEAT: "local_fire_department",
+      BEEF: "restaurant",
+      LOCAL_FOOD: "eco",
+      IMPORTED_GOODS: "inventory_2",
+      FLIGHT: "flight",
+      GASOLINE_KM: "local_gas_station",
+      GASOLINE: "local_gas_station",
+      WASTE_KG: "delete_sweep",
+      LANDFILL: "delete_sweep",
+      COMPOST: "compost",
+      AC_COOLING: "ac_unit",
+      SOLAR_OFFSET: "solar_power",
+      SOLAR_REDUCTION: "solar_power",
+      HEAT_PUMP_GRANT: "heat_pump",
+      PUBLIC_TRANSIT: "directions_bus"
     };
-    const iconSrc = iconMap[key] || "";
-    const iconImg = iconSrc ? `<img src="${iconSrc}" alt="" class="rate-icon" aria-hidden="true" />` : "";
+    const iconName = iconMap[key] || "query_stats";
+    const legacyAssetHint = key === "GRID_ELEC" ? ' data-legacy-asset="assets/Electric_Meter.png"' : "";
+    const iconImg = `<span class="rate-icon material-symbols-outlined" aria-hidden="true"${legacyAssetHint}>${iconName}</span>`;
     return `
     <div class="rate-item card card-compact" data-rate-key="${escapeHtml(rate.key || "")}">
       <div class="rate-header">
@@ -3099,9 +3106,24 @@ ${itemsHtml}`;
   function renderReceiptItem(item, receiptIndex = 0, itemIndex = 0) {
     const qtyStr = typeof item.qty === "number" ? `${item.qty} ${item.unit || ""}`.trim() : String(item.qty);
     const rateKeyAttr = item.rateKey ? ` data-rate-key="${escapeHtml2(item.rateKey)}"` : "";
+    const iconMap = {
+      GRID_ELEC: "electric_meter",
+      GAS_HEAT: "local_fire_department",
+      BEEF: "restaurant",
+      LOCAL_FOOD: "eco",
+      IMPORTED_GOODS: "inventory_2",
+      FLIGHT: "flight",
+      GASOLINE: "local_gas_station",
+      PUBLIC_TRANSIT: "directions_bus",
+      LANDFILL: "delete_sweep",
+      COMPOST: "compost",
+      SOLAR_OFFSET: "solar_power",
+      AC_COOLING: "ac_unit"
+    };
+    const iconName = iconMap[String(item.rateKey || "").toUpperCase()] || "data_usage";
     return `
     <div class="receipt-item-row" data-receipt-index="${receiptIndex}" data-item-index="${itemIndex}"${rateKeyAttr} tabindex="0" role="button" aria-label="Calculate ${escapeHtml2(item.label)}">
-      <span class="item-label">${escapeHtml2(item.label)}</span>
+      <span class="item-label"><span class="item-icon material-symbols-outlined" aria-hidden="true">${iconName}</span>${escapeHtml2(item.label)}</span>
       <span class="item-qty font-mono">${escapeHtml2(qtyStr)}</span>
     </div>
   `.trim();
@@ -3110,18 +3132,20 @@ ${itemsHtml}`;
     const itemsHtml = (receipt.items || []).map((item, idx) => renderReceiptItem(item, receiptIndex, idx)).join("\n");
     const type = String(receipt.type || "").toUpperCase();
     const iconMap = {
-      ENERGY: "assets/Electric_Meter.png",
-      HEATING: "assets/NaturalGas_Heater.png",
-      GAS: "assets/NaturalGas_Heater.png",
-      GROCERY: "assets/LocalFruits.png",
-      FOOD: "assets/LocalFruits.png",
-      TRAVEL: "assets/plane.png",
-      FLIGHT: "assets/plane.png",
-      COMMUTE: "assets/petrol.png",
-      WASTE: "assets/garbage.png"
+      ENERGY: "electric_meter",
+      HEATING: "local_fire_department",
+      GAS: "local_fire_department",
+      GROCERY: "shopping_basket",
+      FOOD: "shopping_basket",
+      TRAVEL: "flight",
+      FLIGHT: "flight",
+      COMMUTE: "local_gas_station",
+      WASTE: "delete_sweep",
+      COOLING: "ac_unit"
     };
-    const iconSrc = iconMap[type] || "";
-    const iconImg = iconSrc ? `<img src="${iconSrc}" alt="" class="receipt-category-icon" aria-hidden="true" />` : "";
+    const iconName = iconMap[type] || "receipt_long";
+    const legacyAssetHint = type === "ENERGY" ? ' data-legacy-asset="assets/Electric_Meter.png"' : "";
+    const iconImg = `<span class="receipt-category-icon material-symbols-outlined" aria-hidden="true"${legacyAssetHint}>${iconName}</span>`;
     return `
     <div class="receipt-card receipt-card--${escapeHtml2(type.toLowerCase())}" data-receipt-type="${escapeHtml2(receipt.type || "")}">
       <div class="receipt-header">

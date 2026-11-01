@@ -44,7 +44,11 @@ Automated tests use [Vitest](https://vitest.dev/), installed as a development-on
 
 ## Fonts
 
-No font files are bundled. The design references `JetBrains Mono` and `Inter` via Google Fonts, with system font fallbacks (`Fira Code`, `Courier New`, monospace, `-apple-system`, `Segoe UI`, `sans-serif`).
+No font files are bundled. The design loads `Anta`, `Chakra Petch`, and `Inter` from [Google Fonts](https://fonts.google.com/). Anta is used for display headings, Chakra Petch for technical labels and numeric readouts, and Inter for body copy and longer-form text. Each font is distributed under the SIL Open Font License 1.1. System fallbacks remain in place for offline or restricted environments.
+
+## Iconography
+
+The interface loads [Material Symbols Outlined](https://fonts.google.com/icons) from Google Fonts for status controls, audit actions, official emission-rate entries, receipt headers, and receipt line items. Material Symbols are distributed under the Apache License 2.0. Existing project-owned visual assets remain in use for the dossier seal, paper textures, stamps, and environmental artwork.
 
 ## Audio
 

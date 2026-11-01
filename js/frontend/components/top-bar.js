@@ -185,7 +185,7 @@ export class TopBarComponent {
     if (!this.elements.btnAudioToggle) return;
     const isMuted = soundEngine.isMuted();
     const iconSpan = this.elements.btnAudioToggle.querySelector?.('.audio-icon') || this.elements.btnAudioToggle;
-    iconSpan.textContent = isMuted ? '🔇' : '🔊';
+    iconSpan.textContent = isMuted ? 'volume_off' : 'volume_up';
     this.elements.btnAudioToggle.setAttribute('aria-label', isMuted ? 'Unmute Sound Effects' : 'Mute Sound Effects');
     this.elements.btnAudioToggle.setAttribute('title', isMuted ? 'Sound: Muted (Click to Unmute)' : 'Sound: Active (Click to Mute)');
   }

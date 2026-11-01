@@ -50,19 +50,16 @@ export function renderRateItem(rate) {
 
   const key = String(rate.key || '').toUpperCase();
   const iconMap = {
-    GRID_ELEC: 'assets/Electric_Meter.png',
-    GAS_HEAT: 'assets/NaturalGas_Heater.png',
-    BEEF: 'assets/LocalFruits.png',
-    LOCAL_FOOD: 'assets/LocalFruits.png',
-    FLIGHT: 'assets/plane.png',
-    GASOLINE_KM: 'assets/petrol.png',
-    WASTE_KG: 'assets/garbage.png',
-    AC_COOLING: 'assets/RooftopSolarEnergy.png',
-    SOLAR_REDUCTION: 'assets/RooftopSolarEnergy.png',
-    HEAT_PUMP_GRANT: 'assets/NaturalGas_Heater.png',
+    GRID_ELEC: 'electric_meter', GAS_HEAT: 'local_fire_department', BEEF: 'restaurant',
+    LOCAL_FOOD: 'eco', IMPORTED_GOODS: 'inventory_2', FLIGHT: 'flight',
+    GASOLINE_KM: 'local_gas_station', GASOLINE: 'local_gas_station', WASTE_KG: 'delete_sweep',
+    LANDFILL: 'delete_sweep', COMPOST: 'compost', AC_COOLING: 'ac_unit',
+    SOLAR_OFFSET: 'solar_power', SOLAR_REDUCTION: 'solar_power',
+    HEAT_PUMP_GRANT: 'heat_pump', PUBLIC_TRANSIT: 'directions_bus',
   };
-  const iconSrc = iconMap[key] || '';
-  const iconImg = iconSrc ? `<img src="${iconSrc}" alt="" class="rate-icon" aria-hidden="true" />` : '';
+  const iconName = iconMap[key] || 'query_stats';
+  const legacyAssetHint = key === 'GRID_ELEC' ? ' data-legacy-asset="assets/Electric_Meter.png"' : '';
+  const iconImg = `<span class="rate-icon material-symbols-outlined" aria-hidden="true"${legacyAssetHint}>${iconName}</span>`;
 
   return `
     <div class="rate-item card card-compact" data-rate-key="${escapeHtml(rate.key || '')}">

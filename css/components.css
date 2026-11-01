@@ -366,8 +366,9 @@
 .receipt-category-icon {
   width: 20px;
   height: 20px;
-  object-fit: contain;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
+  color: #126b79;
+  font-size: 20px;
+  flex: 0 0 20px;
 }
 
 .receipt-title {
@@ -394,6 +395,18 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   border: 1px solid transparent;
+}
+
+.item-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.item-icon {
+  color: #126b79;
+  font-size: 16px;
+  flex: 0 0 16px;
 }
 
 .receipt-item-row:hover {

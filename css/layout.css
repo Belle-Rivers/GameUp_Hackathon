@@ -380,7 +380,9 @@
 .rate-icon {
   width: 18px;
   height: 18px;
-  object-fit: contain;
+  color: var(--accent-cyan-bright);
+  font-size: 18px;
+  flex: 0 0 18px;
   opacity: 0.92;
 }
 

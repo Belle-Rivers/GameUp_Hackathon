@@ -6,10 +6,10 @@
   <meta name="description" content="Municipal Carbon Assessor - Retro-futuristic municipal assessment terminal under the COP31 Antalya Protocol.">
   <title>Municipal Carbon Assessor | COP31 Antalya Protocol</title>
 
-  <!-- Google Fonts: JetBrains Mono and Inter -->
+  <!-- Google Fonts: Anta for display, Chakra Petch for technical UI, Inter for body copy -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anta&family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0..1&display=swap" rel="stylesheet">
 
   <!-- Core Stylesheets -->
   <link rel="stylesheet" href="css/styles.css">
@@ -125,18 +125,18 @@
 
           <!-- Shift Countdown Timer -->
           <div class="timer-widget font-mono" id="timer-container" aria-label="Shift Countdown Timer">
-            <span class="timer-icon" aria-hidden="true">⏱</span>
+            <span class="timer-icon material-symbols-outlined" aria-hidden="true">timer</span>
             <span class="timer-display" id="timer-display">02:00</span>
           </div>
 
           <!-- Audio Toggle Control -->
           <button id="btn-audio-toggle" class="audio-toggle-btn" type="button" aria-label="Mute Sound Effects" title="Sound: Active (Click to Mute)">
-            <span class="audio-icon" aria-hidden="true">🔊</span>
+            <span class="audio-icon material-symbols-outlined" aria-hidden="true">volume_up</span>
           </button>
 
           <!-- Terminal / CRT Mode Toggle Control (P5B-11) -->
           <button id="btn-terminal-toggle" class="terminal-toggle-btn" type="button" aria-label="Toggle CRT Terminal Mode" title="CRT Mode: Off (Click to Enable)">
-            <span class="terminal-icon font-mono" aria-hidden="true">CRT</span>
+            <span class="terminal-icon material-symbols-outlined" aria-hidden="true">display_settings</span>
           </button>
         </div>
       </header>
@@ -169,28 +169,28 @@
                 <!-- Dynamically populated or mock rates -->
                 <div class="rate-item card card-compact">
                   <div class="rate-header">
-                    <span class="rate-name">Grid Electricity</span>
+                    <div class="rate-title-wrap"><span class="rate-icon material-symbols-outlined" aria-hidden="true">electric_meter</span><span class="rate-name">Grid Electricity</span></div>
                     <span class="rate-value font-mono">0.50 kg CO₂/kWh</span>
                   </div>
                   <span class="rate-category font-mono">Electricity</span>
                 </div>
                 <div class="rate-item card card-compact">
                   <div class="rate-header">
-                    <span class="rate-name">Natural Gas</span>
+                    <div class="rate-title-wrap"><span class="rate-icon material-symbols-outlined" aria-hidden="true">local_fire_department</span><span class="rate-name">Natural Gas</span></div>
                     <span class="rate-value font-mono">2.00 kg CO₂/m³</span>
                   </div>
                   <span class="rate-category font-mono">Heating</span>
                 </div>
                 <div class="rate-item card card-compact">
                   <div class="rate-header">
-                    <span class="rate-name">Beef / Ruminant Meat</span>
+                    <div class="rate-title-wrap"><span class="rate-icon material-symbols-outlined" aria-hidden="true">restaurant</span><span class="rate-name">Beef / Ruminant Meat</span></div>
                     <span class="rate-value font-mono">15.00 kg CO₂/pack</span>
                   </div>
                   <span class="rate-category font-mono">Food</span>
                 </div>
                 <div class="rate-item card card-compact">
                   <div class="rate-header">
-                    <span class="rate-name">Domestic Flight</span>
+                    <div class="rate-title-wrap"><span class="rate-icon material-symbols-outlined" aria-hidden="true">flight</span><span class="rate-name">Domestic Flight</span></div>
                     <span class="rate-value font-mono">150.00 kg CO₂/tkt</span>
                   </div>
                   <span class="rate-category font-mono">Travel</span>
@@ -263,16 +263,16 @@
             <div class="receipts-stack" id="dossier-receipts-container" aria-label="Submitted Utility and Commercial Receipts">
               <div class="receipt-card">
                 <div class="receipt-header">
-                  <span class="receipt-title font-mono">TEDAŞ Smart Meter Log</span>
+                  <div class="receipt-title-wrap"><span class="receipt-category-icon material-symbols-outlined" aria-hidden="true">receipt_long</span><span class="receipt-title font-mono">TEDAŞ Smart Meter Log</span></div>
                   <span class="badge badge-subtle">ENERGY</span>
                 </div>
                 <div class="receipt-items">
                   <div class="receipt-item-row">
-                    <span class="item-label">Grid Electricity</span>
+                    <span class="item-label"><span class="item-icon material-symbols-outlined" aria-hidden="true">electric_meter</span>Grid Electricity</span>
                     <span class="item-qty font-mono">150 kWh</span>
                   </div>
                   <div class="receipt-item-row">
-                    <span class="item-label">Natural Gas</span>
+                    <span class="item-label"><span class="item-icon material-symbols-outlined" aria-hidden="true">local_fire_department</span>Natural Gas</span>
                     <span class="item-qty font-mono">80 m³</span>
                   </div>
                 </div>
@@ -280,16 +280,16 @@
 
               <div class="receipt-card">
                 <div class="receipt-header">
-                  <span class="receipt-title font-mono">Migros Grocery Receipt</span>
+                  <div class="receipt-title-wrap"><span class="receipt-category-icon material-symbols-outlined" aria-hidden="true">shopping_basket</span><span class="receipt-title font-mono">Migros Grocery Receipt</span></div>
                   <span class="badge badge-subtle">GROCERY</span>
                 </div>
                 <div class="receipt-items">
                   <div class="receipt-item-row">
-                    <span class="item-label">Local Veg Pack</span>
+                    <span class="item-label"><span class="item-icon material-symbols-outlined" aria-hidden="true">eco</span>Local Veg Pack</span>
                     <span class="item-qty font-mono">4 pack</span>
                   </div>
                   <div class="receipt-item-row">
-                    <span class="item-label">Beef Sirloin</span>
+                    <span class="item-label"><span class="item-icon material-symbols-outlined" aria-hidden="true">restaurant</span>Beef Sirloin</span>
                     <span class="item-qty font-mono">1 pack</span>
                   </div>
                 </div>
@@ -354,17 +354,17 @@
             <!-- Stamp Action Dock -->
             <div class="stamp-action-dock" id="stamp-dock" role="group" aria-label="Audit Decisions Dock">
               <button id="btn-action-approve" class="stamp-btn stamp-btn--approve" type="button">
-                <span class="stamp-icon" aria-hidden="true">✓</span>
+                <span class="stamp-icon material-symbols-outlined" aria-hidden="true">verified</span>
                 <span class="stamp-text">APPROVE DECLARATION</span>
               </button>
 
               <button id="btn-action-fine" class="stamp-btn stamp-btn--fine" type="button">
-                <span class="stamp-icon" aria-hidden="true">⚠</span>
+                <span class="stamp-icon material-symbols-outlined" aria-hidden="true">warning</span>
                 <span class="stamp-text">ISSUE CO₂ FINE</span>
               </button>
 
               <button id="btn-action-grant" class="stamp-btn stamp-btn--grant" type="button">
-                <span class="stamp-icon" aria-hidden="true">★</span>
+                <span class="stamp-icon material-symbols-outlined" aria-hidden="true">star</span>
                 <span class="stamp-text">AWARD GRANT</span>
               </button>
             </div>
