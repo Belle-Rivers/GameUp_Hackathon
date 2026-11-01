@@ -48,10 +48,29 @@ export function renderRateItem(rate) {
   const sign = rate.rate < 0 ? '' : '';
   const unitStr = rate.unit ? ` ${rate.unit}` : ' kg CO₂/unit';
 
+  const key = String(rate.key || '').toUpperCase();
+  const iconMap = {
+    GRID_ELEC: 'assets/Electric_Meter.png',
+    GAS_HEAT: 'assets/NaturalGas_Heater.png',
+    BEEF: 'assets/LocalFruits.png',
+    LOCAL_FOOD: 'assets/LocalFruits.png',
+    FLIGHT: 'assets/plane.png',
+    GASOLINE_KM: 'assets/petrol.png',
+    WASTE_KG: 'assets/garbage.png',
+    AC_COOLING: 'assets/RooftopSolarEnergy.png',
+    SOLAR_REDUCTION: 'assets/RooftopSolarEnergy.png',
+    HEAT_PUMP_GRANT: 'assets/NaturalGas_Heater.png',
+  };
+  const iconSrc = iconMap[key] || '';
+  const iconImg = iconSrc ? `<img src="${iconSrc}" alt="" class="rate-icon" aria-hidden="true" />` : '';
+
   return `
     <div class="rate-item card card-compact" data-rate-key="${escapeHtml(rate.key || '')}">
       <div class="rate-header">
-        <span class="rate-name">${escapeHtml(rate.activity || rate.name || '')}</span>
+        <div class="rate-title-wrap">
+          ${iconImg}
+          <span class="rate-name">${escapeHtml(rate.activity || rate.name || '')}</span>
+        </div>
         <span class="rate-value font-mono">${sign}${rateFormatted}${escapeHtml(unitStr)}</span>
       </div>
       <span class="rate-category font-mono">${escapeHtml(rate.category || 'General')}</span>

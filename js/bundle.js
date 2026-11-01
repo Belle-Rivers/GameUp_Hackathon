@@ -1843,6 +1843,225 @@
     return new MainMenuScreen(root, options);
   }
 
+  // js/frontend/audio.js
+  var SoundEngine = class {
+    constructor() {
+      this.ctx = null;
+      this.muted = false;
+      if (typeof window !== "undefined" && window.localStorage) {
+        try {
+          const saved = window.localStorage.getItem("mca_sound_muted");
+          if (saved !== null) {
+            this.muted = saved === "true";
+          }
+        } catch (_) {
+        }
+      }
+    }
+    /**
+     * Initializes or resumes the AudioContext on first user interaction.
+     * Gracefully handles browser autoplay restrictions.
+     *
+     * @returns {boolean} true if AudioContext is active
+     */
+    init() {
+      if (typeof window === "undefined") return false;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return false;
+      if (!this.ctx) {
+        try {
+          this.ctx = new AudioContextClass();
+        } catch (e) {
+          console.warn("[AudioEngine] Could not initialize AudioContext:", e.message);
+          return false;
+        }
+      }
+      if (this.ctx && this.ctx.state === "suspended") {
+        this.ctx.resume().catch(() => {
+        });
+      }
+      return true;
+    }
+    /**
+     * Checks if sound is currently muted.
+     *
+     * @returns {boolean}
+     */
+    isMuted() {
+      return this.muted;
+    }
+    /**
+     * Sets mute state and persists to localStorage.
+     *
+     * @param {boolean} muted
+     */
+    setMuted(muted) {
+      this.muted = Boolean(muted);
+      if (typeof window !== "undefined" && window.localStorage) {
+        try {
+          window.localStorage.setItem("mca_sound_muted", String(this.muted));
+        } catch (_) {
+        }
+      }
+    }
+    /**
+     * Toggles mute state.
+     *
+     * @returns {boolean} New mute state
+     */
+    toggleMute() {
+      this.setMuted(!this.muted);
+      return this.muted;
+    }
+    /**
+     * Mechanical rubber stamp impact thud.
+     *
+     * @param {'APPROVE'|'FINE'|'GRANT'} [type='APPROVE']
+     */
+    playStamp(type = "APPROVE") {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const baseFreq = type === "FINE" ? 95 : type === "GRANT" ? 140 : 120;
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(baseFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(32, now + 0.18);
+        gain.gain.setValueAtTime(0.7, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.18);
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(450, now);
+        filter.frequency.exponentialRampToValueAtTime(80, now + 0.18);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      } catch (_) {
+      }
+    }
+    /**
+     * Bright rising duo-tone chime for correct audit decision.
+     */
+    playSuccess() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.09);
+        osc.frequency.setValueAtTime(783.99, now + 0.18);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } catch (_) {
+      }
+    }
+    /**
+     * Harsh low saw buzz for incorrect decision / penalty.
+     */
+    playError() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.setValueAtTime(95, now + 0.12);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.32);
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(800, now);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.32);
+      } catch (_) {
+      }
+    }
+    /**
+     * Subtle paper rustle / slide sound when loading a new dossier or flipping records.
+     */
+    playPaper() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const bufferSize = this.ctx.sampleRate * 0.12;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(1200, this.ctx.currentTime);
+        filter.Q.setValueAtTime(2.5, this.ctx.currentTime);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(1e-3, this.ctx.currentTime + 0.12);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
+      } catch (_) {
+      }
+    }
+    /**
+     * Short mechanical click for calculator, tabs, or receipt row tap.
+     */
+    playClick() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(200, now + 0.04);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      } catch (_) {
+      }
+    }
+    /**
+     * Shift start or conclusion chime.
+     */
+    playTransition() {
+      if (this.muted || !this.init() || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.25);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(1e-3, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } catch (_) {
+      }
+    }
+  };
+  var soundEngine = new SoundEngine();
+
   // js/frontend/components/top-bar.js
   function formatBudget(amount) {
     if (typeof amount !== "number" || !Number.isFinite(amount)) {
@@ -1870,6 +2089,7 @@
     constructor(root = document) {
       this.root = root;
       this.elements = this._queryElements();
+      this._initAudioToggle();
     }
     _queryElements() {
       const q = (sel) => this.root && typeof this.root.querySelector === "function" ? this.root.querySelector(sel) : null;
@@ -1883,8 +2103,25 @@
         trustVal: q("#meter-trust-val"),
         trustBar: q("#meter-trust-bar"),
         timerDisplay: q("#timer-display"),
-        timerContainer: q("#timer-container")
+        timerContainer: q("#timer-container"),
+        btnAudioToggle: q("#btn-audio-toggle")
       };
+    }
+    _initAudioToggle() {
+      if (!this.elements.btnAudioToggle) return;
+      this._updateAudioIcon();
+      this.elements.btnAudioToggle.addEventListener("click", () => {
+        soundEngine.toggleMute();
+        this._updateAudioIcon();
+      });
+    }
+    _updateAudioIcon() {
+      if (!this.elements.btnAudioToggle) return;
+      const isMuted = soundEngine.isMuted();
+      const iconSpan = this.elements.btnAudioToggle.querySelector?.(".audio-icon") || this.elements.btnAudioToggle;
+      iconSpan.textContent = isMuted ? "\u{1F507}" : "\u{1F50A}";
+      this.elements.btnAudioToggle.setAttribute("aria-label", isMuted ? "Unmute Sound Effects" : "Mute Sound Effects");
+      this.elements.btnAudioToggle.setAttribute("title", isMuted ? "Sound: Muted (Click to Unmute)" : "Sound: Active (Click to Mute)");
     }
     /**
      * Updates the top bar display with new state data.
@@ -1994,10 +2231,28 @@
     const rateFormatted = typeof rate.rate === "number" ? rate.rate.toFixed(2) : String(rate.rate);
     const sign = rate.rate < 0 ? "" : "";
     const unitStr = rate.unit ? ` ${rate.unit}` : " kg CO\u2082/unit";
+    const key = String(rate.key || "").toUpperCase();
+    const iconMap = {
+      GRID_ELEC: "assets/Electric_Meter.png",
+      GAS_HEAT: "assets/NaturalGas_Heater.png",
+      BEEF: "assets/LocalFruits.png",
+      LOCAL_FOOD: "assets/LocalFruits.png",
+      FLIGHT: "assets/plane.png",
+      GASOLINE_KM: "assets/petrol.png",
+      WASTE_KG: "assets/garbage.png",
+      AC_COOLING: "assets/RooftopSolarEnergy.png",
+      SOLAR_REDUCTION: "assets/RooftopSolarEnergy.png",
+      HEAT_PUMP_GRANT: "assets/NaturalGas_Heater.png"
+    };
+    const iconSrc = iconMap[key] || "";
+    const iconImg = iconSrc ? `<img src="${iconSrc}" alt="" class="rate-icon" aria-hidden="true" />` : "";
     return `
     <div class="rate-item card card-compact" data-rate-key="${escapeHtml(rate.key || "")}">
       <div class="rate-header">
-        <span class="rate-name">${escapeHtml(rate.activity || rate.name || "")}</span>
+        <div class="rate-title-wrap">
+          ${iconImg}
+          <span class="rate-name">${escapeHtml(rate.activity || rate.name || "")}</span>
+        </div>
         <span class="rate-value font-mono">${sign}${rateFormatted}${escapeHtml(unitStr)}</span>
       </div>
       <span class="rate-category font-mono">${escapeHtml(rate.category || "General")}</span>
@@ -2100,10 +2355,27 @@ ${itemsHtml}`;
   }
   function renderReceiptCard(receipt, receiptIndex = 0) {
     const itemsHtml = (receipt.items || []).map((item, idx) => renderReceiptItem(item, receiptIndex, idx)).join("\n");
+    const type = String(receipt.type || "").toUpperCase();
+    const iconMap = {
+      ENERGY: "assets/Electric_Meter.png",
+      HEATING: "assets/NaturalGas_Heater.png",
+      GAS: "assets/NaturalGas_Heater.png",
+      GROCERY: "assets/LocalFruits.png",
+      FOOD: "assets/LocalFruits.png",
+      TRAVEL: "assets/plane.png",
+      FLIGHT: "assets/plane.png",
+      COMMUTE: "assets/petrol.png",
+      WASTE: "assets/garbage.png"
+    };
+    const iconSrc = iconMap[type] || "";
+    const iconImg = iconSrc ? `<img src="${iconSrc}" alt="" class="receipt-category-icon" aria-hidden="true" />` : "";
     return `
-    <div class="receipt-card" data-receipt-type="${escapeHtml2(receipt.type || "")}">
+    <div class="receipt-card receipt-card--${escapeHtml2(type.toLowerCase())}" data-receipt-type="${escapeHtml2(receipt.type || "")}">
       <div class="receipt-header">
-        <span class="receipt-title font-mono">${escapeHtml2(receipt.title || "Receipt Record")}</span>
+        <div class="receipt-title-wrap">
+          ${iconImg}
+          <span class="receipt-title font-mono">${escapeHtml2(receipt.title || "Receipt Record")}</span>
+        </div>
         <span class="badge badge-subtle font-mono">${escapeHtml2(receipt.type || "MISC")}</span>
       </div>
       <div class="receipt-items">
@@ -3555,6 +3827,7 @@ ${optionsHtml}`;
      */
     onStartShift() {
       this.renderer.hideDayIntroModal();
+      soundEngine.playTransition();
       if (!this._timerHandle) {
         this._startTimer();
       }
@@ -3668,6 +3941,7 @@ ${optionsHtml}`;
       }
       if (this.renderer.gameplay?.dossier) {
         this.renderer.gameplay.dossier.loadCitizen(citizenCase);
+        soundEngine.playPaper();
       }
       if (this.renderer.gameplay?.calculator) {
         this.renderer.gameplay.calculator.clear();
@@ -3712,6 +3986,7 @@ ${optionsHtml}`;
             unit: bItem.unit,
             co2: bItem.co2
           });
+          soundEngine.playClick();
         }
       }
       this._syncActionPanelAudit();
@@ -3737,6 +4012,7 @@ ${optionsHtml}`;
     onClearCalculator() {
       if (this.renderer.gameplay?.calculator) {
         this.renderer.gameplay.calculator.clear();
+        soundEngine.playClick();
       }
       this._syncActionPanelAudit();
     }
@@ -3779,6 +4055,7 @@ ${optionsHtml}`;
     _submitAction(action, grantId) {
       this._setActionsEnabled(false);
       this._awaitingTransition = true;
+      soundEngine.playStamp(action);
       let result;
       try {
         result = this.backend.submitAction({
@@ -3812,6 +4089,11 @@ ${optionsHtml}`;
         const statusText = result.isValid ? "\u2713 CORRECT" : "\u2717 INCORRECT";
         this.renderer.gameplay.actionPanel.setStatus(statusText);
       }
+      if (result.isValid) {
+        soundEngine.playSuccess();
+      } else {
+        soundEngine.playError();
+      }
       this._showFeedbackOverlay(result);
     }
     /**
@@ -3831,8 +4113,17 @@ ${optionsHtml}`;
       const stampClass = result.isValid ? "feedback--valid" : "feedback--invalid";
       const stampLabel = result.action;
       const metricLines = this._buildMetricChangeLines(result.metricChanges);
+      const stampMap = {
+        APPROVE: "assets/Approved_Stamp.png",
+        FINE: "assets/FineIssued_Stamp.png",
+        GRANT: "assets/GrantApproved_Stamp.png"
+      };
+      const stampAsset = stampMap[result.action] || "assets/Approved_Stamp.png";
       overlay.className = `action-feedback-overlay ${stampClass}`;
       overlay.innerHTML = `
+      <div class="feedback-stamp-graphic-wrap">
+        <img src="${stampAsset}" alt="${this._escapeHtml(stampLabel)} Stamp" class="feedback-stamp-image stamp-drop-anim" />
+      </div>
       <div class="feedback-stamp">${this._escapeHtml(stampLabel)}</div>
       <div class="feedback-explanation">${this._escapeHtml(result.explanation)}</div>
       ${metricLines ? `<div class="feedback-metrics font-mono">${metricLines}</div>` : ""}
@@ -3929,6 +4220,7 @@ ${optionsHtml}`;
      * @private
      */
     _handleShiftEnd(stateView, statsOverride) {
+      soundEngine.playTransition();
       const summary = this.backend.getShiftSummary();
       const stats = statsOverride || summary.shiftStats;
       const day = summary.day || stateView?.currentDay || 1;

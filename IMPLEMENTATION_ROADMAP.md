@@ -513,52 +513,538 @@ Objective: Transform the single-day prototype into the complete three-day campai
 
 Important: Do not implement saving/loading or persistent player accounts. A campaign can remain entirely in browser memory for this jam.
 
-## Phase 5 — Visual Polish, Animation and Audio
+## Phase 5 — Visual Identity, Game Assets, Animation and Audio
 
-Frontend
+**Role:** Frontend
 
-Objective: Make the game feel like a finished product instead of an interactive prototype.
+**Objective:** Transform the playable three-day campaign into a visually distinctive, cohesive game experience. Establish a recognizable world, introduce appropriate visual assets, and improve the presentation and feedback of the existing gameplay.
 
-The PRD already has a good visual direction: a retro-futuristic municipal desktop with dark slate panels, paper-like citizen dossiers and colourful action stamps.
+### 5.1 Visual Direction
 
-I would preserve this direction.
+**Working visual identity: Antalya Climate Operations Office**
 
-[Notes on Papers, Please - metamedia](https://images.openai.com/static-rsc-4/B1vcqBdL8hhtFaUlwJP0W_Q4MiZi1qg8u1sy4nQBu-O9c4IKBmwkExTbS94jQfZNTapW8KbdZDzSpsNTO1yfyHnfo2ZbH3vsIR1RE_eEUe52hUMcWuzBxmho39Qqd3RwmNuh9SPa5WHayt242T0bLGOTnlUKuyZwS6h8pm30q3s?purpose=inline)
+The game takes place in a near-future municipal climate assessment office inspired by Antalya's Mediterranean environment.
 
-[The Retro Futuristic UI Kit](https://images.openai.com/static-rsc-4/lOjhUBXhldgPvGEaauSwzLs56FGkW5UwSUcrA84_XjBFHc0vwPpFJrdvCx9KGVvAkpk8_IrV8HuvKufdCx6SJEpscL8QGfgUMzBTkM6jbOyF4oY-K_TOc3ep5EKWubXsC_sDAu8ud0d5KyaJvE50l-RDxWAT5UMRyvHv6k0LjBo?purpose=inline)
+The visual direction combines:
 
-[边境检查员 - Border Patrol | indienova GameDB 游戏库](https://images.openai.com/static-rsc-4/Fr8WI9_PUOfkinI0aAlyCzvXPJADEoWJNN8uDzDMWF1zjOsnecQoT54azy81ZAhpNk4kk89OlY-htuor1YvYuSpMtYVv3AJZfwNvRka-TTDNABTuu2hFKC5-j_9yiTaYMfAavSeOp6RQvjT-gk5sXTocU5OyT4q3_ny742EUShg?purpose=inline)
+- A contemporary municipal operations centre.
+- A physical audit desk with citizen dossiers and official documents.
+- Modern climate-monitoring technology and data visualization.
+- Mediterranean architectural and environmental details.
+- Tactile administrative interactions such as stamps, folders, paper records and official seals.
 
-10
+The result should feel like a modern indie simulation game, not a generic website dashboard and not a direct imitation of *Papers, Please*.
 
-### Tasks
+#### Visual characteristics
 
-| ID    | Task                      | Description                                                   |
-| ----- | ------------------------- | ------------------------------------------------------------- |
-| P5-01 | Finalize visual identity  | Apply the approved palette and typography consistently.       |
-| P5-02 | Improve dossier visuals   | Make receipts and citizen notes look like physical documents. |
-| P5-03 | Add stamp animations      | Create satisfying approval, fine and grant stamp animations.  |
-| P5-04 | Add metric animations     | Animate changes in budget, trust and Net-Zero Progress.       |
-| P5-05 | Add transitions           | Smoothly transition between citizens and screens.             |
-| P5-06 | Add action feedback       | Visually distinguish correct and incorrect decisions.         |
-| P5-07 | Implement audio engine    | Add synthesized stamp, success and error sounds.              |
-| P5-08 | Add audio controls        | Allow players to mute or enable sound.                        |
-| P5-09 | Improve responsive design | Check smaller resolutions and prevent clipped content.        |
-| P5-10 | Add visual game identity  | Add COP31-inspired branding and Antalya municipal atmosphere. |
+- **Primary surfaces:** deep navy, charcoal and slate.
+- **Secondary surfaces:** warm ivory, paper beige and muted grey.
+- **Accent colours:** Mediterranean teal, turquoise, amber and restrained coral/red.
+- **Typography:** clean, highly readable sans-serif for interface content; monospaced typography for case IDs, figures, records and technical information.
+- **Documents:** layered paper, subtle texture, realistic shadows, receipt edges and official markings.
+- **Technology:** clean charts, carbon indicators, small status lights and technical diagrams.
+- **Environment:** warm Mediterranean daylight, modern municipal architecture and subtle Antalya-inspired city details.
 
-### Asset strategy
+Avoid excessive neon, generic sci-fi holograms, overly decorative dashboards, pixel-art styling, and inconsistent asset styles.
 
-I would avoid external asset packs unless you really need them.
+### 5.2 Tasks
 
-Use:
+| ID | Task | Description |
+|---|---|---|
+| P5-01 | Establish visual identity and design system | Define the visual style, colour palette, typography, spacing, component appearance, visual hierarchy and reusable design tokens. Create a consistent visual language for all existing screens. |
+| P5-02 | Source and prepare game assets | Identify, create or generate suitable assets for the office environment, documents, climate illustrations, icons and action stamps. Verify licensing and organize assets in the approved project structure. |
+| P5-03 | Create the municipal office environment | Introduce a distinctive office setting using a background illustration and appropriate visual layers. Integrate desk/environment details without interfering with gameplay controls or readability. |
+| P5-04 | Redesign citizen dossiers and documents | Give receipts, utility bills, transport records, citizen notes and official forms a physical-document appearance. Preserve the existing case data and inspection functionality. |
+| P5-05 | Improve gameplay HUD and climate visualization | Present Net-Zero Progress, Budget, Public Trust, timers, case information and relevant emissions data as clear game UI elements. Use appropriate indicators, icons, charts and visual hierarchy. |
+| P5-06 | Implement tactile action stamps and animations | Create distinctive APPROVE, FINE and GRANT feedback. Add satisfying stamp animations and visual confirmation while preserving the existing action flow and backend results. |
+| P5-07 | Implement screen transitions and decision feedback | Improve transitions between citizens, daily shifts, summaries and campaign screens. Clearly distinguish successful, incorrect and consequential decisions without changing their gameplay effects. |
+| P5-08 | Implement audio and sound controls | Add suitable interface and gameplay sounds for document interactions, stamps, successful decisions, errors and transitions. Provide mute/volume controls and respect browser audio restrictions. |
+| P5-09 | Improve responsive presentation and accessibility | Verify the game at the intended desktop resolution and smaller supported viewports. Prevent clipped content, preserve readable text, provide visible interaction states and respect reduced-motion preferences. |
+| P5-10 | Integrate, polish and verify game identity | Apply the visual identity consistently across the full campaign, including introduction, daily summaries, victory and failure screens. Verify that all Phase 1–4 gameplay functionality remains intact. |
 
-- CSS for the terminal interface.
-- SVG for stamps, icons, municipal symbols and small illustrations.
-- CSS animations for transitions.
-- Web Audio API for sound effects.
-- System fonts as fallbacks.
+**P5-01 status:** Completed — Established the Antalya Climate Operations Office visual design system across `css/styles.css`, `css/layout.css`, and `css/components.css`. Defined comprehensive design tokens for deep Mediterranean night/slate surfaces, warm manila dossier paper, tactile shadows, Antalya turquoise accents, and authentic administrative stamp ink colors while maintaining full compatibility with core PRD tokens.
 
-The game is based on documents and administrative work, so a polished interface can be more effective than elaborate illustrations.
+**P5-02 status:** Completed — Curated and integrated the full Antalya Climate Operations Office asset collection under `assets/`, including background artwork, physical dossier and receipt textures, category climate icons, official seals, and authentic APPROVE/FINE/GRANT stamps. Documented licensing and usage details in `ATTRIBUTION.md`.
+
+**P5-03 status:** Completed — Created the municipal office setting using `assets/Antalya_Office_background.jpg` in `css/layout.css` for `.gameplay-screen` with ambient Mediterranean lighting and vignette. Framed the 3-column workstation with tactile desk surfaces that establish environmental depth while ensuring high contrast and non-interference with controls.
+
+**P5-04 status:** Completed — Redesigned the citizen dossier and supporting records in `js/frontend/components/dossier-panel.js` and `css/components.css`. Embedded the official COP31 embossed seal, paperclip citizen plea note, and categorized physical receipt styles with climate icons (`assets/Electric_Meter.png`, `assets/NaturalGas_Heater.png`, `assets/LocalFruits.png`, `assets/plane.png`, `assets/petrol.png`, `assets/garbage.png`), while keeping all receipt items clickable and keyboard-accessible.
+
+**P5-05 status:** Completed — Upgraded the gameplay HUD in `js/frontend/components/top-bar.js`, `js/frontend/components/rulebook-panel.js`, and `css/layout.css`. Implemented retro-futuristic console gauges for Net-Zero, Budget, and Public Trust, pulsing countdown clock warnings for <= 30 seconds, audio mute controls, and categorized climate benchmark icons in the rulebook.
+
+**P5-06 status:** Completed — Implemented tactile rubber stamp actions and visual feedback in `js/frontend/game-controller.js` and `css/components.css`. Action dock buttons feature heavy 3D bevels and depression states. Submitting an action displays high-resolution stamps (`assets/Approved_Stamp.png`, `assets/FineIssued_Stamp.png`, `assets/GrantApproved_Stamp.png`) with animated downward stamp physics (`@keyframes stampDown`), ink shadow, and accompanying stamp thuds.
+
+**P5-07 status:** Completed — Enhanced screen transitions and decision feedback. Feedback overlay presents the authentic stamp graphic, clear validation badges, and detailed metric changes. Main Menu, Day Introduction modal, Shift Summary modal, and Executive Verdict screens all received unified Mediterranean administrative polish.
+
+**P5-08 status:** Completed — Built a zero-dependency procedural Web Audio API synthesizer engine in `js/frontend/audio.js`. Implemented synthesized stamp thuds, success chimes, penalty buzzes, paper rustles, calculator clicks, and shift transition bells. Added audio mute toggle button in the top bar with persistence in localStorage and graceful browser autoplay handling.
+
+**P5-09 status:** Completed — Optimized responsive layouts across 1280px laptops, 1024px tablets, and <= 768px viewports in `css/responsive.css`. Implemented `@media (prefers-reduced-motion: reduce)` accessibility overrides to instantly render stamps without scale/rotation physics, and verified high contrast text readability.
+
+**P5-10 status:** Completed — Verified full game identity and end-to-end campaign integrity. Rebuilt `js/bundle.js` with esbuild, confirmed zero console warnings or broken layouts, and verified that all 273 unit, integration, and visual polish tests pass cleanly with zero gameplay regressions.
+
+### 5.3 Asset Strategy
+
+Use a combination of original/generated artwork, appropriately licensed external assets, SVG and CSS.
+
+#### Priority assets
+
+1. **Main office background**
+   - Wide landscape illustration.
+   - Modern municipal office with a desk and large window.
+   - Mediterranean city environment inspired by Antalya.
+   - Warm natural daylight and contemporary climate-technology details.
+
+2. **Document assets**
+   - Paper textures and document backgrounds.
+   - Receipt and invoice illustrations.
+   - Official municipal seals and document markings.
+   - Folders, clips, handwritten annotations and paper edges.
+
+3. **Climate illustrations**
+   - Solar panels and renewable energy.
+   - Residential buildings and heating systems.
+   - Public transport and electric vehicles.
+   - Waste separation and composting.
+   - Urban greenery and sustainable infrastructure.
+
+4. **Action assets**
+   - APPROVED stamp.
+   - FINE ISSUED stamp.
+   - GRANT APPROVED stamp.
+   - Optional municipal seals and status markers.
+
+5. **Interface assets**
+   - Consistent icons.
+   - Metric indicators.
+   - Small charts and progress indicators.
+   - Buttons, badges and status symbols.
+
+#### Asset implementation rules
+
+- Prefer CC0 assets or assets with clearly compatible licenses.
+- Verify the license of each individual asset, not just the website hosting it.
+- Record creator, source, license and modifications in `ATTRIBUTION.md`.
+- Do not use assets extracted from *Papers, Please* or other copyrighted games.
+- Do not mix unrelated visual styles.
+- Prefer transparent PNG or SVG for isolated objects and icons.
+- Use CSS for interface surfaces, layout, shadows, borders and simple effects.
+- Use SVG for scalable icons, seals, diagrams and simple illustrations.
+- Use PNG for detailed illustrations and textured artwork.
+- Optimize image sizes and avoid unnecessarily large assets.
+- Do not introduce an external asset framework or npm dependency.
+
+### 5.4 Gameplay and Architecture Preservation
+
+Phase 5 is a presentation phase. It must not change the authoritative gameplay behavior implemented in Phases 1–4.
+
+The following must remain intact:
+
+- Carbon emission calculations and emission factors.
+- Declaration tolerance and discrepancy calculations.
+- Fraud and offset verification.
+- Approval, fine and grant validation.
+- Grant eligibility and costs.
+- Budget, Public Trust and Net-Zero Progress changes.
+- Citizen and case progression.
+- Timers, day configurations and campaign transitions.
+- Victory and failure conditions.
+- Existing game statistics and campaign restart behavior.
+
+The frontend must continue to display backend results rather than independently calculate or decide gameplay outcomes.
+
+Animations and audio must respond to actual gameplay results. Do not show a successful approval animation when the backend rejects the action.
+
+Visual redesign must not remove, hide or weaken information required to inspect a case and make a correct decision.
+
+### 5.5 Verification and Acceptance Criteria
+
+Phase 5 is complete when:
+
+- The game has a recognizable visual identity that is distinct from a conventional website dashboard.
+- The municipal office environment establishes a clear sense of place.
+- Citizen records and supporting documents look like intentional game objects.
+- The three action types have distinctive, satisfying visual feedback.
+- Existing gameplay information remains readable and accessible.
+- Metrics visibly respond to backend results.
+- Transitions and animations do not interrupt or break gameplay.
+- Audio can be muted or controlled.
+- The game works at its intended desktop resolution and supported smaller resolutions.
+- All campaign screens receive consistent visual treatment.
+- All newly sourced assets have verified licenses and required attribution.
+- No Phase 1–4 gameplay behavior has been changed.
+- No new console errors or gameplay regressions are introduced.
+
+**Testing requirement:** Run the full three-day campaign and verify the main gameplay loop, all three actions, correct and incorrect decisions, metric updates, daily summaries, victory, failure and campaign restart.
+
+If an existing Phase 1–4 issue is discovered, document it separately rather than silently changing gameplay during visual implementation.
+
+### 5.6 Recommended Implementation Order
+
+1. Finalize the visual direction and design tokens.
+2. Select and prepare a small coherent asset collection.
+3. Establish the office environment.
+4. Redesign the dossier and document presentation.
+5. Improve the gameplay HUD and data visualization.
+6. Add action stamps and feedback.
+7. Add transitions and audio.
+8. Test responsive behavior and accessibility.
+9. Polish all campaign screens and run regression testing.
+
+**Scope principle:** Prioritize a small number of high-quality, consistent assets over a large collection of unrelated decorations. The game should feel like a complete experience while keeping the existing gameplay clear, functional and easy to understand.
+
+
+# Phase 5B — Immersion, Transitions & Game-Feel Layer
+
+**Objective:** Transform the game from a static dashboard into a living municipal office through motion design, layered overlays, scene transitions, and physical-feeling interactions.
+
+The game is functionally complete and has its visual identity and static assets. The remaining problem is that state changes happen in place, with modals appearing over the same screen. The experience should feel more like working at a physical office: dossiers arrive and leave, decisions are stamped, citizens move through the process, and the office changes throughout the campaign.
+
+This phase should require near-zero new raster assets. Prioritize CSS, SVG, animation, layered overlays, and scene choreography.
+
+## Design principles
+
+1. **Nothing simply appears; everything arrives.** Dossiers slide in, stamps slam down, citizens leave, and the next case arrives.
+2. **The office is a character.** Daylight changes throughout the campaign, with subtle ambient motion such as dust, blinking indicators, and light through the window.
+3. **Screens are scenes, not modals.** Briefings, shift summaries, and final verdicts should feel like full-screen scene changes rather than ordinary pop-ups.
+
+---
+
+## P5B-01 — SceneDirector
+
+Create a centralized frontend scene-transition orchestrator.
+
+The intended scene sequence is:
+
+`MENU → DAY_BRIEF → SHIFT_START → CASE_INTAKE → CASE_REVIEW → CASE_RESOLVE → NEXT_CASE → DAY_SUMMARY → NEXT_DAY → VERDICT`
+
+Requirements:
+
+- Implement a clear `transitionTo(scene, data)` interface.
+- Coordinate scene entry and exit animations.
+- Support configurable transition durations.
+- Prevent conflicting transitions from running simultaneously.
+- Handle interrupted, skipped, or failed animations safely.
+- Preserve the existing gameplay flow and backend authority.
+- Keep the SceneDirector presentation-only; it must not become a second gameplay state machine.
+
+**Ownership:** Agent A — Frontend Lead.
+
+## P5B-02 — Cinematic Main Menu
+
+Transform the main menu into an atmospheric opening scene.
+
+Requirements:
+
+- Slow Ken Burns-style movement on the office background.
+- Title reveal using a typing or fade-in effect.
+- Start button reveal after the title.
+- Subtle film grain and vignette.
+- Restrained visual effects that preserve readability.
+
+**Ownership:** Agent B — Frontend Presentation.
+
+## P5B-03 — Day Briefing
+
+Create a full-screen day briefing scene.
+
+Requirements:
+
+- Office lighting that reflects the time of day.
+- Day and quota card that slides into view.
+- Typewriter-style briefing text.
+- Clear action to begin the shift.
+- Transition from the briefing into the working scene.
+
+Use existing campaign data. Do not change quotas or day progression.
+
+**Ownership:** Agent B — Frontend Presentation.
+
+## P5B-04 — Citizen Intake Animation
+
+Make each new citizen dossier feel physically delivered to the auditor.
+
+Requirements:
+
+- The previous case slides out before the next dossier arrives.
+- The new dossier slides upward from the bottom of the screen.
+- The dossier settles with a slight rotation and shadow.
+- Case ID and citizen name are revealed in sequence.
+- Subtle paper-rustle audio where supported.
+- Target duration: approximately 0.6–0.9 seconds.
+- Animation must be skippable or safely completed.
+
+**Ownership:** Agent A — Frontend Lead.
+
+## P5B-05 — Case Resolution Animation
+
+Give every decision a distinct physical-feeling conclusion.
+
+Requirements:
+
+- APPROVE: dossier exits to the right.
+- FINE: dossier exits downward with a red visual flash.
+- GRANT: dossier exits upward with a gold shimmer.
+- Preserve the existing result feedback interaction until the player dismisses it.
+- The next case arrives through the established intake flow.
+
+Do not change the gameplay meaning or effects of any decision.
+
+**Ownership:** Agent A — Frontend Lead.
+
+## P5B-06 — Ambient Office
+
+Make the office feel alive during case review.
+
+Possible effects:
+
+- Subtle dust motes.
+- Gentle light gradient or daylight variation.
+- Blinking indicator LED.
+- Soft movement of light through the window.
+
+Requirements:
+
+- Ambient effects must not interfere with interaction.
+- Use `pointer-events: none` where appropriate.
+- Keep effects subtle and performance-friendly.
+- Respect reduced-motion settings.
+- Change the office mood to reflect the campaign day or time of day where appropriate.
+
+**Ownership:** Agent B — Frontend Presentation.
+
+## P5B-07 — Metric HUD
+
+Improve the visual feedback of metric changes and timer urgency.
+
+Requirements:
+
+- Short bounce or emphasis animation when a metric changes.
+- Red flash for negative changes where appropriate.
+- Timer urgency styling when fewer than 30 seconds remain.
+- Subtle tick-tock effect if suitable.
+- Floating metric delta chips displaying the changes supplied by the backend.
+
+The frontend must display supplied values and must not calculate or modify metrics.
+
+**Ownership:** Agent B — Frontend Presentation.
+
+## P5B-08 — Enhanced Decision Feedback
+
+Improve the visual presentation of decision results.
+
+Requirements:
+
+- Prominent decision stamp.
+- Torn-paper-style result strip.
+- Clear ruling text.
+- Metric changes that count up or animate into their final values.
+- Distinct verdict labels:
+  - VERIFIED
+  - VIOLATION
+  - OVERRULED
+- Visually distinguish correct decisions from incorrect decisions.
+
+Use existing backend-provided results and metric changes. Do not recalculate them in the frontend.
+
+**Ownership:** Agent A — Frontend Lead.
+
+## P5B-09 — Day-End Summary
+
+Create a full-screen shift-report scene.
+
+Requirements:
+
+- Transition away from the active office scene.
+- Dimmed office background.
+- SHIFT REPORT document that appears to land on the desk.
+- Report information revealed progressively.
+- Stamp or seal animation.
+- Clear action to continue to the next day.
+
+Use existing campaign results. Do not calculate or change report values.
+
+**Ownership:** Agent B — Frontend Presentation.
+
+## P5B-10 — Victory and Game-Over Cinematics
+
+Give the campaign ending a distinct visual identity.
+
+### Game over
+
+- Dim the office.
+- Present a termination or failure notice.
+- Use restrained flicker or audio feedback for trust-collapse or bankruptcy outcomes where appropriate.
+- Make the final result clear and readable.
+
+### Victory
+
+- Brighten the office.
+- Present a certificate or final approval document.
+- Use a satisfying final stamp or seal.
+- Give the player a clear sense of completion.
+
+The backend determines the ending. The frontend only presents the outcome it provides.
+
+**Ownership:** Agent B — Frontend Presentation.
+
+## P5B-11 — Optional Terminal Display Mode
+
+Add an optional CRT/terminal visual treatment for terminal-style panels only.
+
+Possible effects:
+
+- Subtle scanlines.
+- Restrained chromatic aberration.
+- User-accessible toggle.
+- Persist the setting using the existing settings approach if available; otherwise, use a session-only setting rather than introducing unnecessary infrastructure.
+
+**Ownership:** Agent A — Integration.
+
+## P5B-12 — Audio Transitions
+
+Add subtle synthesized or existing audio cues for important transitions.
+
+Possible sounds:
+
+- Transition whoosh.
+- Drawer movement.
+- Page turn or paper rustle.
+- Day-start bell.
+- Final countdown sting.
+- Decision stamp.
+
+Requirements:
+
+- Follow the existing audio architecture.
+- Provide mute/volume controls consistently with the existing game.
+- Avoid unnecessary external audio dependencies.
+- Keep sounds subtle and non-intrusive.
+- Respect browser audio restrictions and user interaction requirements.
+- Audio failures must not break gameplay.
+
+**Ownership:** Agent B — Frontend Presentation.
+
+## P5B-13 — Responsive and Reduced-Motion Support
+
+Ensure the new experience works across relevant screen sizes and accessibility preferences.
+
+Requirements:
+
+- Respect `prefers-reduced-motion`.
+- Replace long animations with short transitions or immediate state changes when reduced motion is enabled.
+- Ensure no input remains locked because an animation failed.
+- Do not rely exclusively on `animationend` or `transitionend`.
+- Keep dossiers, feedback, buttons, and HUD elements usable on smaller screens.
+
+**Ownership:** Agent A — Integration.
+
+## P5B-14 — Regression Verification
+
+Verify the complete game after the immersion layer is integrated.
+
+Test the actual project build and test procedures. Do not assume a particular bundle filename or test count without inspecting the project.
+
+Manual verification should cover:
+
+- Main menu and game start.
+- Every day briefing.
+- Case intake and case review.
+- APPROVE, FINE, and GRANT.
+- Correct and incorrect decisions.
+- Metric changes and timer behavior.
+- Day-end summaries.
+- Next-day progression.
+- Victory and game-over outcomes.
+- Restart behavior.
+- Audio controls and mute behavior.
+- Reduced-motion behavior.
+- Terminal display mode.
+
+Acceptance criteria:
+
+- Existing gameplay rules and outcomes remain unchanged.
+- No metric drift or duplicate state updates.
+- No animation leaves the game stuck.
+- No new console errors.
+- Existing tests continue to pass.
+- The full campaign remains playable from beginning to end.
+
+Report the actual test count, build procedure, and manual verification results.
+
+**Ownership:** Agent A — Integration and Final Verification.
+
+---
+
+## Implementation order and agent coordination
+
+### Stage 1 — Core architecture
+
+1. P5B-01 — SceneDirector.
+
+Agent A establishes the transition interface and shares its contract with Agent B before dependent scene transitions are implemented.
+
+### Stage 2 — Core gameplay experience
+
+2. P5B-04 — Citizen Intake Animation.
+3. P5B-05 — Case Resolution Animation.
+4. P5B-08 — Enhanced Decision Feedback.
+
+These tasks have the highest impact on the repeated gameplay loop.
+
+### Stage 3 — Surrounding scenes and atmosphere
+
+5. P5B-02 — Cinematic Main Menu.
+6. P5B-03 — Day Briefing.
+7. P5B-09 — Day-End Summary.
+8. P5B-10 — Victory and Game-Over Cinematics.
+9. P5B-06 — Ambient Office.
+10. P5B-07 — Metric HUD.
+11. P5B-12 — Audio Transitions.
+
+Agent B owns these tasks and uses Agent A's agreed SceneDirector interface.
+
+### Stage 4 — Integration and hardening
+
+12. P5B-11 — Optional Terminal Display Mode.
+13. P5B-13 — Responsive and Reduced-Motion Support.
+14. P5B-14 — Regression Verification.
+
+Agent A owns integration and final verification.
+
+## Asset strategy
+
+No new raster assets are required for this phase.
+
+Prefer:
+
+- CSS animations and transitions.
+- CSS-generated film grain and vignette.
+- SVG stamps, seals, and paper details.
+- CSS transforms for dossier movement.
+- Layered gradients for daylight changes.
+- CSS/SVG techniques for metric animations and visual effects.
+- Existing office, dossier, and character assets.
+
+An optional generated citizen silhouette portrait may be considered only if the existing assets do not adequately support the intake scene.
+
+## Overall acceptance criteria
+
+Phase 5B is complete when:
+
+1. Scene transitions are intentional and coordinated through the SceneDirector.
+2. Cases visibly arrive and depart rather than simply changing in place.
+3. Decisions have distinct visual feedback and recognizable outcomes.
+4. Briefings, summaries, and verdicts feel like scenes rather than ordinary modals.
+5. The office atmosphere changes throughout the campaign.
+6. HUD and metric changes provide clear visual feedback.
+7. Audio enhances the experience without becoming intrusive.
+8. Reduced-motion and responsive behavior work correctly.
+9. Existing gameplay logic, rules, and outcomes remain unchanged.
+10. The complete campaign passes regression verification.
+
+**Important:** Phase 5B supplements Phase 5. It does not replace or renumber the existing Phase 6 or any later roadmap phase.
+
+
 
 ## Phase 6 — Quality Assurance and Final Submission
 

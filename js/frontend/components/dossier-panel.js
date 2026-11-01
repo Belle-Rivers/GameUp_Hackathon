@@ -86,10 +86,28 @@ export function renderReceiptCard(receipt, receiptIndex = 0) {
     .map((item, idx) => renderReceiptItem(item, receiptIndex, idx))
     .join('\n');
 
+  const type = String(receipt.type || '').toUpperCase();
+  const iconMap = {
+    ENERGY: 'assets/Electric_Meter.png',
+    HEATING: 'assets/NaturalGas_Heater.png',
+    GAS: 'assets/NaturalGas_Heater.png',
+    GROCERY: 'assets/LocalFruits.png',
+    FOOD: 'assets/LocalFruits.png',
+    TRAVEL: 'assets/plane.png',
+    FLIGHT: 'assets/plane.png',
+    COMMUTE: 'assets/petrol.png',
+    WASTE: 'assets/garbage.png',
+  };
+  const iconSrc = iconMap[type] || '';
+  const iconImg = iconSrc ? `<img src="${iconSrc}" alt="" class="receipt-category-icon" aria-hidden="true" />` : '';
+
   return `
-    <div class="receipt-card" data-receipt-type="${escapeHtml(receipt.type || '')}">
+    <div class="receipt-card receipt-card--${escapeHtml(type.toLowerCase())}" data-receipt-type="${escapeHtml(receipt.type || '')}">
       <div class="receipt-header">
-        <span class="receipt-title font-mono">${escapeHtml(receipt.title || 'Receipt Record')}</span>
+        <div class="receipt-title-wrap">
+          ${iconImg}
+          <span class="receipt-title font-mono">${escapeHtml(receipt.title || 'Receipt Record')}</span>
+        </div>
         <span class="badge badge-subtle font-mono">${escapeHtml(receipt.type || 'MISC')}</span>
       </div>
       <div class="receipt-items">

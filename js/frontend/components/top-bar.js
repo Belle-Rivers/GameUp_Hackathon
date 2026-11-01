@@ -1,3 +1,5 @@
+import { soundEngine } from '../audio.js';
+
 /**
  * @typedef {Object} TopBarMetrics
  * @property {number} [netZero] Net-Zero progress percentage [0, 100].
@@ -59,6 +61,7 @@ export class TopBarComponent {
   constructor(root = document) {
     this.root = root;
     this.elements = this._queryElements();
+    this._initAudioToggle();
   }
 
   _queryElements() {
@@ -74,7 +77,26 @@ export class TopBarComponent {
       trustBar: q('#meter-trust-bar'),
       timerDisplay: q('#timer-display'),
       timerContainer: q('#timer-container'),
+      btnAudioToggle: q('#btn-audio-toggle'),
     };
+  }
+
+  _initAudioToggle() {
+    if (!this.elements.btnAudioToggle) return;
+    this._updateAudioIcon();
+    this.elements.btnAudioToggle.addEventListener('click', () => {
+      soundEngine.toggleMute();
+      this._updateAudioIcon();
+    });
+  }
+
+  _updateAudioIcon() {
+    if (!this.elements.btnAudioToggle) return;
+    const isMuted = soundEngine.isMuted();
+    const iconSpan = this.elements.btnAudioToggle.querySelector?.('.audio-icon') || this.elements.btnAudioToggle;
+    iconSpan.textContent = isMuted ? '🔇' : '🔊';
+    this.elements.btnAudioToggle.setAttribute('aria-label', isMuted ? 'Unmute Sound Effects' : 'Mute Sound Effects');
+    this.elements.btnAudioToggle.setAttribute('title', isMuted ? 'Sound: Muted (Click to Unmute)' : 'Sound: Active (Click to Mute)');
   }
 
   /**

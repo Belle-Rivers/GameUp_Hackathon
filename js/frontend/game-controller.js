@@ -1,3 +1,5 @@
+import { soundEngine } from './audio.js';
+
 /**
  * @file game-controller.js
  * Game Controller — Phase 3 integration layer.
@@ -119,6 +121,7 @@ export class GameController {
    */
   onStartShift() {
     this.renderer.hideDayIntroModal();
+    soundEngine.playTransition();
     if (!this._timerHandle) {
       this._startTimer();
     }
@@ -262,6 +265,7 @@ export class GameController {
     // Render dossier
     if (this.renderer.gameplay?.dossier) {
       this.renderer.gameplay.dossier.loadCitizen(citizenCase);
+      soundEngine.playPaper();
     }
 
     // Reset calculator for new citizen
@@ -317,6 +321,7 @@ export class GameController {
           unit: bItem.unit,
           co2: bItem.co2,
         });
+        soundEngine.playClick();
       }
     }
 
@@ -347,6 +352,7 @@ export class GameController {
   onClearCalculator() {
     if (this.renderer.gameplay?.calculator) {
       this.renderer.gameplay.calculator.clear();
+      soundEngine.playClick();
     }
     this._syncActionPanelAudit();
   }
@@ -395,6 +401,7 @@ export class GameController {
     // Disable actions while processing
     this._setActionsEnabled(false);
     this._awaitingTransition = true;
+    soundEngine.playStamp(action);
 
     let result;
     try {
@@ -438,6 +445,12 @@ export class GameController {
       this.renderer.gameplay.actionPanel.setStatus(statusText);
     }
 
+    if (result.isValid) {
+      soundEngine.playSuccess();
+    } else {
+      soundEngine.playError();
+    }
+
     this._showFeedbackOverlay(result);
   }
 
@@ -463,8 +476,18 @@ export class GameController {
     const stampLabel = result.action;
     const metricLines = this._buildMetricChangeLines(result.metricChanges);
 
+    const stampMap = {
+      APPROVE: 'assets/Approved_Stamp.png',
+      FINE: 'assets/FineIssued_Stamp.png',
+      GRANT: 'assets/GrantApproved_Stamp.png',
+    };
+    const stampAsset = stampMap[result.action] || 'assets/Approved_Stamp.png';
+
     overlay.className = `action-feedback-overlay ${stampClass}`;
     overlay.innerHTML = `
+      <div class="feedback-stamp-graphic-wrap">
+        <img src="${stampAsset}" alt="${this._escapeHtml(stampLabel)} Stamp" class="feedback-stamp-image stamp-drop-anim" />
+      </div>
       <div class="feedback-stamp">${this._escapeHtml(stampLabel)}</div>
       <div class="feedback-explanation">${this._escapeHtml(result.explanation)}</div>
       ${metricLines ? `<div class="feedback-metrics font-mono">${metricLines}</div>` : ''}
@@ -578,6 +601,7 @@ export class GameController {
    * @private
    */
   _handleShiftEnd(stateView, statsOverride) {
+    soundEngine.playTransition();
     const summary = this.backend.getShiftSummary();
     const stats = statsOverride || summary.shiftStats;
     const day = summary.day || (stateView?.currentDay) || 1;

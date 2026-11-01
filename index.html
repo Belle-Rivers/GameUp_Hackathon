@@ -109,6 +109,11 @@
             <span class="timer-icon" aria-hidden="true">⏱</span>
             <span class="timer-display" id="timer-display">02:00</span>
           </div>
+
+          <!-- Audio Toggle Control -->
+          <button id="btn-audio-toggle" class="audio-toggle-btn" type="button" aria-label="Mute Sound Effects" title="Sound: Active (Click to Mute)">
+            <span class="audio-icon" aria-hidden="true">🔊</span>
+          </button>
         </div>
       </header>
 
@@ -199,7 +204,10 @@
           <div class="panel-body dossier-body" id="dossier-content">
             <!-- Citizen Identity and Declaration -->
             <div class="dossier-paper">
-              <div class="dossier-stamp-seal" aria-hidden="true">COP31 OFFICIAL RECORD</div>
+              <div class="dossier-stamp-seal" aria-hidden="true">
+                <img src="assets/Official_Seal.png" alt="" class="seal-graphic" />
+                <span class="seal-text">COP31 OFFICIAL RECORD</span>
+              </div>
 
               <div class="dossier-meta-grid">
                 <div class="meta-field">
@@ -217,6 +225,9 @@
               </div>
 
               <div class="dossier-plea-card">
+                <div class="plea-paperclip-graphic" aria-hidden="true">
+                  <img src="assets/Paperclips_and_Note.png" alt="" class="paperclip-img" />
+                </div>
                 <h4 class="plea-title">Citizen Statement / Note:</h4>
                 <p class="plea-text" id="dossier-note">
                   "My gas bill was extreme this winter because our landlord won't insulate the walls. I tried my best to cut down on meat to compensate!"

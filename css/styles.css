@@ -1,45 +1,60 @@
 /* ==========================================================================
    MUNICIPAL CARBON ASSESSOR — CSS DESIGN SYSTEM & BASE STYLES
-   Subphase 2A / Task P2-02
-   ========================================================================== */
+   Visual Direction: Antalya Climate Operations Office (Phase 5)
+   ========================================================================= */
 
 :root {
-  /* Surface & Background Colors */
-  --bg-app: #0f172a;               /* Dark Slate Slate-900 */
-  --surface-panel: #1e293b;         /* Slate-800 */
-  --surface-card: #334155;          /* Slate-700 */
-  --surface-card-hover: #475569;    /* Slate-600 */
-  --surface-elevated: #243046;      /* Intermediate depth */
-  --paper-dossier: #f8fafc;         /* Clean Off-White */
-  --paper-text: #0f172a;            /* Deep Slate Text */
-  --paper-muted: #475569;           /* Secondary paper text */
-  --paper-border: #cbd5e1;          /* Document border line */
+  /* PRD Core Base Tokens (P2-02 Compatibility) */
+  --bg-app: #0f172a;
+  --surface-panel: #1e293b;
+  --surface-card: #334155;
+  --surface-card-hover: #475569;
+  --surface-elevated: #243046;
+  --paper-dossier: #f8fafc;
+  --paper-text: #0f172a;
+  --paper-muted: #475569;
+  --paper-border: #cbd5e1;
 
-  /* Text & Border Colors */
-  --text-main: #f1f5f9;             /* Slate-100 */
-  --text-muted: #94a3b8;            /* Slate-400 */
-  --text-dim: #64748b;              /* Slate-500 */
-  --border-subtle: #334155;         /* Subtle separator */
-  --border-bright: #475569;         /* Highlighted border */
-
-  /* Primary Theme Accents */
-  --accent-cyan: #06b6d4;           /* Terminal Blue */
+  --accent-cyan: #06b6d4;
   --accent-cyan-dim: rgba(6, 182, 212, 0.15);
   --accent-cyan-glow: rgba(6, 182, 212, 0.35);
-  --accent-gold: #f59e0b;           /* COP31 Gold Accent */
+  --accent-gold: #f59e0b;
   --accent-gold-dim: rgba(245, 158, 11, 0.15);
   --accent-gold-glow: rgba(245, 158, 11, 0.35);
 
-  /* Interactive Action Colors */
-  --stamp-approve-bg: #10b981;      /* Emerald Green */
+  --stamp-approve-bg: #10b981;
   --stamp-approve-hover: #059669;
   --stamp-approve-glow: rgba(16, 185, 129, 0.35);
-  --stamp-fine-bg: #ef4444;         /* Crimson Red */
+  --stamp-fine-bg: #ef4444;
   --stamp-fine-hover: #dc2626;
   --stamp-fine-glow: rgba(239, 68, 68, 0.35);
-  --stamp-grant-bg: #0284c7;        /* Solution Blue */
+  --stamp-grant-bg: #0284c7;
   --stamp-grant-hover: #0369a1;
   --stamp-grant-glow: rgba(2, 132, 199, 0.35);
+
+  /* Enhanced Antalya Climate Operations Office Surfaces */
+  --bg-office: #080e18;
+  --surface-desk: #121c2b;
+  --surface-panel-border: #233752;
+
+  /* Authentic Mediterranean Parchment & Dossier Materials */
+  --paper-manila: #f7f3e7;
+  --paper-dossier-border: #ded3bc;
+  --paper-bill: #fbf9f4;
+  --paper-receipt: #f6f5ef;
+  --paper-ink: #162232;
+  --paper-stamp-ink: #116932;
+
+  /* Extended Text & Mediterranean Accents */
+  --text-main: #edf2f7;
+  --text-muted: #9bb0c9;
+  --text-dim: #647d9b;
+  --border-subtle: #243853;
+  --border-bright: #395780;
+
+  --accent-cyan-bright: #00b4d8;
+  --accent-gold-bright: #f5b041;
+  --accent-terracotta: #c85a32;
 
   /* Typography Fonts */
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
@@ -70,15 +85,19 @@
   --radius-lg: 12px;
   --top-bar-height: 58px;
 
-  /* Shadows */
-  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.25);
-  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
-  --shadow-stamp: inset 0 2px 0 rgba(255, 255, 255, 0.2), 0 4px 8px rgba(0, 0, 0, 0.4);
+  /* Physical Shadows & Tactile Depth */
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 4px 10px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-modal: 0 24px 38px rgba(0, 0, 0, 0.75), 0 12px 16px rgba(0, 0, 0, 0.55);
+  --shadow-paper: 0 6px 16px rgba(0, 0, 0, 0.28), 0 1px 4px rgba(0, 0, 0, 0.16);
+  --shadow-paper-floating: 0 12px 28px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --shadow-stamp: inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 6px 14px rgba(0, 0, 0, 0.55);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ==========================================================================
@@ -127,7 +146,7 @@ body {
 }
 
 .text-cyan {
-  color: var(--accent-cyan);
+  color: var(--accent-cyan-bright);
 }
 
 .text-gold {
@@ -141,12 +160,13 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(14, 22, 34, 0.7);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--surface-card);
   border-radius: var(--radius-xs);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -165,4 +185,3 @@ body {
   white-space: nowrap;
   border-width: 0;
 }
-

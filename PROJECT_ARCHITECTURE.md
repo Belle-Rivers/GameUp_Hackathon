@@ -46,6 +46,7 @@ GameUP/
 │   │   └── audio.js
 │   │
 │   └── app.js
+
 │
 ├── assets/
 │   └── icons/

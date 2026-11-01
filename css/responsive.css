@@ -1,6 +1,6 @@
 /* ==========================================================================
-   MUNICIPAL CARBON ASSESSOR — RESPONSIVE LAYOUT & MEDIA QUERIES
-   Subphase 2A / Task P2-04
+   MUNICIPAL CARBON ASSESSOR — RESPONSIVE LAYOUT & ACCESSIBILITY
+   Subphase 5 / Task P5-09
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -8,17 +8,22 @@
    -------------------------------------------------------------------------- */
 @media screen and (max-width: 1280px) {
   .workspace-grid {
-    grid-template-columns: minmax(240px, 0.9fr) minmax(320px, 1.3fr) minmax(280px, 1fr);
+    grid-template-columns: minmax(250px, 0.9fr) minmax(340px, 1.3fr) minmax(290px, 1fr);
     gap: var(--space-sm);
     padding: var(--space-sm);
   }
 
   .city-meters {
-    gap: var(--space-md);
+    gap: var(--space-sm);
   }
 
   .meter-widget {
     min-width: 110px;
+  }
+
+  .feedback-stamp-graphic-wrap {
+    width: 140px;
+    height: 140px;
   }
 }
 
@@ -45,7 +50,7 @@
   }
 
   .workspace-grid {
-    grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.2fr) minmax(260px, 1fr);
+    grid-template-columns: minmax(230px, 1fr) minmax(300px, 1.2fr) minmax(270px, 1fr);
     gap: var(--space-xs);
     padding: var(--space-xs);
   }
@@ -55,7 +60,7 @@
   }
 
   .stamp-btn {
-    padding: 10px 12px;
+    padding: 10px 14px;
     font-size: var(--text-xs);
   }
 }
@@ -68,7 +73,8 @@
   .workspace-tabs-bar {
     display: flex;
     overflow-x: auto;
-    background: #111c30;
+    background: #0e1724;
+    border-bottom: 2px solid var(--accent-gold);
   }
 
   .workspace-grid {
@@ -79,7 +85,7 @@
     overflow-y: auto;
   }
 
-  /* When tabs are active, hidden panels are visually hidden unless active or scrolled */
+  /* When tabs are active, hidden panels are visually hidden unless active */
   .workspace-grid[data-tab-mode="tabs"] .workspace-column {
     display: none;
     height: 100%;
@@ -112,8 +118,13 @@
   }
 
   .timer-widget {
-    grid-column: span 2;
+    grid-column: span 1;
     justify-content: center;
+  }
+
+  .audio-toggle-btn {
+    grid-column: span 1;
+    justify-self: end;
   }
 
   .dossier-meta-grid {
@@ -180,7 +191,7 @@
   }
 
   .meter-track {
-    height: 6px;
+    height: 7px;
   }
 
   .workspace-grid {
@@ -197,7 +208,7 @@
   }
 
   .stamp-btn {
-    padding: 8px 12px;
+    padding: 9px 12px;
   }
 
   .calculator-container {
@@ -208,10 +219,15 @@
     padding: 4px 8px;
     font-size: var(--text-md);
   }
+
+  .feedback-stamp-graphic-wrap {
+    width: 110px;
+    height: 110px;
+  }
 }
 
 /* --------------------------------------------------------------------------
-   Reduced Motion Preferences
+   Reduced Motion Preferences (Accessibility P5-09)
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -220,5 +236,10 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
 
+  .stamp-drop-anim {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: rotate(-6deg) !important;
+  }
+}
